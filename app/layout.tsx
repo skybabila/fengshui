@@ -20,6 +20,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-MXVLQJDTZ8"></script>
+        <script>
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-MXVLQJDTZ8');
+          `}
+        </script>
+      </head>
       <body className={inter.className + ' bg-silk min-h-screen'}>
         <Navbar />
         <main className="min-h-screen">

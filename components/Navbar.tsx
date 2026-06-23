@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { supabase, ADMIN_EMAIL } from '@/lib/supabase'
+import { VERSION } from '@/lib/version'
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -68,6 +69,7 @@ export default function Navbar() {
           </Link>
 
           <div className="hidden md:flex items-center gap-1">
+            <div className="mr-4 px-3 py-2 text-xs font-mono text-stone-400 border border-stone-200 rounded-full">v{VERSION}</div>
             <Link href="/" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">Home</Link>
             <Link href="/articles" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">Articles</Link>
             {isLoggedIn && (
