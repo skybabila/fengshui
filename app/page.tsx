@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Compass, Sparkles, Heart, TrendingUp } from 'lucide-react'
 
 const elements = [
@@ -161,10 +162,11 @@ export default function Home() {
                 style={{ animationDelay: `${index * 0.15}s` }}
               >
                 <div className="relative h-48 overflow-hidden">
-                  <img
+                  <Image
                     src={article.image}
                     alt={article.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                 </div>

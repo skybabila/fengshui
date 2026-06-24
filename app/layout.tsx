@@ -35,14 +35,14 @@ export default function RootLayout({
         </Script>
         {/* Google Analytics */}
         <Script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}></Script>
-        <Script dangerouslySetInnerHTML={{
+        <Script id="ga-inline-script" strategy="afterInteractive" dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
             gtag('config', '${GA_TRACKING_ID}');
           `
-        }}></Script>
+        }} />
       </head>
       <body className={inter.className + ' bg-silk min-h-screen'}>
         {/* Google Tag Manager (noscript) */}
