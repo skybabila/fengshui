@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import Script from 'next/script'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
@@ -19,21 +18,20 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const GA_TRACKING_ID = 'G-MXVLQJDTZ8'
+
   return (
     <html lang="en">
       <head>
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-MXVLQJDTZ8"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}></script>
+        <script dangerouslySetInnerHTML={{
+          __html: `
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-MXVLQJDTZ8');
-          `}
-        </Script>
+            gtag('config', '${GA_TRACKING_ID}');
+          `
+        }}></script>
       </head>
       <body className={inter.className + ' bg-silk min-h-screen'}>
         <Navbar />
