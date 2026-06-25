@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
-import { Coins, Calendar, Star, TrendingUp, Award, Activity } from 'lucide-react'
+import { Coins, Calendar, Star, TrendingUp, Award, Activity, Settings, Heart } from 'lucide-react'
 
 export default function UserDashboard() {
   const [user, setUser] = useState<any>(null)
@@ -11,6 +11,7 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true)
   const [dailyFortune, setDailyFortune] = useState<any>(null)
   const [recentPrayers, setRecentPrayers] = useState<any[]>([])
+  const [wishCount, setWishCount] = useState(0)
 
   useEffect(() => {
     async function fetchData() {
@@ -29,6 +30,7 @@ export default function UserDashboard() {
           .from('daily_fortunes')
           .select('*')
           .eq('user_id', authUser.id)
+          .eq('fortune_period', 'daily')
           .order('created_at', { ascending: false })
           .limit(1)
         
@@ -44,6 +46,14 @@ export default function UserDashboard() {
           .limit(5)
         
         setRecentPrayers(prayers || [])
+
+        // 获取许愿数量
+        const { count } = await supabase
+          .from('wishes')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', authUser.id)
+        
+        setWishCount(count || 0)
       } catch (error) {
         console.error('Error fetching data:', error)
       } finally {
@@ -73,45 +83,57 @@ export default function UserDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-stone-800 mb-2">Member Dashboard</h1>
-          <p className="text-stone-500">Welcome back, {user?.email?.split('@')[0]}</p>
+          <h1 className="text-3xl font-bold text-stone-800 mb-2">会员中心</h1>
+          <p className="text-stone-500">欢迎回来，{profile?.nickname || profile?.name || user?.email?.split('@')[0]}</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-2xl p-6 shadow-lg shadow-emerald-100">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
-                <Coins className="w-7 h-7 text-amber-600" />
+        <div className="grid md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white rounded-2xl p-5 shadow-lg shadow-emerald-100">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
+                <Coins className="w-6 h-6 text-amber-600" />
               </div>
               <div>
-                <p className="text-stone-500 text-sm">Merit Points</p>
-                <p className="text-2xl font-bold text-stone-800">{points.toLocaleString()}</p>
+                <p className="text-stone-500 text-sm">我的元宝</p>
+                <p className="text-xl font-bold text-stone-800">{points.toLocaleString()}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-lg shadow-teal-100">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-teal-100 to-cyan-100 rounded-xl flex items-center justify-center">
-                <Calendar className="w-7 h-7 text-teal-600" />
+          <div className="bg-white rounded-2xl p-5 shadow-lg shadow-teal-100">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-teal-100 to-cyan-100 rounded-xl flex items-center justify-center">
+                <Calendar className="w-6 h-6 text-teal-600" />
               </div>
               <div>
-                <p className="text-stone-500 text-sm">Today&apos;s Fortune</p>
-                <p className="text-2xl font-bold text-stone-800">
+                <p className="text-stone-500 text-sm">今日运势</p>
+                <p className="text-xl font-bold text-stone-800">
                   {dailyFortune?.fortune_type || '-'}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-lg shadow-green-100">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-100 to-green-100 rounded-xl flex items-center justify-center">
-                <Activity className="w-7 h-7 text-emerald-600" />
+          <div className="bg-white rounded-2xl p-5 shadow-lg shadow-green-100">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-green-100 rounded-xl flex items-center justify-center">
+                <Activity className="w-6 h-6 text-emerald-600" />
               </div>
               <div>
-                <p className="text-stone-500 text-sm">Prayers Offered</p>
-                <p className="text-2xl font-bold text-stone-800">{recentPrayers.length}</p>
+                <p className="text-stone-500 text-sm">祈福次数</p>
+                <p className="text-xl font-bold text-stone-800">{recentPrayers.length}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 shadow-lg shadow-pink-100">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-pink-100 to-rose-100 rounded-xl flex items-center justify-center">
+                <Heart className="w-6 h-6 text-pink-600" />
+              </div>
+              <div>
+                <p className="text-stone-500 text-sm">许愿数量</p>
+                <p className="text-xl font-bold text-stone-800">{wishCount}</p>
               </div>
             </div>
           </div>
@@ -121,28 +143,29 @@ export default function UserDashboard() {
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <div className="flex items-center gap-2 mb-4">
               <Star className="w-5 h-5 text-amber-500" />
-              <h2 className="text-lg font-semibold text-stone-800">Today&apos;s Fortune</h2>
+              <h2 className="text-lg font-semibold text-stone-800">今日运势</h2>
             </div>
             
             {dailyFortune ? (
               <div className="space-y-4">
                 <div className="text-center py-4">
                   <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 ${
-                    dailyFortune.fortune_type === 'Excellent' ? 'bg-green-100' :
-                    dailyFortune.fortune_type === 'Good' ? 'bg-emerald-100' :
-                    dailyFortune.fortune_type === 'Normal' ? 'bg-amber-100' : 'bg-red-100'
+                    dailyFortune.fortune_type === '大吉' ? 'bg-green-100' :
+                    dailyFortune.fortune_type === '吉' ? 'bg-emerald-100' :
+                    dailyFortune.fortune_type === '中吉' ? 'bg-amber-100' : 'bg-red-100'
                   }`}>
                     <span className="text-3xl">
-                      {dailyFortune.fortune_type === 'Excellent' && '🌟'}
-                      {dailyFortune.fortune_type === 'Good' && '✨'}
-                      {dailyFortune.fortune_type === 'Normal' && '🌤️'}
-                      {dailyFortune.fortune_type === 'Challenging' && '⛅'}
+                      {dailyFortune.fortune_type === '大吉' && '🌟'}
+                      {dailyFortune.fortune_type === '吉' && '✨'}
+                      {dailyFortune.fortune_type === '中吉' && '🌤️'}
+                      {dailyFortune.fortune_type === '小吉' && '⛅'}
+                      {dailyFortune.fortune_type === '平' && '☁️'}
                     </span>
                   </div>
                   <h3 className={`text-xl font-bold ${
-                    dailyFortune.fortune_type === 'Excellent' ? 'text-green-600' :
-                    dailyFortune.fortune_type === 'Good' ? 'text-emerald-600' :
-                    dailyFortune.fortune_type === 'Normal' ? 'text-amber-600' : 'text-red-600'
+                    dailyFortune.fortune_type === '大吉' ? 'text-green-600' :
+                    dailyFortune.fortune_type === '吉' ? 'text-emerald-600' :
+                    dailyFortune.fortune_type === '中吉' ? 'text-amber-600' : 'text-red-600'
                   }`}>
                     {dailyFortune.fortune_type}
                   </h3>
@@ -154,9 +177,9 @@ export default function UserDashboard() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-stone-400 mb-4">No fortune reading today</p>
-                <a href="/daily-fortune" className="inline-flex items-center gap-2 text-emerald-600 font-medium hover:text-emerald-700">
-                  Get your daily fortune <span>→</span>
+                <p className="text-stone-400 mb-4">今日运势尚未获取</p>
+                <a href="/fortune/daily" className="inline-flex items-center gap-2 text-emerald-600 font-medium hover:text-emerald-700">
+                  获取今日运势 <span>→</span>
                 </a>
               </div>
             )}
@@ -165,33 +188,46 @@ export default function UserDashboard() {
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <div className="flex items-center gap-2 mb-4">
               <Award className="w-5 h-5 text-cyan-500" />
-              <h2 className="text-lg font-semibold text-stone-800">Quick Actions</h2>
+              <h2 className="text-lg font-semibold text-stone-800">快捷入口</h2>
             </div>
             
             <div className="space-y-3">
               <a
-                href="/daily-fortune"
-                className="flex items-center gap-3 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl hover:from-emerald-100 hover:to-teal-100 transition-colors"
+                href="/fortune"
+                className="flex items-center gap-3 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl hover:from-amber-100 hover:to-orange-100 transition-colors"
               >
-                <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                  <Star className="w-5 h-5 text-emerald-600" />
+                <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                  <Star className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-stone-800">Daily Fortune</p>
-                  <p className="text-sm text-stone-500">Get your personalized reading</p>
+                  <p className="font-medium text-stone-800">运势中心</p>
+                  <p className="text-sm text-stone-500">每日/每周/每月运势</p>
+                </div>
+              </a>
+
+              <a
+                href="/wish-wall"
+                className="flex items-center gap-3 p-4 bg-gradient-to-r from-pink-50 to-rose-50 rounded-xl hover:from-pink-100 hover:to-rose-100 transition-colors"
+              >
+                <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
+                  <Heart className="w-5 h-5 text-pink-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-stone-800">我的许愿</p>
+                  <p className="text-sm text-stone-500">许下美好愿望</p>
                 </div>
               </a>
 
               <a
                 href="/user/prayer"
-                className="flex items-center gap-3 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl hover:from-amber-100 hover:to-orange-100 transition-colors"
+                className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl hover:from-orange-100 hover:to-red-100 transition-colors"
               >
-                <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-amber-600" />
+                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-orange-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-stone-800">Temple Prayer</p>
-                  <p className="text-sm text-stone-500">Offer prayers and earn points</p>
+                  <p className="font-medium text-stone-800">祈福中心</p>
+                  <p className="text-sm text-stone-500">祈福积德</p>
                 </div>
               </a>
 
@@ -203,8 +239,21 @@ export default function UserDashboard() {
                   <Coins className="w-5 h-5 text-cyan-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-stone-800">My Points</p>
-                  <p className="text-sm text-stone-500">View history and rewards</p>
+                  <p className="font-medium text-stone-800">元宝明细</p>
+                  <p className="text-sm text-stone-500">查看收支记录</p>
+                </div>
+              </a>
+
+              <a
+                href="/user/profile"
+                className="flex items-center gap-3 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl hover:from-emerald-100 hover:to-teal-100 transition-colors"
+              >
+                <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                  <Settings className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-stone-800">个人设置</p>
+                  <p className="text-sm text-stone-500">修改头像、密码等</p>
                 </div>
               </a>
             </div>
@@ -213,7 +262,7 @@ export default function UserDashboard() {
 
         {recentPrayers.length > 0 && (
           <div className="mt-6 bg-white rounded-2xl p-6 shadow-lg">
-            <h2 className="text-lg font-semibold text-stone-800 mb-4">Recent Prayers</h2>
+            <h2 className="text-lg font-semibold text-stone-800 mb-4">最近祈福</h2>
             <div className="space-y-3">
               {recentPrayers.map((prayer: any) => (
                 <div key={prayer.id} className="flex items-center justify-between p-4 bg-stone-50 rounded-xl">
@@ -222,7 +271,7 @@ export default function UserDashboard() {
                     <p className="text-sm text-stone-500">{formatDate(prayer.created_at)}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-amber-600">+{prayer.points_spent} pts</p>
+                    <p className="font-semibold text-amber-600">-{prayer.points_spent} 元宝</p>
                   </div>
                 </div>
               ))}

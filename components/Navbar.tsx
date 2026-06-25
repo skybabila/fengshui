@@ -71,15 +71,14 @@ export default function Navbar() {
 
           <div className="hidden md:flex items-center gap-1">
             <div className="mr-4 px-3 py-2 text-xs font-mono text-stone-400 border border-stone-200 rounded-full">v{VERSION}</div>
-            <Link href="/" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">Home</Link>
-            <Link href="/articles" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">Articles</Link>
+            <Link href="/" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">首页</Link>
+            <Link href="/articles" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">文章</Link>
             {isLoggedIn && (
               <>
-                <Link href="/daily-fortune" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">Daily Fortune</Link>
-                <Link href="/user/prayer" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">Temple Prayer</Link>
+                <Link href="/fortune" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">运势</Link>
+                <Link href="/user/prayer" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">祈福</Link>
               </>
             )}
-            <Link href="/wish-wall" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">Wish Wall</Link>
 
             <div className="ml-2 flex items-center gap-2">
               {isLoggedIn ? (
@@ -154,15 +153,14 @@ export default function Navbar() {
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t border-emerald-100 animate-fade-in-down">
           <div className="px-4 pt-2 pb-4 space-y-1">
-            <Link href="/" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">Home</Link>
-            <Link href="/articles" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">Articles</Link>
+            <Link href="/" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">首页</Link>
+            <Link href="/articles" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">文章</Link>
             {isLoggedIn && (
               <>
-                <Link href="/daily-fortune" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">Daily Fortune</Link>
-                <Link href="/user/prayer" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">Temple Prayer</Link>
+                <Link href="/fortune" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">运势</Link>
+                <Link href="/user/prayer" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">祈福</Link>
               </>
             )}
-            <Link href="/wish-wall" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">Wish Wall</Link>
 
             <div className="pt-3 mt-2 border-t border-emerald-100 space-y-2">
               {isLoggedIn ? (
