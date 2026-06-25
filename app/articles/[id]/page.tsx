@@ -151,36 +151,70 @@ export default function ArticleDetailPage() {
     )
   }
 
+  const hasImage = !!article.image
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 via-emerald-50/20 to-teal-50/20">
-      {/* Hero Image */}
-      <div className="relative h-80 md:h-[500px] overflow-hidden">
-        <Image
-          src={article.image || defaultImage}
-          alt={article.title}
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/30 to-transparent" />
-        
-        {/* Floating decorations */}
-        <div className="absolute top-10 left-10 w-20 h-20 border border-white/20 rounded-full animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-32 h-32 border border-white/10 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-        
-        {/* Hero content */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12">
-          <div className="max-w-4xl mx-auto">
+      {/* Hero Section - with or without image */}
+      {hasImage ? (
+        <div className="relative h-80 md:h-[500px] overflow-hidden">
+          <Image
+            src={article.image || defaultImage}
+            alt={article.title}
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/30 to-transparent" />
+          
+          <div className="absolute top-10 left-10 w-20 h-20 border border-white/20 rounded-full animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-32 h-32 border border-white/10 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+          
+          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12">
+            <div className="max-w-4xl mx-auto">
+              <Link
+                href="/articles"
+                className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors backdrop-blur-sm px-4 py-2 rounded-full bg-white/10 hover:bg-white/20"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Articles
+              </Link>
+              
+              <div className={`inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r ${getCategoryColor(article.category)} rounded-full text-white text-sm font-medium shadow-lg mb-4`}>
+                <Tag className="w-4 h-4" />
+                {article.category}
+              </div>
+              
+              <h1 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight max-w-3xl">
+                {article.title}
+              </h1>
+              
+              <div className="flex flex-wrap items-center gap-6 text-white/90 text-sm">
+                <span className="flex items-center gap-2"><User className="w-4 h-4" /> {article.author}</span>
+                <span className="flex items-center gap-2"><Clock className="w-4 h-4" /> {formatDate(article.date || article.created_at)}</span>
+                <span className="flex items-center gap-2"><Sparkles className="w-4 h-4" /> 5 min read</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="relative bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 py-20 px-4 overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-10 left-10 w-32 h-32 border-2 border-white rounded-full animate-pulse"></div>
+            <div className="absolute bottom-10 right-10 w-48 h-48 border-2 border-white rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+            <div className="absolute top-1/2 left-1/2 w-64 h-64 border border-white rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+          </div>
+          <div className="max-w-4xl mx-auto relative z-10">
             <Link
               href="/articles"
-              className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors backdrop-blur-sm px-4 py-2 rounded-full bg-white/10 hover:bg-white/20"
+              className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Articles
             </Link>
             
-            <div className={`inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r ${getCategoryColor(article.category)} rounded-full text-white text-sm font-medium shadow-lg mb-4`}>
+            <div className={`inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium mb-4`}>
               <Tag className="w-4 h-4" />
               {article.category}
             </div>
@@ -196,7 +230,7 @@ export default function ArticleDetailPage() {
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Share & Actions */}
@@ -228,14 +262,16 @@ export default function ArticleDetailPage() {
 
           {/* Content */}
           <div
-            className="prose prose-lg max-w-none
-              prose-headings:text-stone-800 prose-headings:font-bold prose-headings:text-2xl
-              prose-p:text-stone-600 prose-p:leading-loose prose-p:text-lg
+            className="article-content prose prose-lg max-w-none
+              prose-headings:text-stone-800 prose-headings:font-bold prose-headings:text-2xl prose-headings:mt-10 prose-headings:mb-4
+              prose-p:text-stone-600 prose-p:leading-loose prose-p:text-lg prose-p:my-4
               prose-a:text-emerald-600 prose-a:no-underline hover:prose-a:text-emerald-700
-              prose-strong:text-stone-700
-              prose-li:text-stone-600 prose-li:text-lg
-              prose-ul:my-6 prose-ol:my-6
-              prose-hr:border-stone-200"
+              prose-strong:text-stone-700 prose-strong:font-semibold
+              prose-li:text-stone-600 prose-li:text-lg prose-li:my-2
+              prose-ul:my-6 prose-ol:my-6 prose-ul:space-y-2 prose-ol:space-y-2
+              prose-hr:border-stone-200 prose-hr:my-8
+              prose-blockquote:border-l-4 prose-blockquote:border-emerald-500 prose-blockquote:bg-emerald-50 prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:rounded-r-xl prose-blockquote:not-italic prose-blockquote:text-stone-700
+              prose-img:rounded-2xl prose-img:shadow-lg prose-img:my-8 prose-img:mx-auto prose-img:max-w-full"
             dangerouslySetInnerHTML={{ __html: article.content || article.excerpt }}
           />
           

@@ -25,13 +25,20 @@ export default function AdminArticlesPage() {
           return
         }
 
-        const { data, error } = await supabase
-          .from('articles')
-          .select('*')
-          .order(sortBy, { ascending: sortOrder === 'asc' })
-
-        if (!error) {
-          setArticles(data || [])
+        const response = await fetch(`/api/articles?status=all&limit=100`)
+        const data = await response.json()
+        
+        if (response.ok && data.articles) {
+          let sorted = [...data.articles]
+          sorted.sort((a: any, b: any) => {
+            const aVal = a[sortBy] || ''
+            const bVal = b[sortBy] || ''
+            if (sortOrder === 'asc') {
+              return aVal > bVal ? 1 : -1
+            }
+            return aVal < bVal ? 1 : -1
+          })
+          setArticles(sorted)
         }
       } catch (error) {
         console.error('Error fetching articles:', error)

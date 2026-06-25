@@ -34,3 +34,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Serena MCP
+.serena/
+serena*.yml
+SERPNA*.md

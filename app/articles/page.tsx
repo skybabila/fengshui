@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
-import { BookOpen, Clock, Search, ArrowRight, Sparkles, TrendingUp, Heart } from 'lucide-react'
+import { BookOpen, Clock, Search, ArrowRight, Sparkles, TrendingUp, Heart, FileText, ChevronRight } from 'lucide-react'
 
 const categories = ['All', 'Feng Shui', 'Fortune', 'Wellness', 'History', 'Philosophy']
 
@@ -14,9 +14,9 @@ const defaultArticleImage = 'https://neeko-copilot.bytedance.net/api/text_to_ima
 const sampleArticles = [
   { id: 1, title: 'Understanding the Five Elements in Feng Shui', excerpt: 'Learn how the five elements interact and influence your life and environment.', category: 'Feng Shui', image: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=feng%20shui%20five%20elements%20meditation%20peaceful&image_size=landscape_4_3', author: 'Master Li', date: '2024-01-15', status: 'published' },
   { id: 2, title: 'Creating Harmonious Spaces', excerpt: 'Discover practical tips for arranging your home and workspace.', category: 'Feng Shui', image: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=harmonious%20chinese%20interior%20design%20feng%20shui&image_size=landscape_4_3', author: 'Master Li', date: '2024-01-12', status: 'published' },
-  { id: 3, title: 'Daily Feng Shui Practices', excerpt: 'Simple rituals and practices to align your daily life with natural energy.', category: 'Wellness', image: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=morning%20meditation%20zen%20peaceful%20garden&image_size=landscape_4_3', author: 'Master Li', date: '2024-01-10', status: 'published' },
+  { id: 3, title: 'Daily Feng Shui Practices', excerpt: 'Simple rituals and practices to align your daily life with natural energy.', category: 'Wellness', image: '', author: 'Master Li', date: '2024-01-10', status: 'published' },
   { id: 4, title: 'Chinese Zodiac and Personality', excerpt: 'Explore how your zodiac sign influences your personality traits.', category: 'Fortune', image: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=chinese%20zodiac%20symbols%20traditional&image_size=landscape_4_3', author: 'Master Li', date: '2024-01-08', status: 'published' },
-  { id: 5, title: 'History of Feng Shui', excerpt: 'Trace the origins and evolution of Feng Shui from ancient China.', category: 'History', image: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=ancient%20chinese%20temple%20traditional&image_size=landscape_4_3', author: 'Master Li', date: '2024-01-05', status: 'published' },
+  { id: 5, title: 'History of Feng Shui', excerpt: 'Trace the origins and evolution of Feng Shui from ancient China.', category: 'History', image: '', author: 'Master Li', date: '2024-01-05', status: 'published' },
   { id: 6, title: 'The Philosophy of Qi', excerpt: 'Deep dive into the concept of Qi (life energy) and its role.', category: 'Philosophy', image: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=chinese%20philosophy%20meditation%20peaceful&image_size=landscape_4_3', author: 'Master Li', date: '2024-01-03', status: 'published' },
 ]
 
@@ -74,6 +74,17 @@ export default function ArticlesPage() {
     return colors[category] || 'from-emerald-500 to-teal-600'
   }
 
+  const getCategoryBgColor = (category: string) => {
+    const colors: Record<string, string> = {
+      'Feng Shui': 'bg-emerald-100 text-emerald-700',
+      'Fortune': 'bg-amber-100 text-amber-700',
+      'Wellness': 'bg-purple-100 text-purple-700',
+      'History': 'bg-blue-100 text-blue-700',
+      'Philosophy': 'bg-rose-100 text-rose-700',
+    }
+    return colors[category] || 'bg-emerald-100 text-emerald-700'
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-stone-50 via-emerald-50 to-teal-50">
@@ -86,6 +97,66 @@ export default function ArticlesPage() {
       </div>
     )
   }
+
+  const ArticleCardWithImage = ({ article }: { article: any }) => (
+    <Link href={`/articles/${article.id}`}>
+      <article className="group h-full bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col">
+        <div className="relative h-52 overflow-hidden">
+          <Image
+            src={article.image || defaultArticleImage}
+            alt={article.title}
+            fill
+            className="object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className={`absolute top-4 left-4 px-3 py-1 bg-gradient-to-r ${getCategoryColor(article.category)} rounded-full text-white text-xs font-medium shadow-lg`}>
+            {article.category}
+          </div>
+          <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
+              <ArrowRight className="w-5 h-5 text-emerald-600" />
+            </div>
+          </div>
+        </div>
+        <div className="p-6 flex-1 flex flex-col">
+          <h3 className="text-lg font-bold text-stone-800 mb-3 group-hover:text-emerald-700 transition-colors line-clamp-2 leading-tight">
+            {article.title}
+          </h3>
+          <p className="text-stone-500 text-sm line-clamp-2 mb-4 flex-1">{article.excerpt}</p>
+          <div className="flex items-center justify-between text-xs text-stone-400 pt-4 border-t border-stone-100">
+            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {formatDate(article.date || article.created_at)}</span>
+            <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> {article.author}</span>
+          </div>
+        </div>
+      </article>
+    </Link>
+  )
+
+  const ArticleCardWithoutImage = ({ article }: { article: any }) => (
+    <Link href={`/articles/${article.id}`}>
+      <article className="group h-full bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col border border-stone-100 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-emerald-400 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+        
+        <div className={`inline-flex items-center gap-1.5 px-3 py-1 ${getCategoryBgColor(article.category)} rounded-full text-xs font-medium mb-4 w-fit`}>
+          <FileText className="w-3 h-3" />
+          {article.category}
+        </div>
+        
+        <h3 className="text-xl font-bold text-stone-800 mb-3 group-hover:text-emerald-700 transition-colors line-clamp-2 leading-snug">
+          {article.title}
+        </h3>
+        
+        <p className="text-stone-500 text-sm line-clamp-3 mb-4 flex-1 leading-relaxed">{article.excerpt}</p>
+        
+        <div className="flex items-center justify-between text-xs text-stone-400 pt-4 border-t border-stone-100">
+          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {formatDate(article.date || article.created_at)}</span>
+          <span className="flex items-center gap-1 text-emerald-600 font-medium group-hover:gap-2 transition-all">
+            Read more <ChevronRight className="w-3.5 h-3.5" />
+          </span>
+        </div>
+      </article>
+    </Link>
+  )
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 via-emerald-50/30 to-teal-50/30">
@@ -107,51 +178,8 @@ export default function ArticlesPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-12">
-        {/* Featured Article */}
-        {featuredArticle && nonFeaturedArticles.length > 0 && (
-          <div className="mb-16">
-            <div className="flex items-center gap-2 mb-6">
-              <TrendingUp className="w-5 h-5 text-emerald-600" />
-              <h2 className="text-xl font-bold text-stone-800">Featured Article</h2>
-            </div>
-            <Link href={`/articles/${featuredArticle.id}`}>
-              <div className="group relative bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500">
-                <div className="grid md:grid-cols-2 gap-0">
-                  <div className="relative h-64 md:h-80 overflow-hidden">
-                    <Image
-                      src={featuredArticle.image || defaultArticleImage}
-                      alt={featuredArticle.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-700"
-                      priority
-                    />
-                    <div className={`absolute top-4 left-4 px-4 py-2 bg-gradient-to-r ${getCategoryColor(featuredArticle.category)} rounded-full text-white text-sm font-medium shadow-lg`}>
-                      {featuredArticle.category}
-                    </div>
-                  </div>
-                  <div className="p-8 md:p-10 flex flex-col justify-center">
-                    <h3 className="text-2xl md:text-3xl font-bold text-stone-800 mb-4 group-hover:text-emerald-700 transition-colors leading-tight">
-                      {featuredArticle.title}
-                    </h3>
-                    <p className="text-stone-600 mb-6 line-clamp-3 text-lg">{featuredArticle.excerpt}</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-sm text-stone-400">
-                        <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {formatDate(featuredArticle.date)}</span>
-                        <span className="flex items-center gap-1"><BookOpen className="w-4 h-4" /> {featuredArticle.author}</span>
-                      </div>
-                      <span className="flex items-center gap-2 text-emerald-600 font-semibold group-hover:gap-4 transition-all">
-                        Read More <ArrowRight className="w-5 h-5" />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          </div>
-        )}
-
         {/* Search & Filter */}
-        <div className="mb-10">
+        <div className="mb-12">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
             <div className="relative flex-1 max-w-lg w-full">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
@@ -181,47 +209,67 @@ export default function ArticlesPage() {
           </div>
         </div>
 
-        {/* Articles Grid */}
+        {/* Featured Article */}
+        {featuredArticle && filteredArticles.length > 0 && featuredArticle.image && (
+          <div className="mb-16">
+            <div className="flex items-center gap-2 mb-6">
+              <TrendingUp className="w-5 h-5 text-emerald-600" />
+              <h2 className="text-xl font-bold text-stone-800">Featured Article</h2>
+            </div>
+            <Link href={`/articles/${featuredArticle.id}`}>
+              <div className="group relative bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500">
+                <div className="grid md:grid-cols-2 gap-0">
+                  <div className="relative h-64 md:h-80 overflow-hidden">
+                    <Image
+                      src={featuredArticle.image || defaultArticleImage}
+                      alt={featuredArticle.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
+                      priority
+                    />
+                    <div className={`absolute top-4 left-4 px-4 py-2 bg-gradient-to-r ${getCategoryColor(featuredArticle.category)} rounded-full text-white text-sm font-medium shadow-lg`}>
+                      {featuredArticle.category}
+                    </div>
+                  </div>
+                  <div className="p-8 md:p-10 flex flex-col justify-center">
+                    <h3 className="text-2xl md:text-3xl font-bold text-stone-800 mb-4 group-hover:text-emerald-700 transition-colors leading-tight">
+                      {featuredArticle.title}
+                    </h3>
+                    <p className="text-stone-600 mb-6 line-clamp-3 text-lg">{featuredArticle.excerpt}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 text-sm text-stone-400">
+                        <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {formatDate(featuredArticle.date || featuredArticle.created_at)}</span>
+                        <span className="flex items-center gap-1"><BookOpen className="w-4 h-4" /> {featuredArticle.author}</span>
+                      </div>
+                      <span className="flex items-center gap-2 text-emerald-600 font-semibold group-hover:gap-4 transition-all">
+                        Read More <ArrowRight className="w-5 h-5" />
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
+        )}
+
+        {/* Articles Grid - Mixed Layout */}
         {nonFeaturedArticles.length > 0 && (
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-6">
               <BookOpen className="w-5 h-5 text-emerald-600" />
               <h2 className="text-xl font-bold text-stone-800">All Articles</h2>
-              <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-700 text-sm rounded-full">{nonFeaturedArticles.length}</span>
+              <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-700 text-sm rounded-full">{filteredArticles.length}</span>
             </div>
+            
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {nonFeaturedArticles.map((article) => (
-                <Link href={`/articles/${article.id}`} key={article.id}>
-                  <article className="group h-full bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col">
-                    <div className="relative h-52 overflow-hidden">
-                      <Image
-                        src={article.image || defaultArticleImage}
-                        alt={article.title}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <div className={`absolute top-4 left-4 px-3 py-1 bg-gradient-to-r ${getCategoryColor(article.category)} rounded-full text-white text-xs font-medium shadow-lg`}>
-                        {article.category}
-                      </div>
-                      <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
-                          <ArrowRight className="w-5 h-5 text-emerald-600" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-6 flex-1 flex flex-col">
-                      <h3 className="text-lg font-bold text-stone-800 mb-3 group-hover:text-emerald-700 transition-colors line-clamp-2 leading-tight">
-                        {article.title}
-                      </h3>
-                      <p className="text-stone-500 text-sm line-clamp-2 mb-4 flex-1">{article.excerpt}</p>
-                      <div className="flex items-center justify-between text-xs text-stone-400 pt-4 border-t border-stone-100">
-                        <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {formatDate(article.date)}</span>
-                        <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> {article.author}</span>
-                      </div>
-                    </div>
-                  </article>
-                </Link>
+              {nonFeaturedArticles.map((article, index) => (
+                <div key={article.id} className="h-full">
+                  {article.image ? (
+                    <ArticleCardWithImage article={article} />
+                  ) : (
+                    <ArticleCardWithoutImage article={article} />
+                  )}
+                </div>
               ))}
             </div>
           </div>
