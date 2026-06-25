@@ -38,7 +38,7 @@ export default function FortunePage() {
           <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
             <span className="text-2xl">🌟</span>
           </div>
-          <h2 className="text-xl font-semibold text-stone-700">加载中...</h2>
+          <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
         </div>
       </div>
     )
@@ -49,30 +49,30 @@ export default function FortunePage() {
   const fortuneTypes = [
     {
       id: 'daily',
-      name: '每日运势',
+      name: 'Daily Fortune',
       emoji: '☀️',
       cost: 5,
-      description: '查看今日运势，把握每一天',
+      description: 'Get your daily fortune and make the most of each day',
       color: 'from-amber-500 to-orange-500',
       bgColor: 'bg-amber-50',
       href: '/fortune/daily'
     },
     {
       id: 'weekly',
-      name: '每周运势',
+      name: 'Weekly Fortune',
       emoji: '🌙',
       cost: 20,
-      description: '一周运势总览，规划未来七天',
+      description: 'Weekly overview to plan the next seven days ahead',
       color: 'from-purple-500 to-indigo-500',
       bgColor: 'bg-purple-50',
       href: '/fortune/weekly'
     },
     {
       id: 'monthly',
-      name: '每月运势',
+      name: 'Monthly Fortune',
       emoji: '🌟',
       cost: 50,
-      description: '月度运势详解，展望整月运势',
+      description: 'Detailed monthly forecast for the entire month ahead',
       color: 'from-cyan-500 to-blue-500',
       bgColor: 'bg-cyan-50',
       href: '/fortune/monthly'
@@ -86,18 +86,17 @@ export default function FortunePage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl shadow-lg mb-4">
             <Sparkles className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-stone-800 mb-2">运势中心</h1>
-          <p className="text-stone-500">探索您的命运，把握人生方向</p>
+          <h1 className="text-3xl font-bold text-stone-800 mb-2">Fortune Center</h1>
+          <p className="text-stone-500">Explore your destiny and find your path in life</p>
         </div>
 
-        {/* 元宝显示 */}
         <div className="bg-white rounded-2xl shadow-lg p-4 mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
               <Coins className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <p className="text-sm text-stone-500">我的元宝</p>
+              <p className="text-sm text-stone-500">My Coins</p>
               <p className="text-xl font-bold text-amber-600">{points}</p>
             </div>
           </div>
@@ -105,11 +104,10 @@ export default function FortunePage() {
             href="/user/points"
             className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
           >
-            查看明细 →
+            View History →
           </Link>
         </div>
 
-        {/* 运势类型选择 */}
         <div className="grid md:grid-cols-3 gap-6">
           {fortuneTypes.map((fortune) => (
             <Link
@@ -127,28 +125,27 @@ export default function FortunePage() {
               <div className="flex items-center justify-between">
                 <span className="inline-flex items-center gap-1 text-amber-600 font-semibold">
                   <Coins className="w-4 h-4" />
-                  {fortune.cost} 元宝
+                  {fortune.cost} coins
                 </span>
                 <ArrowRight className="w-5 h-5 text-stone-400" />
               </div>
               {points < fortune.cost && (
-                <p className="mt-3 text-xs text-red-500">元宝不足</p>
+                <p className="mt-3 text-xs text-red-500">Not enough coins</p>
               )}
             </Link>
           ))}
         </div>
 
-        {/* 说明 */}
         <div className="mt-8 bg-white rounded-2xl shadow-lg p-6">
           <h2 className="text-lg font-semibold text-stone-800 mb-4 flex items-center gap-2">
             <Star className="w-5 h-5 text-amber-500" />
-            运势说明
+            Fortune Guide
           </h2>
           <div className="space-y-3 text-sm text-stone-600">
-            <p>• <strong>每日运势</strong>：消耗 5 元宝，每天可查看一次，包含今日综合运势、幸运方位、注意事项等。</p>
-            <p>• <strong>每周运势</strong>：消耗 20 元宝，每周可查看一次，提供一周运势趋势、重点日期提醒。</p>
-            <p>• <strong>每月运势</strong>：消耗 50 元宝，每月可查看一次，详细解读整月运势走向、关键时机。</p>
-            <p className="text-amber-600">💡 每种运势按周期限制查看次数，请珍惜每次机会！</p>
+            <p>• <strong>Daily Fortune</strong>: Costs 5 coins, available once per day. Includes overall fortune, lucky direction, and things to watch for.</p>
+            <p>• <strong>Weekly Fortune</strong>: Costs 20 coins, available once per week. Provides weekly trend analysis and key date reminders.</p>
+            <p>• <strong>Monthly Fortune</strong>: Costs 50 coins, available once per month. Detailed monthly fortune outlook and critical timing guidance.</p>
+            <p className="text-amber-600">💡 Each fortune type is limited by period. Make every reading count!</p>
           </div>
         </div>
       </div>

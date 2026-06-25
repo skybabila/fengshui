@@ -5,7 +5,7 @@ import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import { Heart, Send, Sparkles, Lock, Coins, Trash2 } from 'lucide-react'
 
-const WISH_COST = 10 // 每次许愿消耗10元宝
+const WISH_COST = 10
 
 export default function WishWallPage() {
   const [wishes, setWishes] = useState<any[]>([])
@@ -27,7 +27,6 @@ export default function WishWallPage() {
         const userProfile = await getUserProfile(authUser.id)
         setProfile(userProfile)
 
-        // 只获取当前用户的许愿
         const { data: wishData } = await supabase
           .from('wishes')
           .select('*')
@@ -49,37 +48,35 @@ export default function WishWallPage() {
   const handlePostWish = async () => {
     if (!newWish.trim() || !user) {
       if (!user) {
-        alert('请登录后再许愿')
+        alert('Please log in to make a wish')
       }
       return
     }
 
     if (newWish.length > 200) {
-      alert('愿望内容过长，请保持在200字符以内')
+      alert('Wish content is too long, please keep it under 200 characters')
       return
     }
 
     const points = profile?.points || 0
     if (points < WISH_COST) {
-      alert(`元宝不足！许愿需要 ${WISH_COST} 元宝，您当前有 ${points} 元宝`)
+      alert(`Not enough coins! Making a wish costs ${WISH_COST} coins, you have ${points} coins`)
       return
     }
 
     setPosting(true)
 
     try {
-      // 扣除元宝
       await supabase
         .from('user_profiles')
         .update({ points: points - WISH_COST })
         .eq('id', user.id)
 
-      // 记录元宝交易
       await supabase
         .from('point_transactions')
         .insert({
           user_id: user.id,
-          description: '许愿消耗',
+          description: 'Wish cost',
           points: -WISH_COST
         })
 
@@ -88,7 +85,7 @@ export default function WishWallPage() {
         .insert({
           user_id: user.id,
           content: newWish.trim(),
-          is_public: false, // 改为私有
+          is_public: false,
         })
         .select()
         .single()
@@ -96,20 +93,19 @@ export default function WishWallPage() {
       if (newWishData) {
         setWishes([newWishData, ...wishes])
         setNewWish('')
-        // 更新用户元宝
         const updatedProfile = await getUserProfile(user.id)
         setProfile(updatedProfile)
       }
     } catch (error) {
       console.error('Error posting wish:', error)
-      alert('许愿失败，请稍后再试')
+      alert('Failed to make a wish, please try again later')
     } finally {
       setPosting(false)
     }
   }
 
   const handleDeleteWish = async (wishId: number) => {
-    if (!confirm('确定要删除这条愿望吗？')) return
+    if (!confirm('Are you sure you want to delete this wish?')) return
     
     try {
       await supabase
@@ -120,7 +116,7 @@ export default function WishWallPage() {
       setWishes(wishes.filter(w => w.id !== wishId))
     } catch (error) {
       console.error('Error deleting wish:', error)
-      alert('删除失败')
+      alert('Delete failed')
     }
   }
 
@@ -157,34 +153,33 @@ export default function WishWallPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-500 rounded-xl shadow-lg mb-4">
             <Heart className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-stone-800 mb-2">我的许愿墙</h1>
-          <p className="text-stone-500">记录您的美好愿望，让心灵得到慰藉</p>
+          <h1 className="text-3xl font-bold text-stone-800 mb-2">My Wish Wall</h1>
+          <p className="text-stone-500">Record your beautiful wishes and find spiritual comfort</p>
         </div>
 
-        {/* 元宝显示 */}
         <div className="bg-white rounded-2xl shadow-lg p-4 mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
               <Coins className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <p className="text-sm text-stone-500">我的元宝</p>
+              <p className="text-sm text-stone-500">My Coins</p>
               <p className="text-xl font-bold text-amber-600">{profile?.points || 0}</p>
             </div>
           </div>
           <div className="text-sm text-stone-500">
-            许愿消耗：<span className="text-amber-600 font-semibold">{WISH_COST} 元宝</span>
+            Wish cost: <span className="text-amber-600 font-semibold">{WISH_COST} coins</span>
           </div>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <h2 className="text-lg font-semibold text-stone-800 mb-4">许下新愿望</h2>
+          <h2 className="text-lg font-semibold text-stone-800 mb-4">Make a New Wish</h2>
           {user ? (
             <>
               <textarea
                 value={newWish}
                 onChange={(e) => setNewWish(e.target.value)}
-                placeholder="写下您的愿望... (最多200字符)"
+                placeholder="Write your wish... (max 200 characters)"
                 maxLength={200}
                 className="w-full p-4 border border-stone-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none h-32"
               />
@@ -198,28 +193,28 @@ export default function WishWallPage() {
                   {posting ? (
                     <span className="flex items-center gap-2">
                       <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                      许愿中...
+                      Wishing...
                     </span>
                   ) : (
                     <>
                       <Send className="w-5 h-5" />
-                      许愿 ({WISH_COST}元宝)
+                      Make a Wish ({WISH_COST} coins)
                     </>
                   )}
                 </button>
               </div>
               {(profile?.points || 0) < WISH_COST && (
                 <p className="mt-3 text-sm text-red-500">
-                  元宝不足，无法许愿。请前往个人中心查看如何获取元宝。
+                  Not enough coins to make a wish. Please visit the profile center to see how to get more coins.
                 </p>
               )}
             </>
           ) : (
             <div className="flex flex-col items-center justify-center py-8 bg-stone-50 rounded-xl">
               <Lock className="w-12 h-12 text-stone-400 mb-4" />
-              <p className="text-stone-500 mb-2">请登录后许愿</p>
+              <p className="text-stone-500 mb-2">Please log in to make a wish</p>
               <a href="/login" className="text-pink-600 font-medium hover:underline">
-                登录 / 注册
+                Login / Register
               </a>
             </div>
           )}
@@ -228,7 +223,7 @@ export default function WishWallPage() {
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-md">
             <Sparkles className="w-4 h-4 text-amber-500" />
-            <span className="text-sm text-stone-600">已许下 {wishes.length} 个愿望</span>
+            <span className="text-sm text-stone-600">{wishes.length} wishes made</span>
           </div>
         </div>
 
@@ -242,14 +237,14 @@ export default function WishWallPage() {
               <button
                 onClick={() => handleDeleteWish(wish.id)}
                 className="absolute top-2 right-2 p-1.5 text-stone-400 hover:text-red-500 hover:bg-white/50 rounded-lg transition-colors"
-                title="删除"
+                title="Delete"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
               <p className="text-stone-700 mb-3 pr-6">{wish.content}</p>
               <div className="flex items-center justify-between text-sm text-stone-500">
                 <span>
-                  {profile?.nickname || profile?.name || user?.email?.split('@')[0] || '我'}
+                  {profile?.nickname || profile?.name || user?.email?.split('@')[0] || 'Me'}
                 </span>
                 <span>{formatDate(wish.created_at)}</span>
               </div>
@@ -260,7 +255,7 @@ export default function WishWallPage() {
         {wishes.length === 0 && (
           <div className="text-center py-12">
             <Heart className="w-16 h-16 text-stone-300 mx-auto mb-4" />
-            <p className="text-stone-500">还没有许下任何愿望，开始您的第一个愿望吧！</p>
+            <p className="text-stone-500">No wishes yet, make your first wish!</p>
           </div>
         )}
       </div>

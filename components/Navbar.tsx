@@ -71,12 +71,12 @@ export default function Navbar() {
 
           <div className="hidden md:flex items-center gap-1">
             <div className="mr-4 px-3 py-2 text-xs font-mono text-stone-400 border border-stone-200 rounded-full">v{VERSION}</div>
-            <Link href="/" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">首页</Link>
-            <Link href="/articles" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">文章</Link>
+            <Link href="/" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">Home</Link>
+            <Link href="/articles" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">Articles</Link>
             {isLoggedIn && (
               <>
-                <Link href="/fortune" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">运势</Link>
-                <Link href="/user/prayer" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">祈福</Link>
+                <Link href="/fortune" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">Fortune</Link>
+                <Link href="/user/prayer" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">Prayer</Link>
               </>
             )}
 
@@ -153,12 +153,12 @@ export default function Navbar() {
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t border-emerald-100 animate-fade-in-down">
           <div className="px-4 pt-2 pb-4 space-y-1">
-            <Link href="/" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">首页</Link>
-            <Link href="/articles" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">文章</Link>
+            <Link href="/" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">Home</Link>
+            <Link href="/articles" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">Articles</Link>
             {isLoggedIn && (
               <>
-                <Link href="/fortune" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">运势</Link>
-                <Link href="/user/prayer" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">祈福</Link>
+                <Link href="/fortune" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">Fortune</Link>
+                <Link href="/user/prayer" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">Prayer</Link>
               </>
             )}
 

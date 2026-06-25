@@ -47,7 +47,6 @@ export default function UserDashboard() {
         
         setRecentPrayers(prayers || [])
 
-        // 获取许愿数量
         const { count } = await supabase
           .from('wishes')
           .select('*', { count: 'exact', head: true })
@@ -79,12 +78,45 @@ export default function UserDashboard() {
 
   const points = profile?.points || 0
 
+  const getFortuneEmoji = (type: string) => {
+    switch (type) {
+      case 'Great Fortune': return '🌟'
+      case 'Good Fortune': return '✨'
+      case 'Moderate Fortune': return '🌤️'
+      case 'Small Fortune': return '⛅'
+      case 'Average': return '☁️'
+      default: return '🌟'
+    }
+  }
+
+  const getFortuneBgClass = (type: string) => {
+    switch (type) {
+      case 'Great Fortune': return 'bg-green-100'
+      case 'Good Fortune': return 'bg-emerald-100'
+      case 'Moderate Fortune': return 'bg-amber-100'
+      case 'Small Fortune': return 'bg-orange-100'
+      case 'Average': return 'bg-gray-100'
+      default: return 'bg-green-100'
+    }
+  }
+
+  const getFortuneTextClass = (type: string) => {
+    switch (type) {
+      case 'Great Fortune': return 'text-green-600'
+      case 'Good Fortune': return 'text-emerald-600'
+      case 'Moderate Fortune': return 'text-amber-600'
+      case 'Small Fortune': return 'text-orange-600'
+      case 'Average': return 'text-gray-600'
+      default: return 'text-green-600'
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-stone-800 mb-2">会员中心</h1>
-          <p className="text-stone-500">欢迎回来，{profile?.nickname || profile?.name || user?.email?.split('@')[0]}</p>
+          <h1 className="text-3xl font-bold text-stone-800 mb-2">Member Center</h1>
+          <p className="text-stone-500">Welcome back, {profile?.nickname || profile?.name || user?.email?.split('@')[0]}</p>
         </div>
 
         <div className="grid md:grid-cols-4 gap-4 mb-8">
@@ -94,7 +126,7 @@ export default function UserDashboard() {
                 <Coins className="w-6 h-6 text-amber-600" />
               </div>
               <div>
-                <p className="text-stone-500 text-sm">我的元宝</p>
+                <p className="text-stone-500 text-sm">My Coins</p>
                 <p className="text-xl font-bold text-stone-800">{points.toLocaleString()}</p>
               </div>
             </div>
@@ -106,7 +138,7 @@ export default function UserDashboard() {
                 <Calendar className="w-6 h-6 text-teal-600" />
               </div>
               <div>
-                <p className="text-stone-500 text-sm">今日运势</p>
+                <p className="text-stone-500 text-sm">Daily Fortune</p>
                 <p className="text-xl font-bold text-stone-800">
                   {dailyFortune?.fortune_type || '-'}
                 </p>
@@ -120,7 +152,7 @@ export default function UserDashboard() {
                 <Activity className="w-6 h-6 text-emerald-600" />
               </div>
               <div>
-                <p className="text-stone-500 text-sm">祈福次数</p>
+                <p className="text-stone-500 text-sm">Prayers</p>
                 <p className="text-xl font-bold text-stone-800">{recentPrayers.length}</p>
               </div>
             </div>
@@ -132,7 +164,7 @@ export default function UserDashboard() {
                 <Heart className="w-6 h-6 text-pink-600" />
               </div>
               <div>
-                <p className="text-stone-500 text-sm">许愿数量</p>
+                <p className="text-stone-500 text-sm">Wishes</p>
                 <p className="text-xl font-bold text-stone-800">{wishCount}</p>
               </div>
             </div>
@@ -143,30 +175,16 @@ export default function UserDashboard() {
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <div className="flex items-center gap-2 mb-4">
               <Star className="w-5 h-5 text-amber-500" />
-              <h2 className="text-lg font-semibold text-stone-800">今日运势</h2>
+              <h2 className="text-lg font-semibold text-stone-800">Fortune Today</h2>
             </div>
             
             {dailyFortune ? (
               <div className="space-y-4">
                 <div className="text-center py-4">
-                  <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 ${
-                    dailyFortune.fortune_type === '大吉' ? 'bg-green-100' :
-                    dailyFortune.fortune_type === '吉' ? 'bg-emerald-100' :
-                    dailyFortune.fortune_type === '中吉' ? 'bg-amber-100' : 'bg-red-100'
-                  }`}>
-                    <span className="text-3xl">
-                      {dailyFortune.fortune_type === '大吉' && '🌟'}
-                      {dailyFortune.fortune_type === '吉' && '✨'}
-                      {dailyFortune.fortune_type === '中吉' && '🌤️'}
-                      {dailyFortune.fortune_type === '小吉' && '⛅'}
-                      {dailyFortune.fortune_type === '平' && '☁️'}
-                    </span>
+                  <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 ${getFortuneBgClass(dailyFortune.fortune_type)}`}>
+                    <span className="text-3xl">{getFortuneEmoji(dailyFortune.fortune_type)}</span>
                   </div>
-                  <h3 className={`text-xl font-bold ${
-                    dailyFortune.fortune_type === '大吉' ? 'text-green-600' :
-                    dailyFortune.fortune_type === '吉' ? 'text-emerald-600' :
-                    dailyFortune.fortune_type === '中吉' ? 'text-amber-600' : 'text-red-600'
-                  }`}>
+                  <h3 className={`text-xl font-bold ${getFortuneTextClass(dailyFortune.fortune_type)}`}>
                     {dailyFortune.fortune_type}
                   </h3>
                 </div>
@@ -177,9 +195,9 @@ export default function UserDashboard() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-stone-400 mb-4">今日运势尚未获取</p>
+                <p className="text-stone-400 mb-4">Fortune not yet obtained for today</p>
                 <a href="/fortune/daily" className="inline-flex items-center gap-2 text-emerald-600 font-medium hover:text-emerald-700">
-                  获取今日运势 <span>→</span>
+                  Get Fortune for Today <span>→</span>
                 </a>
               </div>
             )}
@@ -188,7 +206,7 @@ export default function UserDashboard() {
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <div className="flex items-center gap-2 mb-4">
               <Award className="w-5 h-5 text-cyan-500" />
-              <h2 className="text-lg font-semibold text-stone-800">快捷入口</h2>
+              <h2 className="text-lg font-semibold text-stone-800">Quick Links</h2>
             </div>
             
             <div className="space-y-3">
@@ -200,8 +218,8 @@ export default function UserDashboard() {
                   <Star className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-stone-800">运势中心</p>
-                  <p className="text-sm text-stone-500">每日/每周/每月运势</p>
+                  <p className="font-medium text-stone-800">Fortune Center</p>
+                  <p className="text-sm text-stone-500">Daily/Weekly/Monthly fortune</p>
                 </div>
               </a>
 
@@ -213,8 +231,8 @@ export default function UserDashboard() {
                   <Heart className="w-5 h-5 text-pink-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-stone-800">我的许愿</p>
-                  <p className="text-sm text-stone-500">许下美好愿望</p>
+                  <p className="font-medium text-stone-800">My Wishes</p>
+                  <p className="text-sm text-stone-500">Make beautiful wishes</p>
                 </div>
               </a>
 
@@ -226,8 +244,8 @@ export default function UserDashboard() {
                   <TrendingUp className="w-5 h-5 text-orange-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-stone-800">祈福中心</p>
-                  <p className="text-sm text-stone-500">祈福积德</p>
+                  <p className="font-medium text-stone-800">Prayer Center</p>
+                  <p className="text-sm text-stone-500">Pray for blessings</p>
                 </div>
               </a>
 
@@ -239,8 +257,8 @@ export default function UserDashboard() {
                   <Coins className="w-5 h-5 text-cyan-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-stone-800">元宝明细</p>
-                  <p className="text-sm text-stone-500">查看收支记录</p>
+                  <p className="font-medium text-stone-800">Coin History</p>
+                  <p className="text-sm text-stone-500">View transaction records</p>
                 </div>
               </a>
 
@@ -252,8 +270,8 @@ export default function UserDashboard() {
                   <Settings className="w-5 h-5 text-emerald-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-stone-800">个人设置</p>
-                  <p className="text-sm text-stone-500">修改头像、密码等</p>
+                  <p className="font-medium text-stone-800">Profile Settings</p>
+                  <p className="text-sm text-stone-500">Change avatar, password, etc.</p>
                 </div>
               </a>
             </div>
@@ -262,7 +280,7 @@ export default function UserDashboard() {
 
         {recentPrayers.length > 0 && (
           <div className="mt-6 bg-white rounded-2xl p-6 shadow-lg">
-            <h2 className="text-lg font-semibold text-stone-800 mb-4">最近祈福</h2>
+            <h2 className="text-lg font-semibold text-stone-800 mb-4">Recent Prayers</h2>
             <div className="space-y-3">
               {recentPrayers.map((prayer: any) => (
                 <div key={prayer.id} className="flex items-center justify-between p-4 bg-stone-50 rounded-xl">
@@ -271,7 +289,7 @@ export default function UserDashboard() {
                     <p className="text-sm text-stone-500">{formatDate(prayer.created_at)}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-amber-600">-{prayer.points_spent} 元宝</p>
+                    <p className="font-semibold text-amber-600">-{prayer.points_spent} coins</p>
                   </div>
                 </div>
               ))}
