@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase, ADMIN_EMAIL } from '@/lib/supabase'
-import { ArrowLeft, Save, Eye } from 'lucide-react'
+import { ArrowLeft, Save, Eye, Pin } from 'lucide-react'
 import ImageUploader from '@/components/ImageUploader'
 import RichTextEditor from '@/components/RichTextEditor'
 
@@ -16,7 +16,16 @@ export default function NewArticlePage() {
   const [saving, setSaving] = useState(false)
   const [previewing, setPreviewing] = useState(false)
   const [error, setError] = useState('')
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    title: string;
+    excerpt: string;
+    content: string;
+    category: string;
+    image: string;
+    author: string;
+    status: string;
+    is_pinned: boolean;
+  }>({
     title: '',
     excerpt: '',
     content: '',
@@ -24,6 +33,7 @@ export default function NewArticlePage() {
     image: '',
     author: 'Master Li',
     status: 'draft',
+    is_pinned: false,
   })
 
   useEffect(() => {
@@ -197,6 +207,23 @@ export default function NewArticlePage() {
                   <span className="text-stone-700">Published</span>
                 </label>
               </div>
+            </div>
+
+            {/* Pin */}
+            <div>
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={form.is_pinned}
+                  onChange={(e) => setForm(prev => ({ ...prev, is_pinned: e.target.checked }))}
+                  className="w-5 h-5 text-amber-600 focus:ring-amber-500 rounded border-stone-300"
+                />
+                <div className="flex items-center gap-2">
+                  <Pin className="w-5 h-5 text-amber-500" />
+                  <span className="text-stone-700 font-medium group-hover:text-amber-600 transition-colors">Pin to Top</span>
+                </div>
+                <span className="text-xs text-stone-400 ml-2">(Pinned articles will be displayed first on the homepage)</span>
+              </label>
             </div>
 
             {error && (

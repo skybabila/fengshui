@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase, ADMIN_EMAIL } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
-import { Plus, Edit, Trash2, Eye, Search, RefreshCw, BookOpen, ArrowLeft, ArrowUp, ArrowDown, Globe, Lock } from 'lucide-react'
+import { Plus, Edit, Trash2, Eye, Search, RefreshCw, BookOpen, ArrowLeft, ArrowUp, ArrowDown, Globe, Lock, Pin } from 'lucide-react'
 
 export default function AdminArticlesPage() {
   const [articles, setArticles] = useState<any[]>([])
@@ -225,6 +225,7 @@ export default function AdminArticlesPage() {
                 <tr className="border-b border-stone-200 bg-stone-50">
                   <th className="text-left py-4 px-6 font-semibold text-stone-700">Article</th>
                   <th className="text-left py-4 px-6 font-semibold text-stone-700">Category</th>
+                  <th className="text-center py-4 px-4 font-semibold text-stone-700">Pinned</th>
                   <th className="text-left py-4 px-6 font-semibold text-stone-700">Status</th>
                   <th className="text-left py-4 px-6 font-semibold text-stone-700">Author</th>
                   <th className="text-left py-4 px-6 font-semibold text-stone-700">Date</th>
@@ -253,6 +254,15 @@ export default function AdminArticlesPage() {
                       <span className="inline-flex items-center px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm font-medium">
                         {article.category}
                       </span>
+                    </td>
+                    <td className="py-4 px-4 text-center">
+                      {article.is_pinned ? (
+                        <div className="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full">
+                          <Pin className="w-4 h-4 text-amber-600" />
+                        </div>
+                      ) : (
+                        <span className="text-stone-300">-</span>
+                      )}
                     </td>
                     <td className="py-4 px-6">
                       <button

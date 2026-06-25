@@ -5,27 +5,15 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
-import { BookOpen, Clock, Search, ArrowRight, Sparkles, TrendingUp, Heart, FileText, ChevronRight } from 'lucide-react'
+import { BookOpen, Clock, Search, ArrowRight, Sparkles, TrendingUp, Heart, FileText, ChevronRight, Pin } from 'lucide-react'
 
 const categories = ['All', 'Feng Shui', 'Fortune', 'Wellness', 'History', 'Philosophy']
-
-const defaultArticleImage = 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=feng%20shui%20ancient%20wisdom%20peaceful&image_size=landscape_4_3'
-
-const sampleArticles = [
-  { id: 1, title: 'Understanding the Five Elements in Feng Shui', excerpt: 'Learn how the five elements interact and influence your life and environment.', category: 'Feng Shui', image: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=feng%20shui%20five%20elements%20meditation%20peaceful&image_size=landscape_4_3', author: 'Master Li', date: '2024-01-15', status: 'published' },
-  { id: 2, title: 'Creating Harmonious Spaces', excerpt: 'Discover practical tips for arranging your home and workspace.', category: 'Feng Shui', image: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=harmonious%20chinese%20interior%20design%20feng%20shui&image_size=landscape_4_3', author: 'Master Li', date: '2024-01-12', status: 'published' },
-  { id: 3, title: 'Daily Feng Shui Practices', excerpt: 'Simple rituals and practices to align your daily life with natural energy.', category: 'Wellness', image: '', author: 'Master Li', date: '2024-01-10', status: 'published' },
-  { id: 4, title: 'Chinese Zodiac and Personality', excerpt: 'Explore how your zodiac sign influences your personality traits.', category: 'Fortune', image: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=chinese%20zodiac%20symbols%20traditional&image_size=landscape_4_3', author: 'Master Li', date: '2024-01-08', status: 'published' },
-  { id: 5, title: 'History of Feng Shui', excerpt: 'Trace the origins and evolution of Feng Shui from ancient China.', category: 'History', image: '', author: 'Master Li', date: '2024-01-05', status: 'published' },
-  { id: 6, title: 'The Philosophy of Qi', excerpt: 'Deep dive into the concept of Qi (life energy) and its role.', category: 'Philosophy', image: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=chinese%20philosophy%20meditation%20peaceful&image_size=landscape_4_3', author: 'Master Li', date: '2024-01-03', status: 'published' },
-]
 
 export default function ArticlesPage() {
   const [articles, setArticles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [searchTerm, setSearchTerm] = useState('')
-  const [featuredArticle, setFeaturedArticle] = useState<any>(null)
 
   useEffect(() => {
     async function fetchArticles() {
@@ -34,18 +22,17 @@ export default function ArticlesPage() {
           .from('articles')
           .select('*')
           .eq('status', 'published')
+          .order('is_pinned', { ascending: false })
           .order('created_at', { ascending: false })
         
         if (dbArticles && dbArticles.length > 0) {
           setArticles(dbArticles)
-          setFeaturedArticle(dbArticles[0])
         } else {
-          setArticles(sampleArticles)
-          setFeaturedArticle(sampleArticles[0])
+          setArticles([])
         }
       } catch (error) {
-        setArticles(sampleArticles)
-        setFeaturedArticle(sampleArticles[0])
+        console.error('Error fetching articles:', error)
+        setArticles([])
       } finally {
         setLoading(false)
       }
@@ -61,7 +48,19 @@ export default function ArticlesPage() {
     return matchesCategory && matchesSearch
   })
 
-  const nonFeaturedArticles = filteredArticles.filter(a => a.id !== featuredArticle?.id)
+  // Separate pinned and unpinned articles
+  const pinnedArticles = filteredArticles.filter(a => a.is_pinned)
+  const unpinnedArticles = filteredArticles.filter(a => !a.is_pinned)
+
+  // Get featured article (first pinned, or first unpinned)
+  const getFeaturedArticle = () => {
+    if (pinnedArticles.length > 0) {
+      return pinnedArticles[0]
+    }
+    return unpinnedArticles.length > 0 ? unpinnedArticles[0] : null
+  }
+
+  const featuredArticle = getFeaturedArticle()
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
@@ -100,10 +99,16 @@ export default function ArticlesPage() {
 
   const ArticleCardWithImage = ({ article }: { article: any }) => (
     <Link href={`/articles/${article.id}`}>
-      <article className="group h-full bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col">
+      <article className="group h-full bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col relative">
+        {article.is_pinned && (
+          <div className="absolute top-3 right-3 z-10 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 shadow-lg">
+            <Pin className="w-3 h-3" />
+            Pinned
+          </div>
+        )}
         <div className="relative h-52 overflow-hidden">
           <Image
-            src={article.image || defaultArticleImage}
+            src={article.image}
             alt={article.title}
             fill
             className="object-cover group-hover:scale-110 transition-transform duration-500"
@@ -124,7 +129,7 @@ export default function ArticlesPage() {
           </h3>
           <p className="text-stone-500 text-sm line-clamp-2 mb-4 flex-1">{article.excerpt}</p>
           <div className="flex items-center justify-between text-xs text-stone-400 pt-4 border-t border-stone-100">
-            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {formatDate(article.date || article.created_at)}</span>
+            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {formatDate(article.created_at)}</span>
             <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> {article.author}</span>
           </div>
         </div>
@@ -135,6 +140,12 @@ export default function ArticlesPage() {
   const ArticleCardWithoutImage = ({ article }: { article: any }) => (
     <Link href={`/articles/${article.id}`}>
       <article className="group h-full bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col border border-stone-100 relative overflow-hidden">
+        {article.is_pinned && (
+          <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 shadow-lg">
+            <Pin className="w-3 h-3" />
+            Pinned
+          </div>
+        )}
         <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-emerald-400 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity" />
         
         <div className={`inline-flex items-center gap-1.5 px-3 py-1 ${getCategoryBgColor(article.category)} rounded-full text-xs font-medium mb-4 w-fit`}>
@@ -149,7 +160,7 @@ export default function ArticlesPage() {
         <p className="text-stone-500 text-sm line-clamp-3 mb-4 flex-1 leading-relaxed">{article.excerpt}</p>
         
         <div className="flex items-center justify-between text-xs text-stone-400 pt-4 border-t border-stone-100">
-          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {formatDate(article.date || article.created_at)}</span>
+          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {formatDate(article.created_at)}</span>
           <span className="flex items-center gap-1 text-emerald-600 font-medium group-hover:gap-2 transition-all">
             Read more <ChevronRight className="w-3.5 h-3.5" />
           </span>
@@ -209,19 +220,25 @@ export default function ArticlesPage() {
           </div>
         </div>
 
-        {/* Featured Article */}
-        {featuredArticle && filteredArticles.length > 0 && featuredArticle.image && (
+        {/* Featured Article - Only show if has image */}
+        {featuredArticle && featuredArticle.image && (
           <div className="mb-16">
             <div className="flex items-center gap-2 mb-6">
               <TrendingUp className="w-5 h-5 text-emerald-600" />
               <h2 className="text-xl font-bold text-stone-800">Featured Article</h2>
+              {featuredArticle.is_pinned && (
+                <span className="inline-flex items-center gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                  <Pin className="w-3 h-3" />
+                  Pinned
+                </span>
+              )}
             </div>
             <Link href={`/articles/${featuredArticle.id}`}>
               <div className="group relative bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500">
                 <div className="grid md:grid-cols-2 gap-0">
                   <div className="relative h-64 md:h-80 overflow-hidden">
                     <Image
-                      src={featuredArticle.image || defaultArticleImage}
+                      src={featuredArticle.image}
                       alt={featuredArticle.title}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-700"
@@ -238,7 +255,7 @@ export default function ArticlesPage() {
                     <p className="text-stone-600 mb-6 line-clamp-3 text-lg">{featuredArticle.excerpt}</p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4 text-sm text-stone-400">
-                        <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {formatDate(featuredArticle.date || featuredArticle.created_at)}</span>
+                        <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {formatDate(featuredArticle.created_at)}</span>
                         <span className="flex items-center gap-1"><BookOpen className="w-4 h-4" /> {featuredArticle.author}</span>
                       </div>
                       <span className="flex items-center gap-2 text-emerald-600 font-semibold group-hover:gap-4 transition-all">
@@ -252,17 +269,42 @@ export default function ArticlesPage() {
           </div>
         )}
 
-        {/* Articles Grid - Mixed Layout */}
-        {nonFeaturedArticles.length > 0 && (
+        {/* Pinned Articles Section - Only show pinned articles without images */}
+        {pinnedArticles.length > 0 && unpinnedArticles.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-6">
+              <Pin className="w-5 h-5 text-amber-600" />
+              <h2 className="text-xl font-bold text-stone-800">Pinned Articles</h2>
+              <span className="px-2.5 py-0.5 bg-amber-100 text-amber-700 text-sm rounded-full">{pinnedArticles.length}</span>
+            </div>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {pinnedArticles.map((article) => (
+                <div key={article.id} className="h-full">
+                  {article.image ? (
+                    <ArticleCardWithImage article={article} />
+                  ) : (
+                    <ArticleCardWithoutImage article={article} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* All Articles Grid - Mixed Layout */}
+        {filteredArticles.length > 0 && (
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-6">
               <BookOpen className="w-5 h-5 text-emerald-600" />
-              <h2 className="text-xl font-bold text-stone-800">All Articles</h2>
+              <h2 className="text-xl font-bold text-stone-800">
+                {pinnedArticles.length > 0 ? 'Latest Articles' : 'All Articles'}
+              </h2>
               <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-700 text-sm rounded-full">{filteredArticles.length}</span>
             </div>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {nonFeaturedArticles.map((article, index) => (
+              {filteredArticles.map((article) => (
                 <div key={article.id} className="h-full">
                   {article.image ? (
                     <ArticleCardWithImage article={article} />
@@ -281,7 +323,7 @@ export default function ArticlesPage() {
               <BookOpen className="w-10 h-10 text-stone-300" />
             </div>
             <h3 className="text-xl font-semibold text-stone-700 mb-2">No articles found</h3>
-            <p className="text-stone-500">Try adjusting your search or filter criteria</p>
+            <p className="text-stone-500">Check back later for new content</p>
           </div>
         )}
 
