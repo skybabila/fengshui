@@ -8,6 +8,7 @@ import { formatDate } from '@/lib/utils'
 import { BookOpen, Clock, ArrowRight, Search } from 'lucide-react'
 
 const categories = ['All', 'Feng Shui', 'Fortune', 'Wellness', 'History', 'Philosophy']
+const defaultArticleImage = 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=feng%20shui%20ancient%20wisdom%20peaceful&image_size=landscape_4_3'
 
 const sampleArticles = [
   {
@@ -162,7 +163,7 @@ export default function ArticlesPage() {
               >
                 <div className="relative h-48 overflow-hidden">
                   <Image
-                    src={article.image}
+                    src={article.image || defaultArticleImage}
                     alt={article.title}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"

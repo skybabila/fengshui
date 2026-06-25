@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase, ADMIN_EMAIL } from '@/lib/supabase'
 import { ArrowLeft, Save, Eye } from 'lucide-react'
+import ImageUploader from '@/components/ImageUploader'
 
 const categories = ['Feng Shui', 'Fortune', 'Wellness', 'History', 'Philosophy']
 
@@ -167,21 +168,13 @@ export default function EditArticlePage() {
               </div>
             </div>
 
-            {/* Image URL */}
+            {/* Image Upload */}
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-2">Cover Image URL</label>
-              <input
-                type="url"
+              <ImageUploader
                 value={form.image}
-                onChange={(e) => handleChange('image', e.target.value)}
-                className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="https://example.com/image.jpg"
+                onChange={(url) => handleChange('image', url)}
+                bucket="articles"
               />
-              {form.image && (
-                <div className="mt-3 relative h-40 rounded-xl overflow-hidden bg-stone-100">
-                  <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
-                </div>
-              )}
             </div>
 
             {/* Excerpt */}

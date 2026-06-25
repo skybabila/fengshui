@@ -22,6 +22,7 @@ export default function ArticleDetailPage() {
   const id = params.id as string
   const [article, setArticle] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const defaultImage = 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=feng%20shui%20ancient%20wisdom%20peaceful&image_size=landscape_4_3'
 
   useEffect(() => {
     async function fetchArticle() {
