@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase, ADMIN_EMAIL } from '@/lib/supabase'
 import { ArrowLeft, Save, Eye } from 'lucide-react'
 import ImageUploader from '@/components/ImageUploader'
+import RichTextEditor from '@/components/RichTextEditor'
 
 const categories = ['Feng Shui', 'Fortune', 'Wellness', 'History', 'Philosophy']
 
@@ -137,7 +138,7 @@ export default function EditArticlePage() {
                 type="text"
                 value={form.title}
                 onChange={(e) => handleChange('title', e.target.value)}
-                className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-lg font-medium"
                 placeholder="Enter article title"
               />
             </div>
@@ -179,27 +180,24 @@ export default function EditArticlePage() {
 
             {/* Excerpt */}
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-2">Excerpt</label>
+              <label className="block text-sm font-medium text-stone-700 mb-2">Excerpt (Short Description)</label>
               <textarea
                 value={form.excerpt}
                 onChange={(e) => handleChange('excerpt', e.target.value)}
-                rows={3}
+                rows={2}
                 className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
-                placeholder="Short description of the article"
+                placeholder="Brief description for article preview"
               />
             </div>
 
-            {/* Content */}
+            {/* Rich Text Content */}
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-2">Content (HTML)</label>
-              <textarea
+              <label className="block text-sm font-medium text-stone-700 mb-2">Content</label>
+              <RichTextEditor
                 value={form.content}
-                onChange={(e) => handleChange('content', e.target.value)}
-                rows={15}
-                className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent font-mono text-sm"
-                placeholder="<p>Write your article content in HTML...</p>"
+                onChange={(content) => handleChange('content', content)}
+                placeholder="Write your article content here..."
               />
-              <p className="text-xs text-stone-400 mt-1">Supports HTML tags: &lt;p&gt;, &lt;h2&gt;, &lt;h3&gt;, &lt;ul&gt;, &lt;ol&gt;, &lt;li&gt;, &lt;strong&gt;, &lt;em&gt;</p>
             </div>
 
             {/* Status */}

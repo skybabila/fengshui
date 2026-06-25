@@ -4,14 +4,17 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase, ADMIN_EMAIL } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
-import { Plus, Edit, Trash2, Eye, Search, RefreshCw, BookOpen, ArrowLeft } from 'lucide-react'
+import { Plus, Edit, Trash2, Eye, Search, RefreshCw, BookOpen, ArrowLeft, ArrowUp, ArrowDown, Globe, Lock } from 'lucide-react'
 
 export default function AdminArticlesPage() {
   const [articles, setArticles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [sortBy, setSortBy] = useState<'created_at' | 'updated_at' | 'title'>('created_at')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [togglingId, setTogglingId] = useState<number | null>(null)
 
   useEffect(() => {
     async function fetchArticles() {
@@ -25,7 +28,7 @@ export default function AdminArticlesPage() {
         const { data, error } = await supabase
           .from('articles')
           .select('*')
-          .order('created_at', { ascending: false })
+          .order(sortBy, { ascending: sortOrder === 'asc' })
 
         if (!error) {
           setArticles(data || [])
@@ -38,10 +41,10 @@ export default function AdminArticlesPage() {
     }
 
     fetchArticles()
-  }, [])
+  }, [sortBy, sortOrder])
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this article?')) return
+    if (!confirm('Are you sure you want to delete this article? This action cannot be undone.')) return
     setDeletingId(id)
 
     try {
@@ -60,7 +63,9 @@ export default function AdminArticlesPage() {
   }
 
   const handleToggleStatus = async (id: number, currentStatus: string) => {
+    setTogglingId(id)
     const newStatus = currentStatus === 'published' ? 'draft' : 'published'
+    
     try {
       const response = await fetch(`/api/articles/${id}`, {
         method: 'PUT',
@@ -69,9 +74,23 @@ export default function AdminArticlesPage() {
       })
       if (response.ok) {
         setArticles(articles.map(a => a.id === id ? { ...a, status: newStatus } : a))
+      } else {
+        const data = await response.json()
+        alert(data.error || 'Failed to update status')
       }
     } catch {
       alert('Error updating status')
+    } finally {
+      setTogglingId(null)
+    }
+  }
+
+  const handleSort = (column: 'created_at' | 'updated_at' | 'title') => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(column)
+      setSortOrder('desc')
     }
   }
 
@@ -81,6 +100,12 @@ export default function AdminArticlesPage() {
     const matchesStatus = statusFilter === 'all' || a.status === statusFilter
     return matchesSearch && matchesStatus
   })
+
+  const SortIcon = ({ column }: { column: string }) => (
+    sortBy === column ? (
+      sortOrder === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />
+    ) : null
+  )
 
   if (loading) {
     return (
@@ -116,7 +141,7 @@ export default function AdminArticlesPage() {
           </Link>
         </div>
 
-        {/* Filters */}
+        {/* Filters & Search */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="relative flex-1 max-w-md">
@@ -129,7 +154,7 @@ export default function AdminArticlesPage() {
                 className="w-full pl-10 pr-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {['all', 'published', 'draft'].map(s => (
                 <button
                   key={s}
@@ -152,6 +177,37 @@ export default function AdminArticlesPage() {
               </button>
             </div>
           </div>
+
+          {/* Sort Options */}
+          <div className="flex items-center gap-4 mt-4 pt-4 border-t border-stone-100">
+            <span className="text-sm text-stone-500">Sort by:</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleSort('created_at')}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-all ${
+                  sortBy === 'created_at' ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-50 text-stone-600 hover:bg-stone-100'
+                }`}
+              >
+                Date Created <SortIcon column="created_at" />
+              </button>
+              <button
+                onClick={() => handleSort('updated_at')}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-all ${
+                  sortBy === 'updated_at' ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-50 text-stone-600 hover:bg-stone-100'
+                }`}
+              >
+                Last Modified <SortIcon column="updated_at" />
+              </button>
+              <button
+                onClick={() => handleSort('title')}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-all ${
+                  sortBy === 'title' ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-50 text-stone-600 hover:bg-stone-100'
+                }`}
+              >
+                Title <SortIcon column="title" />
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Articles Table */}
@@ -160,7 +216,7 @@ export default function AdminArticlesPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-stone-200 bg-stone-50">
-                  <th className="text-left py-4 px-6 font-semibold text-stone-700">Title</th>
+                  <th className="text-left py-4 px-6 font-semibold text-stone-700">Article</th>
                   <th className="text-left py-4 px-6 font-semibold text-stone-700">Category</th>
                   <th className="text-left py-4 px-6 font-semibold text-stone-700">Status</th>
                   <th className="text-left py-4 px-6 font-semibold text-stone-700">Author</th>
@@ -173,12 +229,16 @@ export default function AdminArticlesPage() {
                   <tr key={article.id} className="border-b border-stone-100 hover:bg-stone-50 transition-colors">
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <BookOpen className="w-5 h-5 text-emerald-600" />
-                        </div>
+                        {article.image ? (
+                          <img src={article.image} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                        ) : (
+                          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center flex-shrink-0">
+                            <BookOpen className="w-6 h-6 text-emerald-600" />
+                          </div>
+                        )}
                         <div>
                           <p className="font-medium text-stone-800 line-clamp-1">{article.title}</p>
-                          <p className="text-sm text-stone-400 line-clamp-1">{article.excerpt?.substring(0, 60)}</p>
+                          <p className="text-sm text-stone-400 line-clamp-1">{article.excerpt?.substring(0, 50)}...</p>
                         </div>
                       </div>
                     </td>
@@ -190,18 +250,27 @@ export default function AdminArticlesPage() {
                     <td className="py-4 px-6">
                       <button
                         onClick={() => handleToggleStatus(article.id, article.status)}
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium cursor-pointer transition-colors ${
+                        disabled={togglingId === article.id}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium cursor-pointer transition-all disabled:opacity-50 ${
                           article.status === 'published'
                             ? 'bg-green-100 text-green-700 hover:bg-green-200'
                             : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
                         }`}
                       >
+                        {togglingId === article.id ? (
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                        ) : article.status === 'published' ? (
+                          <Globe className="w-4 h-4" />
+                        ) : (
+                          <Lock className="w-4 h-4" />
+                        )}
                         {article.status === 'published' ? 'Published' : 'Draft'}
                       </button>
                     </td>
                     <td className="py-4 px-6 text-stone-600">{article.author || 'Master Li'}</td>
                     <td className="py-4 px-6 text-stone-500 text-sm">
-                      {formatDate(article.created_at)}
+                      <div>{formatDate(article.created_at)}</div>
+                      <div className="text-xs text-stone-400">Modified: {formatDate(article.updated_at)}</div>
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center justify-end gap-2">
