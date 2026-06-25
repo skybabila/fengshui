@@ -1,0 +1,44 @@
+# Serena Project Configuration
+# This file configures Serena for the Feng Shui website project
+
+project_name: fengshui-website
+description: Feng Shui Wisdom Website with Next.js, Supabase, and Tailwind CSS
+
+# Project path configuration
+project_path: C:\Users\Admin\Desktop\codebuddy
+
+# Serena MCP Configuration
+# Connect to local Serena MCP server
+mcp:
+  enabled: true
+  server: local
+  
+# Code language settings
+language: 
+  - TypeScript
+  - JavaScript
+  
+# Project type
+project_type: nextjs
+
+# Additional tools to enable
+tools:
+  - filesystem
+  - search
+  - code_editing
+  - terminal
+  - git
+  
+# Custom memory patterns
+memory_patterns:
+  - "*.md"
+  - "*.tsx"
+  - "*.ts"
+  
+# Ignored paths
+ignored_paths:
+  - node_modules
+  - .next
+  - .git
+  - "*.log"
+  - ".env*"
