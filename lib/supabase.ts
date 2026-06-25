@@ -6,10 +6,22 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
 function hasValidConfig(): boolean {
-  if (!supabaseUrl || !supabaseAnonKey) return false
-  if (supabaseUrl.includes('your-project-id')) return false
-  if (supabaseAnonKey.includes('your-anon-key-here')) return false
-  if (supabaseAnonKey.length < 30) return false
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('[Supabase Config] Missing URL or ANON_KEY', { supabaseUrl: !!supabaseUrl, anonKeyLength: supabaseAnonKey?.length })
+    return false
+  }
+  if (supabaseUrl.includes('your-project-id')) {
+    console.error('[Supabase Config] URL contains placeholder')
+    return false
+  }
+  if (supabaseAnonKey.includes('your-anon-key-here')) {
+    console.error('[Supabase Config] ANON_KEY contains placeholder')
+    return false
+  }
+  if (supabaseAnonKey.length < 30) {
+    console.error('[Supabase Config] ANON_KEY too short', { length: supabaseAnonKey.length })
+    return false
+  }
   return true
 }
 
