@@ -50,4 +50,15 @@ CREATE TABLE IF NOT EXISTS wishes (
 
 -- Create articles table
 CREATE TABLE IF NOT EXISTS articles (
-  id
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  slug TEXT UNIQUE,
+  excerpt TEXT,
+  content TEXT DEFAULT '',
+  category TEXT NOT NULL DEFAULT 'Feng Shui',
+  image TEXT,
+  author TEXT DEFAULT 'Master Li',
+  status TEXT DEFAULT 'published',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);

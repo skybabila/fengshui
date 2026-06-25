@@ -202,7 +202,7 @@ export default function AdminDashboard() {
                 </div>
               </a>
 
-              <a href="/admin/content" className="block p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors">
+              <a href="/admin/articles" className="block p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
                     <Calendar className="w-5 h-5 text-purple-600" />

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
@@ -155,39 +156,40 @@ export default function ArticlesPage() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredArticles.map((article) => (
-            <article
-              key={article.id}
-              className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <div className="relative h-48 overflow-hidden">
-                <Image
-                  src={article.image}
-                  alt={article.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute top-4 left-4">
-                  <span className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-sm font-medium text-emerald-600">
-                    {article.category}
-                  </span>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-lg font-semibold text-stone-800 mb-2 group-hover:text-emerald-700 transition-colors">
-                  {article.title}
-                </h3>
-                <p className="text-stone-500 text-sm line-clamp-2 mb-4">{article.excerpt}</p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-stone-400">
-                    <Clock className="w-4 h-4" />
-                    <span>{formatDate(article.date)}</span>
+            <Link href={`/articles/${article.id}`} key={article.id}>
+              <article
+                className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
+              >
+                <div className="relative h-48 overflow-hidden">
+                  <Image
+                    src={article.image}
+                    alt={article.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-4 left-4">
+                    <span className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-sm font-medium text-emerald-600">
+                      {article.category}
+                    </span>
                   </div>
-                  <button className="inline-flex items-center gap-1 text-emerald-600 font-medium text-sm hover:text-emerald-700 transition-colors">
-                    Read more <ArrowRight className="w-4 h-4" />
-                  </button>
                 </div>
-              </div>
-            </article>
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-stone-800 mb-2 group-hover:text-emerald-700 transition-colors">
+                    {article.title}
+                  </h3>
+                  <p className="text-stone-500 text-sm line-clamp-2 mb-4">{article.excerpt}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-stone-400">
+                      <Clock className="w-4 h-4" />
+                      <span>{formatDate(article.date)}</span>
+                    </div>
+                    <span className="inline-flex items-center gap-1 text-emerald-600 font-medium text-sm hover:text-emerald-700 transition-colors">
+                      Read more <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </div>
+                </div>
+              </article>
+            </Link>
           ))}
         </div>
 

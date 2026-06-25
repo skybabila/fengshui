@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { supabase, ADMIN_EMAIL } from '@/lib/supabase'
 import { VERSION } from '@/lib/version'
+import { BarChart3, FileText } from 'lucide-react'
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -83,6 +84,26 @@ export default function Navbar() {
             <div className="ml-2 flex items-center gap-2">
               {isLoggedIn ? (
                 <>
+                  {isAdmin && (
+                    <>
+                      <Link
+                        href="/admin/analytics"
+                        className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-stone-500 hover:text-cyan-600 hover:bg-cyan-50 transition-colors"
+                        title="Analytics"
+                      >
+                        <BarChart3 className="w-4 h-4" />
+                        <span className="hidden lg:inline">Analytics</span>
+                      </Link>
+                      <Link
+                        href="/admin/articles"
+                        className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-stone-500 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+                        title="Articles"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span className="hidden lg:inline">Articles</span>
+                      </Link>
+                    </>
+                  )}
                   <Link
                     href={primaryHref}
                     className={`px-4 py-2 rounded-lg text-sm font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 ${
@@ -143,6 +164,16 @@ export default function Navbar() {
             <div className="pt-3 mt-2 border-t border-emerald-100 space-y-2">
               {isLoggedIn ? (
                 <>
+                  {isAdmin && (
+                    <>
+                      <Link href="/admin/analytics" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-cyan-50">
+                        <BarChart3 className="w-4 h-4" /> Analytics
+                      </Link>
+                      <Link href="/admin/articles" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-purple-50">
+                        <FileText className="w-4 h-4" /> Manage Articles
+                      </Link>
+                    </>
+                  )}
                   <Link href={primaryHref} onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-semibold text-center text-white bg-gradient-to-r from-emerald-600 to-teal-600">
                     {primaryLabel}
                   </Link>
