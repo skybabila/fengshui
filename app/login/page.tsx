@@ -64,10 +64,10 @@ export default function LoginPage() {
           password,
         })
         if (signInError) {
-          setError(signInError.message)
+          setError(signInError.message || 'Sign in failed')
         }
       } else {
-        const { data, error: signUpError, ...rest } = await supabase.auth.signUp({
+        const result = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -80,24 +80,27 @@ export default function LoginPage() {
           },
         })
         
+        const { data, error: signUpError } = result
+        
         if (signUpError) {
-          setError(signUpError.message)
+          console.error('Signup error:', signUpError)
+          const errorMsg = signUpError.message || signUpError.msg || JSON.stringify(signUpError) || 'Registration failed'
+          setError(errorMsg)
         } else if (data?.user && !data?.session) {
-          // User created but needs email confirmation
           alert('Registration successful! Please check your email and click the confirmation link to activate your account.')
           setIsLogin(true)
         } else if (data?.session) {
-          // Auto-login after signup (if email confirmation is disabled)
           alert('Welcome! Your account has been created.')
           setIsLogin(true)
         } else {
-          // Unexpected response
-          console.error('Unexpected signup response:', { data, rest })
+          console.error('Unexpected signup response:', result)
           setError('Registration failed. Please try again.')
         }
       }
-    } catch (err) {
-      setError('An error occurred. Please try again.')
+    } catch (err: any) {
+      console.error('Auth error:', err)
+      const errorMsg = err?.message || err?.msg || 'An error occurred. Please try again.'
+      setError(errorMsg)
     } finally {
       setLoading(false)
     }
