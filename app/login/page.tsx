@@ -84,7 +84,7 @@ export default function LoginPage() {
         
         if (signUpError) {
           console.error('Signup error:', signUpError)
-          const errorMsg = signUpError.message || signUpError.msg || JSON.stringify(signUpError) || 'Registration failed'
+          const errorMsg = signUpError.message || 'Registration failed'
           setError(errorMsg)
         } else if (data?.user && !data?.session) {
           alert('Registration successful! Please check your email and click the confirmation link to activate your account.')
