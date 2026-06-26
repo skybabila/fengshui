@@ -67,20 +67,33 @@ export default function LoginPage() {
           setError(signInError.message)
         }
       } else {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data, error: signUpError, ...rest } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: {
               name: name || email.split('@')[0],
             },
+            emailRedirectTo: typeof window !== 'undefined' 
+              ? `${window.location.origin}/login` 
+              : undefined,
           },
         })
+        
         if (signUpError) {
           setError(signUpError.message)
-        } else {
-          alert('Check your email for confirmation link!')
+        } else if (data?.user && !data?.session) {
+          // User created but needs email confirmation
+          alert('Registration successful! Please check your email and click the confirmation link to activate your account.')
           setIsLogin(true)
+        } else if (data?.session) {
+          // Auto-login after signup (if email confirmation is disabled)
+          alert('Welcome! Your account has been created.')
+          setIsLogin(true)
+        } else {
+          // Unexpected response
+          console.error('Unexpected signup response:', { data, rest })
+          setError('Registration failed. Please try again.')
         }
       }
     } catch (err) {
