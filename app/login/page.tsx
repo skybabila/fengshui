@@ -88,10 +88,23 @@ export default function LoginPage() {
         
         if (signUpError) {
           console.error('Signup error:', signUpError)
-          const msg = typeof signUpError.message === 'string'
-            ? signUpError.message
-            : JSON.stringify(signUpError)
-          setError(msg || 'Registration failed')
+          let msg = ''
+          if (typeof signUpError.message === 'string' && signUpError.message) {
+            msg = signUpError.message
+          } else if (signUpError.toString && typeof signUpError.toString === 'function') {
+            msg = signUpError.toString()
+          }
+          if (!msg || msg === '[object Object]') {
+            try {
+              const props = Object.getOwnPropertyNames(signUpError)
+              const obj: any = {}
+              props.forEach(p => { obj[p] = (signUpError as any)[p] })
+              msg = JSON.stringify(obj) || 'Registration failed'
+            } catch {
+              msg = String(signUpError) || 'Registration failed'
+            }
+          }
+          setError(msg)
         } else if (data?.user && !data?.session) {
           alert('Registration successful! Please check your email and click the confirmation link to activate your account.')
           setIsLogin(true)
