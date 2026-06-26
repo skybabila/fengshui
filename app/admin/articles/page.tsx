@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase, ADMIN_EMAIL } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
+import SidebarLayout from '@/components/SidebarLayout'
 import { Plus, Edit, Trash2, Eye, Search, RefreshCw, BookOpen, ArrowLeft, ArrowUp, ArrowDown, Globe, Lock, Pin } from 'lucide-react'
 
 export default function AdminArticlesPage() {
@@ -116,37 +117,36 @@ export default function AdminArticlesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-stone-50 to-stone-100">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
-            <span className="text-2xl">☯</span>
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
+              <span className="text-2xl">☯</span>
+            </div>
+            <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
           </div>
-          <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
         </div>
-      </div>
+      </SidebarLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 to-stone-100 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <Link href="/admin/dashboard" className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-700 mb-2 transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-              Back to Dashboard
+    <SidebarLayout>
+      <div className="p-8">
+        <div className="max-w-7xl">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-stone-800">Article Management</h1>
+              <p className="text-stone-500 mt-1">Create, edit, and manage your articles</p>
+            </div>
+            <Link
+              href="/admin/articles/new"
+              className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:from-emerald-500 hover:to-teal-500 shadow-lg shadow-emerald-200 transition-all"
+            >
+              <Plus className="w-5 h-5" />
+              New Article
             </Link>
-            <h1 className="text-3xl font-bold text-stone-800">Article Management</h1>
-            <p className="text-stone-500 mt-1">Create, edit, and manage your articles</p>
           </div>
-          <Link
-            href="/admin/articles/new"
-            className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:from-emerald-500 hover:to-teal-500 shadow-lg shadow-emerald-200 transition-all"
-          >
-            <Plus className="w-5 h-5" />
-            New Article
-          </Link>
-        </div>
 
         {/* Filters & Search */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
@@ -356,7 +356,8 @@ export default function AdminArticlesPage() {
             <p className="text-sm text-stone-500">Drafts</p>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </SidebarLayout>
   )
 }

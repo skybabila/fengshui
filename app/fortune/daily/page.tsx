@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate, getTodayString } from '@/lib/utils'
-import { Star, Calendar, Sparkles, Coins, ArrowRight, Clock, Sun, Moon, CalendarDays } from 'lucide-react'
+import SidebarLayout from '@/components/SidebarLayout'
+import { Star, Calendar, Sparkles, Coins, ArrowRight, Clock, Sun } from 'lucide-react'
 
 const DAILY_COST = 5
 
@@ -37,11 +37,7 @@ function getZodiacElement(year: number): string {
   return zodiacElements[index]
 }
 
-const fortuneNavItems = [
-  { id: 'daily', name: 'Daily Fortune', emoji: '☀️', icon: Sun, href: '/fortune/daily', cost: 5 },
-  { id: 'weekly', name: 'Weekly Fortune', emoji: '🌙', icon: Moon, href: '/fortune/weekly', cost: 20 },
-  { id: 'monthly', name: 'Monthly Fortune', emoji: '🌟', icon: CalendarDays, href: '/fortune/monthly', cost: 50 },
-]
+
 
 export default function DailyFortunePage() {
   const [fortune, setFortune] = useState<any>(null)
@@ -197,14 +193,16 @@ export default function DailyFortunePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
-            <span className="text-2xl">☀️</span>
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
+              <span className="text-2xl">☀️</span>
+            </div>
+            <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
           </div>
-          <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
         </div>
-      </div>
+      </SidebarLayout>
     )
   }
 
@@ -212,84 +210,9 @@ export default function DailyFortunePage() {
   const points = profile?.points || 0
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
-      <div className="flex">
-        {/* Left Sidebar Menu */}
-        <div className="w-72 min-h-screen bg-white border-r border-stone-200 p-6 flex flex-col">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-stone-800">Fortune Center</h1>
-              <p className="text-xs text-stone-500">Explore your destiny</p>
-            </div>
-          </div>
-
-          {/* Coins Display */}
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
-                <Coins className="w-5 h-5 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-sm text-stone-500">My Coins</p>
-                <p className="text-xl font-bold text-amber-600">{points}</p>
-              </div>
-            </div>
-            <Link
-              href="/user/points"
-              className="mt-3 block text-center text-sm text-emerald-600 hover:text-emerald-700 font-medium py-2 bg-white rounded-lg"
-            >
-              View History →
-            </Link>
-          </div>
-
-          {/* Navigation Menu */}
-          <nav className="flex-1 space-y-2">
-            {fortuneNavItems.map((item) => {
-              const Icon = item.icon
-              return (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
-                    item.id === 'daily'
-                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg'
-                      : 'bg-amber-50 hover:bg-amber-100 border border-transparent hover:border-amber-300'
-                  }`}
-                >
-                  <span className="text-xl">{item.emoji}</span>
-                  <div className="flex-1">
-                    <p className={`font-semibold ${item.id === 'daily' ? 'text-white' : 'text-stone-800'}`}>
-                      {item.name}
-                    </p>
-                    <p className={`text-xs ${item.id === 'daily' ? 'text-white/80' : 'text-stone-500'}`}>
-                      {item.cost} coins
-                    </p>
-                  </div>
-                </Link>
-              )
-            })}
-          </nav>
-
-          {/* Fortune Guide */}
-          <div className="mt-6 pt-6 border-t border-stone-100">
-            <h3 className="text-sm font-semibold text-stone-700 mb-3 flex items-center gap-2">
-              <Star className="w-4 h-4 text-amber-500" />
-              Daily Fortune
-            </h3>
-            <div className="space-y-2 text-xs text-stone-500">
-              <p>• Quick daily overview</p>
-              <p>• Lucky directions & colors</p>
-              <p>• Element guidance</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Content Area */}
-        <div className="flex-1 p-8">
-          <div className="max-w-2xl mx-auto">
+    <SidebarLayout>
+      <div className="p-8">
+        <div className="max-w-2xl">
             {/* Error Message */}
             {errorMsg && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm mb-6">
@@ -413,9 +336,8 @@ export default function DailyFortunePage() {
                 </p>
               </div>
             )}
-          </div>
         </div>
       </div>
-    </div>
+    </SidebarLayout>
   )
 }

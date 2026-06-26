@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
+import SidebarLayout from '@/components/SidebarLayout'
 import { Coins, Gift, History, TrendingUp, Star, Trophy } from 'lucide-react'
 
 const rewardTiers = [
@@ -64,14 +65,16 @@ export default function PointsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
-            <Coins className="w-8 h-8 text-cyan-500" />
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
+              <Coins className="w-8 h-8 text-cyan-500" />
+            </div>
+            <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
           </div>
-          <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
         </div>
-      </div>
+      </SidebarLayout>
     )
   }
 
@@ -82,15 +85,16 @@ export default function PointsPage() {
   const pointsToNext = nextTier ? nextTier.minPoints - points : 0
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl shadow-lg mb-4">
-            <Coins className="w-8 h-8 text-white" />
+    <SidebarLayout>
+      <div className="p-8">
+        <div className="max-w-4xl">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl shadow-lg mb-4">
+              <Coins className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold text-stone-800 mb-2">My Merit Points</h1>
+            <p className="text-stone-500">Track your spiritual journey and rewards</p>
           </div>
-          <h1 className="text-3xl font-bold text-stone-800 mb-2">My Merit Points</h1>
-          <p className="text-stone-500">Track your spiritual journey and rewards</p>
-        </div>
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-2xl shadow-lg p-6">
@@ -198,7 +202,8 @@ export default function PointsPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </SidebarLayout>
   )
 }

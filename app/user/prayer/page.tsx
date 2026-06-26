@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
+import SidebarLayout from '@/components/SidebarLayout'
 import { Flame, Coins, Star, Bell, Heart, Gem, Sparkles } from 'lucide-react'
 
 const prayerTypes = [
@@ -115,15 +116,16 @@ export default function PrayerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-lg mb-4">
-            <Flame className="w-8 h-8 text-white" />
+    <SidebarLayout>
+      <div className="p-8">
+        <div className="max-w-4xl">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-lg mb-4">
+              <Flame className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold text-stone-800 mb-2">Temple Prayer</h1>
+            <p className="text-stone-500">Offer prayers and earn spiritual blessings</p>
           </div>
-          <h1 className="text-3xl font-bold text-stone-800 mb-2">Temple Prayer</h1>
-          <p className="text-stone-500">Offer prayers and earn spiritual blessings</p>
-        </div>
 
         {showResult ? (
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center animate-scale-in">
@@ -252,7 +254,8 @@ export default function PrayerPage() {
             )}
           </>
         )}
+        </div>
       </div>
-    </div>
+    </SidebarLayout>
   )
 }

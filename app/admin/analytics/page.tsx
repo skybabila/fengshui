@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase, ADMIN_EMAIL } from '@/lib/supabase'
+import SidebarLayout from '@/components/SidebarLayout'
 import {
   Users, BookOpen, Star, Heart, TrendingUp, ArrowLeft, Activity,
   Calendar, Coins, Eye, RefreshCw
@@ -117,14 +118,16 @@ export default function AdminAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-stone-50 to-stone-100">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
-            <Activity className="w-8 h-8 text-cyan-500" />
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
+              <Activity className="w-8 h-8 text-cyan-500" />
+            </div>
+            <h2 className="text-xl font-semibold text-stone-700">Loading Analytics...</h2>
           </div>
-          <h2 className="text-xl font-semibold text-stone-700">Loading Analytics...</h2>
         </div>
-      </div>
+      </SidebarLayout>
     )
   }
 
@@ -142,41 +145,38 @@ export default function AdminAnalyticsPage() {
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 to-stone-100 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <Link href="/admin/dashboard" className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-700 mb-2 transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-              Back to Dashboard
-            </Link>
-            <h1 className="text-3xl font-bold text-stone-800">Analytics</h1>
-            <p className="text-stone-500 mt-1">Comprehensive site statistics and insights</p>
-          </div>
-          <div className="flex items-center gap-2">
-            {['today', 'week', 'all'].map(range => (
+    <SidebarLayout>
+      <div className="p-8">
+        <div className="max-w-7xl">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-stone-800">Analytics</h1>
+              <p className="text-stone-500 mt-1">Comprehensive site statistics and insights</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {['today', 'week', 'all'].map(range => (
+                <button
+                  key={range}
+                  onClick={() => setTimeRange(range)}
+                  className={`px-4 py-2 rounded-xl font-medium text-sm transition-all ${
+                    timeRange === range
+                      ? 'bg-cyan-600 text-white shadow-md'
+                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  }`}
+                >
+                  {range === 'today' ? 'Today' : range === 'week' ? 'This Week' : 'All Time'}
+                </button>
+              ))}
               <button
-                key={range}
-                onClick={() => setTimeRange(range)}
-                className={`px-4 py-2 rounded-xl font-medium text-sm transition-all ${
-                  timeRange === range
-                    ? 'bg-cyan-600 text-white shadow-md'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                }`}
+                onClick={() => window.location.reload()}
+                className="ml-2 p-3 bg-stone-100 text-stone-600 rounded-xl hover:bg-stone-200 transition-colors"
+                title="Refresh"
               >
-                {range === 'today' ? 'Today' : range === 'week' ? 'This Week' : 'All Time'}
+                <RefreshCw className="w-5 h-5" />
               </button>
-            ))}
-            <button
-              onClick={() => window.location.reload()}
-              className="ml-2 p-3 bg-stone-100 text-stone-600 rounded-xl hover:bg-stone-200 transition-colors"
-              title="Refresh"
-            >
-              <RefreshCw className="w-5 h-5" />
-            </button>
+            </div>
           </div>
-        </div>
 
         {/* User Stats */}
         <div className="mb-8">
@@ -329,7 +329,8 @@ export default function AdminAnalyticsPage() {
             </div>
           )}
         </div>
+        </div>
       </div>
-    </div>
+    </SidebarLayout>
   )
 }

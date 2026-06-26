@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
+import SidebarLayout from '@/components/SidebarLayout'
 import { Coins, Calendar, Star, TrendingUp, Award, Activity, Settings, Heart } from 'lucide-react'
 
 export default function UserDashboard() {
@@ -65,14 +66,16 @@ export default function UserDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
-            <span className="text-2xl">☯</span>
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
+              <span className="text-2xl">☯</span>
+            </div>
+            <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
           </div>
-          <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
         </div>
-      </div>
+      </SidebarLayout>
     )
   }
 
@@ -112,12 +115,13 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-stone-800 mb-2">Member Center</h1>
-          <p className="text-stone-500">Welcome back, {profile?.nickname || profile?.name || user?.email?.split('@')[0]}</p>
-        </div>
+    <SidebarLayout>
+      <div className="p-8">
+        <div className="max-w-4xl">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-stone-800 mb-2">Member Center</h1>
+            <p className="text-stone-500">Welcome back, {profile?.nickname || profile?.name || user?.email?.split('@')[0]}</p>
+          </div>
 
         <div className="grid md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-2xl p-5 shadow-lg shadow-emerald-100">
@@ -296,7 +300,8 @@ export default function UserDashboard() {
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </SidebarLayout>
   )
 }

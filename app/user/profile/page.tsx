@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
+import SidebarLayout from '@/components/SidebarLayout'
 import { User, Lock, Camera, Coins, Calendar, Star, Settings, ArrowLeft, Save, Eye, EyeOff } from 'lucide-react'
 
 const zodiacOptions = ['Rat', 'Ox', 'Tiger', 'Rabbit', 'Dragon', 'Snake', 'Horse', 'Goat', 'Monkey', 'Rooster', 'Dog', 'Pig']
@@ -191,29 +192,25 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
-            <span className="text-2xl">☯</span>
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
+              <span className="text-2xl">☯</span>
+            </div>
+            <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
           </div>
-          <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
         </div>
-      </div>
+      </SidebarLayout>
     )
   }
 
   const points = profile?.points || 0
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <a
-          href="/user/dashboard"
-          className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-700 mb-6 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Dashboard
-        </a>
+    <SidebarLayout>
+      <div className="p-8">
+        <div className="max-w-2xl">
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-6 text-white">
@@ -518,7 +515,8 @@ export default function ProfilePage() {
             )}
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </SidebarLayout>
   )
 }
