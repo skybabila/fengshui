@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
+import SidebarLayout from '@/components/SidebarLayout'
 import { Heart, Send, Sparkles, Lock, Coins, Trash2 } from 'lucide-react'
 
 const WISH_COST = 10
@@ -135,20 +136,23 @@ export default function WishWallPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-rose-50 to-red-50">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
-            <Heart className="w-8 h-8 text-pink-500" />
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
+              <Heart className="w-8 h-8 text-pink-500" />
+            </div>
+            <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
           </div>
-          <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
         </div>
-      </div>
+      </SidebarLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-red-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+    <SidebarLayout>
+      <div className="p-8">
+        <div className="max-w-4xl">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-500 rounded-xl shadow-lg mb-4">
             <Heart className="w-8 h-8 text-white" />
@@ -258,7 +262,8 @@ export default function WishWallPage() {
             <p className="text-stone-500">No wishes yet, make your first wish!</p>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </SidebarLayout>
   )
 }
