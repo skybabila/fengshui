@@ -64,7 +64,11 @@ export default function LoginPage() {
           password,
         })
         if (signInError) {
-          setError(signInError.message || 'Sign in failed')
+          console.error('Sign in error:', signInError)
+          const msg = typeof signInError.message === 'string'
+            ? signInError.message
+            : JSON.stringify(signInError)
+          setError(msg || 'Sign in failed')
         }
       } else {
         const result = await supabase.auth.signUp({
@@ -84,8 +88,10 @@ export default function LoginPage() {
         
         if (signUpError) {
           console.error('Signup error:', signUpError)
-          const errorMsg = signUpError.message || 'Registration failed'
-          setError(errorMsg)
+          const msg = typeof signUpError.message === 'string'
+            ? signUpError.message
+            : JSON.stringify(signUpError)
+          setError(msg || 'Registration failed')
         } else if (data?.user && !data?.session) {
           alert('Registration successful! Please check your email and click the confirmation link to activate your account.')
           setIsLogin(true)
@@ -99,7 +105,16 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       console.error('Auth error:', err)
-      const errorMsg = err?.message || err?.msg || 'An error occurred. Please try again.'
+      let errorMsg = 'An error occurred. Please try again.'
+      if (typeof err?.message === 'string') {
+        errorMsg = err.message
+      } else if (err) {
+        try {
+          errorMsg = JSON.stringify(err)
+        } catch {
+          errorMsg = String(err)
+        }
+      }
       setError(errorMsg)
     } finally {
       setLoading(false)
