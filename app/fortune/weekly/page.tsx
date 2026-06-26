@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate, getTodayString, getWeekNumber, getYear } from '@/lib/utils'
-import { Star, Calendar, Sparkles, Coins, ArrowRight, Clock } from 'lucide-react'
+import { Sparkles, Calendar, Star, Coins, ArrowRight, Clock, Sun, Moon, CalendarDays } from 'lucide-react'
 
 const WEEKLY_COST = 20
 
@@ -48,6 +50,12 @@ const weekAdvice: Record<string, { overview: string; focus: string; caution: str
   },
 }
 
+const fortuneNavItems = [
+  { id: 'daily', name: 'Daily Fortune', emoji: '☀️', icon: Sun, href: '/fortune/daily', cost: 5 },
+  { id: 'weekly', name: 'Weekly Fortune', emoji: '🌙', icon: Moon, href: '/fortune/weekly', cost: 20 },
+  { id: 'monthly', name: 'Monthly Fortune', emoji: '🌟', icon: CalendarDays, href: '/fortune/monthly', cost: 50 },
+]
+
 export default function WeeklyFortunePage() {
   const [fortune, setFortune] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -56,6 +64,8 @@ export default function WeeklyFortunePage() {
   const [profile, setProfile] = useState<any>(null)
   const [showResult, setShowResult] = useState(false)
   const [hasWeekFortune, setHasWeekFortune] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
+  const pathname = usePathname()
 
   useEffect(() => {
     async function fetchData() {
@@ -73,7 +83,7 @@ export default function WeeklyFortunePage() {
         const currentWeek = getWeekNumber()
         const currentYear = getYear()
 
-        const { data: existing } = await supabase
+        const { data: existing, error } = await supabase
           .from('daily_fortunes')
           .select('*')
           .eq('user_id', authUser.id)
@@ -82,13 +92,17 @@ export default function WeeklyFortunePage() {
           .eq('year', currentYear)
           .single()
         
-        if (existing) {
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error fetching fortune:', error)
+          setErrorMsg('Failed to load fortune data. Please try again.')
+        } else if (existing) {
           setFortune(existing)
           setShowResult(true)
           setHasWeekFortune(true)
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching data:', error)
+        setErrorMsg('An error occurred. Please refresh the page.')
       } finally {
         setLoading(false)
       }
@@ -138,12 +152,6 @@ export default function WeeklyFortunePage() {
 
       const advice = weekAdvice[selectedFortune.type]
 
-      const luckyDirections = ['East', 'South', 'West', 'North', 'Southeast', 'Southwest', 'Northeast', 'Northwest']
-      const luckyDirection = luckyDirections[Math.floor(Math.random() * luckyDirections.length)]
-
-      const luckyColors = ['Red', 'Yellow', 'Green', 'Blue', 'White', 'Purple', 'Orange', 'Pink']
-      const luckyColor = luckyColors[Math.floor(Math.random() * luckyColors.length)]
-
       const { data: newFortune, error } = await supabase
         .from('daily_fortunes')
         .insert({
@@ -166,7 +174,7 @@ export default function WeeklyFortunePage() {
       setFortune(newFortune)
       setShowResult(true)
       setHasWeekFortune(true)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating fortune:', error)
       alert('Failed to generate fortune, please try again later')
     } finally {
@@ -192,118 +200,206 @@ export default function WeeklyFortunePage() {
   const currentWeek = getWeekNumber()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl shadow-lg mb-4">
-            <Sparkles className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold text-stone-800 mb-2">Weekly Fortune</h1>
-          <p className="text-stone-500">Week {currentWeek} · {getYear()}</p>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-lg p-4 mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
-              <Coins className="w-5 h-5 text-amber-600" />
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50">
+      <div className="flex">
+        {/* Left Sidebar Menu */}
+        <div className="w-72 min-h-screen bg-white border-r border-stone-200 p-6 flex flex-col">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm text-stone-500">My Coins</p>
-              <p className="text-xl font-bold text-amber-600">{points}</p>
+              <h1 className="text-lg font-bold text-stone-800">Fortune Center</h1>
+              <p className="text-xs text-stone-500">Explore your destiny</p>
             </div>
           </div>
-          <div className="text-sm text-stone-500">
-            Cost: <span className="text-purple-600 font-semibold">{WEEKLY_COST} coins</span>
+
+          {/* Coins Display */}
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
+                <Coins className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-sm text-stone-500">My Coins</p>
+                <p className="text-xl font-bold text-amber-600">{points}</p>
+              </div>
+            </div>
+            <Link
+              href="/user/points"
+              className="mt-3 block text-center text-sm text-emerald-600 hover:text-emerald-700 font-medium py-2 bg-white rounded-lg"
+            >
+              View History →
+            </Link>
+          </div>
+
+          {/* Navigation Menu */}
+          <nav className="flex-1 space-y-2">
+            {fortuneNavItems.map((item) => {
+              const Icon = item.icon
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
+                    item.id === 'weekly'
+                      ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg'
+                      : 'bg-purple-50 hover:bg-purple-100 border border-transparent hover:border-purple-300'
+                  }`}
+                >
+                  <span className="text-xl">{item.emoji}</span>
+                  <div className="flex-1">
+                    <p className={`font-semibold ${item.id === 'weekly' ? 'text-white' : 'text-stone-800'}`}>
+                      {item.name}
+                    </p>
+                    <p className={`text-xs ${item.id === 'weekly' ? 'text-white/80' : 'text-stone-500'}`}>
+                      {item.cost} coins
+                    </p>
+                  </div>
+                </Link>
+              )
+            })}
+          </nav>
+
+          {/* Fortune Guide */}
+          <div className="mt-6 pt-6 border-t border-stone-100">
+            <h3 className="text-sm font-semibold text-stone-700 mb-3 flex items-center gap-2">
+              <Star className="w-4 h-4 text-purple-500" />
+              Weekly Fortune
+            </h3>
+            <div className="space-y-2 text-xs text-stone-500">
+              <p>• Weekly overview with trend analysis</p>
+              <p>• Focus areas and cautions</p>
+              <p>• Lucky days for the week</p>
+            </div>
           </div>
         </div>
 
-        {showResult && fortune ? (
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in-up">
-            <div className={`bg-gradient-to-r ${currentFortune?.color} p-8 text-center text-white`}>
-              <div className="text-6xl mb-4">{currentFortune?.emoji}</div>
-              <h2 className="text-3xl font-bold mb-2">{fortune.fortune_type}</h2>
-              <div className="flex items-center justify-center gap-2 text-white/80">
-                <Calendar className="w-4 h-4" />
-                <span>Week {fortune.week_number} · {fortune.year}</span>
-              </div>
-            </div>
-
-            <div className="p-8">
-              <div className="text-center mb-6">
-                <p className="text-stone-600 leading-relaxed text-lg">{fortune.description}</p>
-              </div>
-
-              {weekAdvice[fortune.fortune_type] && (
-                <>
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-purple-50 rounded-xl p-4">
-                      <p className="text-sm text-purple-500 mb-1">Focus This Week</p>
-                      <p className="text-stone-700 font-medium">{weekAdvice[fortune.fortune_type].focus}</p>
-                    </div>
-                    <div className="bg-orange-50 rounded-xl p-4">
-                      <p className="text-sm text-orange-500 mb-1">Cautions</p>
-                      <p className="text-stone-700 font-medium">{weekAdvice[fortune.fortune_type].caution}</p>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 mb-6">
-                    <h3 className="font-semibold text-purple-700 mb-3">Lucky Days</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {weekAdvice[fortune.fortune_type].luckyDays.map(day => (
-                        <span key={day} className="inline-flex items-center bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
-                          ✨ {day}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <div className="bg-purple-50 rounded-xl p-4 text-center">
-                <Clock className="w-6 h-6 text-purple-500 mx-auto mb-2" />
-                <p className="text-purple-700 font-medium">You have already gotten your fortune this week</p>
-                <p className="text-sm text-purple-600">Come back next week for a new fortune reading!</p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white rounded-2xl shadow-xl p-8 text-center animate-fade-in">
-            <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Star className="w-12 h-12 text-purple-500" />
-            </div>
-            <h2 className="text-2xl font-bold text-stone-800 mb-2">How is your fortune this week?</h2>
-            <p className="text-stone-500 mb-6">
-              Spend {WEEKLY_COST} coins to get your personalized weekly fortune reading
-            </p>
-            
-            {points < WEEKLY_COST && (
-              <div className="bg-red-50 rounded-xl p-4 mb-6">
-                <p className="text-red-600">
-                  Not enough coins! You need {WEEKLY_COST} coins, you have {points} coins
-                </p>
+        {/* Right Content Area */}
+        <div className="flex-1 p-8">
+          <div className="max-w-2xl mx-auto">
+            {/* Error Message */}
+            {errorMsg && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm mb-6">
+                {errorMsg}
               </div>
             )}
 
-            <button
-              onClick={generateFortune}
-              disabled={generating || points < WEEKLY_COST}
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-purple-200 hover:shadow-xl hover:shadow-purple-300 transition-all hover:-translate-y-1 disabled:opacity-50"
-            >
-              {generating ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                  Calculating...
-                </span>
-              ) : (
-                <>Get Fortune ({WEEKLY_COST} coins) <ArrowRight className="w-5 h-5" /></>
-              )}
-            </button>
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl shadow-lg mb-4">
+                <Moon className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold text-stone-800 mb-2">Weekly Fortune</h1>
+              <p className="text-stone-500">Week {currentWeek} · {getYear()}</p>
+            </div>
 
-            <p className="mt-4 text-xs text-stone-400">
-              You can only get one fortune per week
-            </p>
+            {/* Coins Bar */}
+            <div className="bg-white rounded-2xl shadow-lg p-4 mb-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
+                  <Coins className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-stone-500">My Coins</p>
+                  <p className="text-xl font-bold text-amber-600">{points}</p>
+                </div>
+              </div>
+              <div className="text-sm text-stone-500">
+                Cost: <span className="text-purple-600 font-semibold">{WEEKLY_COST} coins</span>
+              </div>
+            </div>
+
+            {/* Fortune Result */}
+            {showResult && fortune ? (
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in-up">
+                <div className={`bg-gradient-to-r ${currentFortune?.color} p-8 text-center text-white`}>
+                  <div className="text-6xl mb-4">{currentFortune?.emoji}</div>
+                  <h2 className="text-3xl font-bold mb-2">{fortune.fortune_type}</h2>
+                  <div className="flex items-center justify-center gap-2 text-white/80">
+                    <Calendar className="w-4 h-4" />
+                    <span>Week {fortune.week_number} · {fortune.year}</span>
+                  </div>
+                </div>
+
+                <div className="p-8">
+                  <div className="text-center mb-6">
+                    <p className="text-stone-600 leading-relaxed text-lg">{fortune.description}</p>
+                  </div>
+
+                  {weekAdvice[fortune.fortune_type] && (
+                    <>
+                      <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="bg-purple-50 rounded-xl p-4">
+                          <p className="text-sm text-purple-500 mb-1">Focus This Week</p>
+                          <p className="text-stone-700 font-medium">{weekAdvice[fortune.fortune_type].focus}</p>
+                        </div>
+                        <div className="bg-orange-50 rounded-xl p-4">
+                          <p className="text-sm text-orange-500 mb-1">Cautions</p>
+                          <p className="text-stone-700 font-medium">{weekAdvice[fortune.fortune_type].caution}</p>
+                        </div>
+                      </div>
+
+                      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 mb-6">
+                        <h3 className="font-semibold text-purple-700 mb-3">Lucky Days</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {weekAdvice[fortune.fortune_type].luckyDays.map(day => (
+                            <span key={day} className="inline-flex items-center bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
+                              ✨ {day}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="bg-purple-50 rounded-xl p-4 text-center">
+                    <Clock className="w-6 h-6 text-purple-500 mx-auto mb-2" />
+                    <p className="text-purple-700 font-medium">You have already gotten your fortune this week</p>
+                    <p className="text-sm text-purple-600">Come back next week for a new fortune reading!</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl shadow-xl p-8 text-center animate-fade-in">
+                <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Moon className="w-12 h-12 text-purple-500" />
+                </div>
+                <h2 className="text-2xl font-bold text-stone-800 mb-2">How is your fortune this week?</h2>
+                <p className="text-stone-500 mb-6">
+                  Spend {WEEKLY_COST} coins to get your personalized weekly fortune reading
+                </p>
+                
+                {points < WEEKLY_COST && (
+                  <div className="bg-red-50 rounded-xl p-4 mb-6">
+                    <p className="text-red-600">
+                      Not enough coins! You need {WEEKLY_COST} coins, you have {points} coins
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  onClick={generateFortune}
+                  disabled={generating || points < WEEKLY_COST}
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-purple-200 hover:shadow-xl hover:shadow-purple-300 transition-all hover:-translate-y-1 disabled:opacity-50"
+                >
+                  {generating ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                      Calculating...
+                    </span>
+                  ) : (
+                    <>Get Fortune ({WEEKLY_COST} coins) <ArrowRight className="w-5 h-5" /></>
+                  )}
+                </button>
+
+                <p className="mt-4 text-xs text-stone-400">
+                  You can only get one fortune per week
+                </p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   )

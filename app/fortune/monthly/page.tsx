@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate, getTodayString, getMonthNumber, getYear } from '@/lib/utils'
-import { Star, Calendar, Sparkles, Coins, ArrowRight, Clock } from 'lucide-react'
+import { Sparkles, Calendar, Star, Coins, ArrowRight, Clock, Sun, Moon, CalendarDays } from 'lucide-react'
 
 const MONTHLY_COST = 50
 
@@ -60,6 +61,12 @@ const monthAdvice: Record<string, { overview: string; career: string; wealth: st
 
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
+const fortuneNavItems = [
+  { id: 'daily', name: 'Daily Fortune', emoji: '☀️', icon: Sun, href: '/fortune/daily', cost: 5 },
+  { id: 'weekly', name: 'Weekly Fortune', emoji: '🌙', icon: Moon, href: '/fortune/weekly', cost: 20 },
+  { id: 'monthly', name: 'Monthly Fortune', emoji: '🌟', icon: CalendarDays, href: '/fortune/monthly', cost: 50 },
+]
+
 export default function MonthlyFortunePage() {
   const [fortune, setFortune] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -68,6 +75,7 @@ export default function MonthlyFortunePage() {
   const [profile, setProfile] = useState<any>(null)
   const [showResult, setShowResult] = useState(false)
   const [hasMonthFortune, setHasMonthFortune] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
 
   useEffect(() => {
     async function fetchData() {
@@ -85,7 +93,7 @@ export default function MonthlyFortunePage() {
         const currentMonth = getMonthNumber()
         const currentYear = getYear()
 
-        const { data: existing } = await supabase
+        const { data: existing, error } = await supabase
           .from('daily_fortunes')
           .select('*')
           .eq('user_id', authUser.id)
@@ -94,13 +102,17 @@ export default function MonthlyFortunePage() {
           .eq('year', currentYear)
           .single()
         
-        if (existing) {
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error fetching fortune:', error)
+          setErrorMsg('Failed to load fortune data. Please try again.')
+        } else if (existing) {
           setFortune(existing)
           setShowResult(true)
           setHasMonthFortune(true)
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching data:', error)
+        setErrorMsg('An error occurred. Please refresh the page.')
       } finally {
         setLoading(false)
       }
@@ -172,7 +184,7 @@ export default function MonthlyFortunePage() {
       setFortune(newFortune)
       setShowResult(true)
       setHasMonthFortune(true)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating fortune:', error)
       alert('Failed to generate fortune, please try again later')
     } finally {
@@ -198,126 +210,214 @@ export default function MonthlyFortunePage() {
   const currentMonth = getMonthNumber()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl shadow-lg mb-4">
-            <Sparkles className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold text-stone-800 mb-2">Monthly Fortune</h1>
-          <p className="text-stone-500">{monthNames[currentMonth - 1]} · {getYear()}</p>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-lg p-4 mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
-              <Coins className="w-5 h-5 text-amber-600" />
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50">
+      <div className="flex">
+        {/* Left Sidebar Menu */}
+        <div className="w-72 min-h-screen bg-white border-r border-stone-200 p-6 flex flex-col">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm text-stone-500">My Coins</p>
-              <p className="text-xl font-bold text-amber-600">{points}</p>
+              <h1 className="text-lg font-bold text-stone-800">Fortune Center</h1>
+              <p className="text-xs text-stone-500">Explore your destiny</p>
             </div>
           </div>
-          <div className="text-sm text-stone-500">
-            Cost: <span className="text-cyan-600 font-semibold">{MONTHLY_COST} coins</span>
+
+          {/* Coins Display */}
+          <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
+                <Coins className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-sm text-stone-500">My Coins</p>
+                <p className="text-xl font-bold text-amber-600">{points}</p>
+              </div>
+            </div>
+            <Link
+              href="/user/points"
+              className="mt-3 block text-center text-sm text-emerald-600 hover:text-emerald-700 font-medium py-2 bg-white rounded-lg"
+            >
+              View History →
+            </Link>
+          </div>
+
+          {/* Navigation Menu */}
+          <nav className="flex-1 space-y-2">
+            {fortuneNavItems.map((item) => {
+              const Icon = item.icon
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
+                    item.id === 'monthly'
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg'
+                      : 'bg-cyan-50 hover:bg-cyan-100 border border-transparent hover:border-cyan-300'
+                  }`}
+                >
+                  <span className="text-xl">{item.emoji}</span>
+                  <div className="flex-1">
+                    <p className={`font-semibold ${item.id === 'monthly' ? 'text-white' : 'text-stone-800'}`}>
+                      {item.name}
+                    </p>
+                    <p className={`text-xs ${item.id === 'monthly' ? 'text-white/80' : 'text-stone-500'}`}>
+                      {item.cost} coins
+                    </p>
+                  </div>
+                </Link>
+              )
+            })}
+          </nav>
+
+          {/* Fortune Guide */}
+          <div className="mt-6 pt-6 border-t border-stone-100">
+            <h3 className="text-sm font-semibold text-stone-700 mb-3 flex items-center gap-2">
+              <Star className="w-4 h-4 text-cyan-500" />
+              Monthly Fortune
+            </h3>
+            <div className="space-y-2 text-xs text-stone-500">
+              <p>• Detailed monthly forecast</p>
+              <p>• Career, wealth, love, health</p>
+              <p>• Lucky days for the month</p>
+            </div>
           </div>
         </div>
 
-        {showResult && fortune ? (
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in-up">
-            <div className={`bg-gradient-to-r ${currentFortune?.color} p-8 text-center text-white`}>
-              <div className="text-6xl mb-4">{currentFortune?.emoji}</div>
-              <h2 className="text-3xl font-bold mb-2">{fortune.fortune_type}</h2>
-              <div className="flex items-center justify-center gap-2 text-white/80">
-                <Calendar className="w-4 h-4" />
-                <span>{monthNames[fortune.month_number - 1]} · {fortune.year}</span>
-              </div>
-            </div>
-
-            <div className="p-8">
-              <div className="text-center mb-6">
-                <p className="text-stone-600 leading-relaxed text-lg">{fortune.description}</p>
-              </div>
-
-              {monthAdvice[fortune.fortune_type] && (
-                <>
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-blue-50 rounded-xl p-4">
-                      <p className="text-sm text-blue-500 mb-1">💼 Career</p>
-                      <p className="text-stone-700 text-sm">{monthAdvice[fortune.fortune_type].career}</p>
-                    </div>
-                    <div className="bg-amber-50 rounded-xl p-4">
-                      <p className="text-sm text-amber-500 mb-1">💰 Wealth</p>
-                      <p className="text-stone-700 text-sm">{monthAdvice[fortune.fortune_type].wealth}</p>
-                    </div>
-                    <div className="bg-pink-50 rounded-xl p-4">
-                      <p className="text-sm text-pink-500 mb-1">💕 Love</p>
-                      <p className="text-stone-700 text-sm">{monthAdvice[fortune.fortune_type].love}</p>
-                    </div>
-                    <div className="bg-green-50 rounded-xl p-4">
-                      <p className="text-sm text-green-500 mb-1">🏥 Health</p>
-                      <p className="text-stone-700 text-sm">{monthAdvice[fortune.fortune_type].health}</p>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-4 mb-6">
-                    <h3 className="font-semibold text-cyan-700 mb-3">Lucky Days This Month</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {monthAdvice[fortune.fortune_type].luckyDays.map(day => (
-                        <span key={day} className="inline-flex items-center bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-sm font-medium">
-                          ✨ Day {day}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <div className="bg-cyan-50 rounded-xl p-4 text-center">
-                <Clock className="w-6 h-6 text-cyan-500 mx-auto mb-2" />
-                <p className="text-cyan-700 font-medium">You have already gotten your fortune this month</p>
-                <p className="text-sm text-cyan-600">Come back next month for a new fortune reading!</p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white rounded-2xl shadow-xl p-8 text-center animate-fade-in">
-            <div className="w-24 h-24 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Star className="w-12 h-12 text-cyan-500" />
-            </div>
-            <h2 className="text-2xl font-bold text-stone-800 mb-2">How is your fortune this month?</h2>
-            <p className="text-stone-500 mb-6">
-              Spend {MONTHLY_COST} coins to get your personalized monthly fortune reading
-            </p>
-            
-            {points < MONTHLY_COST && (
-              <div className="bg-red-50 rounded-xl p-4 mb-6">
-                <p className="text-red-600">
-                  Not enough coins! You need {MONTHLY_COST} coins, you have {points} coins
-                </p>
+        {/* Right Content Area */}
+        <div className="flex-1 p-8">
+          <div className="max-w-2xl mx-auto">
+            {/* Error Message */}
+            {errorMsg && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm mb-6">
+                {errorMsg}
               </div>
             )}
 
-            <button
-              onClick={generateFortune}
-              disabled={generating || points < MONTHLY_COST}
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-200 hover:shadow-xl hover:shadow-cyan-300 transition-all hover:-translate-y-1 disabled:opacity-50"
-            >
-              {generating ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                  Calculating...
-                </span>
-              ) : (
-                <>Get Fortune ({MONTHLY_COST} coins) <ArrowRight className="w-5 h-5" /></>
-              )}
-            </button>
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl shadow-lg mb-4">
+                <CalendarDays className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold text-stone-800 mb-2">Monthly Fortune</h1>
+              <p className="text-stone-500">{monthNames[currentMonth - 1]} · {getYear()}</p>
+            </div>
 
-            <p className="mt-4 text-xs text-stone-400">
-              You can only get one fortune per month
-            </p>
+            {/* Coins Bar */}
+            <div className="bg-white rounded-2xl shadow-lg p-4 mb-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
+                  <Coins className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-stone-500">My Coins</p>
+                  <p className="text-xl font-bold text-amber-600">{points}</p>
+                </div>
+              </div>
+              <div className="text-sm text-stone-500">
+                Cost: <span className="text-cyan-600 font-semibold">{MONTHLY_COST} coins</span>
+              </div>
+            </div>
+
+            {/* Fortune Result */}
+            {showResult && fortune ? (
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in-up">
+                <div className={`bg-gradient-to-r ${currentFortune?.color} p-8 text-center text-white`}>
+                  <div className="text-6xl mb-4">{currentFortune?.emoji}</div>
+                  <h2 className="text-3xl font-bold mb-2">{fortune.fortune_type}</h2>
+                  <div className="flex items-center justify-center gap-2 text-white/80">
+                    <Calendar className="w-4 h-4" />
+                    <span>{monthNames[fortune.month_number - 1]} · {fortune.year}</span>
+                  </div>
+                </div>
+
+                <div className="p-8">
+                  <div className="text-center mb-6">
+                    <p className="text-stone-600 leading-relaxed text-lg">{fortune.description}</p>
+                  </div>
+
+                  {monthAdvice[fortune.fortune_type] && (
+                    <>
+                      <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="bg-blue-50 rounded-xl p-4">
+                          <p className="text-sm text-blue-500 mb-1">💼 Career</p>
+                          <p className="text-stone-700 text-sm">{monthAdvice[fortune.fortune_type].career}</p>
+                        </div>
+                        <div className="bg-amber-50 rounded-xl p-4">
+                          <p className="text-sm text-amber-500 mb-1">💰 Wealth</p>
+                          <p className="text-stone-700 text-sm">{monthAdvice[fortune.fortune_type].wealth}</p>
+                        </div>
+                        <div className="bg-pink-50 rounded-xl p-4">
+                          <p className="text-sm text-pink-500 mb-1">💕 Love</p>
+                          <p className="text-stone-700 text-sm">{monthAdvice[fortune.fortune_type].love}</p>
+                        </div>
+                        <div className="bg-green-50 rounded-xl p-4">
+                          <p className="text-sm text-green-500 mb-1">🏥 Health</p>
+                          <p className="text-stone-700 text-sm">{monthAdvice[fortune.fortune_type].health}</p>
+                        </div>
+                      </div>
+
+                      <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-4 mb-6">
+                        <h3 className="font-semibold text-cyan-700 mb-3">Lucky Days This Month</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {monthAdvice[fortune.fortune_type].luckyDays.map(day => (
+                            <span key={day} className="inline-flex items-center bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-sm font-medium">
+                              ✨ Day {day}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="bg-cyan-50 rounded-xl p-4 text-center">
+                    <Clock className="w-6 h-6 text-cyan-500 mx-auto mb-2" />
+                    <p className="text-cyan-700 font-medium">You have already gotten your fortune this month</p>
+                    <p className="text-sm text-cyan-600">Come back next month for a new fortune reading!</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl shadow-xl p-8 text-center animate-fade-in">
+                <div className="w-24 h-24 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CalendarDays className="w-12 h-12 text-cyan-500" />
+                </div>
+                <h2 className="text-2xl font-bold text-stone-800 mb-2">How is your fortune this month?</h2>
+                <p className="text-stone-500 mb-6">
+                  Spend {MONTHLY_COST} coins to get your personalized monthly fortune reading
+                </p>
+                
+                {points < MONTHLY_COST && (
+                  <div className="bg-red-50 rounded-xl p-4 mb-6">
+                    <p className="text-red-600">
+                      Not enough coins! You need {MONTHLY_COST} coins, you have {points} coins
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  onClick={generateFortune}
+                  disabled={generating || points < MONTHLY_COST}
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-200 hover:shadow-xl hover:shadow-cyan-300 transition-all hover:-translate-y-1 disabled:opacity-50"
+                >
+                  {generating ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                      Calculating...
+                    </span>
+                  ) : (
+                    <>Get Fortune ({MONTHLY_COST} coins) <ArrowRight className="w-5 h-5" /></>
+                  )}
+                </button>
+
+                <p className="mt-4 text-xs text-stone-400">
+                  You can only get one fortune per month
+                </p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   )
