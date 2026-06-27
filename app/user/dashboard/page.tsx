@@ -169,7 +169,7 @@ export default function UserDashboard() {
       icon: Gift,
       title: 'Earn Coins',
       desc: 'Get more free coins',
-      href: '/user/profile',
+      href: '/user/points',
       cost: 'Free',
       gradient: 'from-emerald-500 to-teal-500',
       bgGradient: 'from-emerald-50 to-teal-50',
@@ -179,6 +179,7 @@ export default function UserDashboard() {
   return (
     <SidebarLayout>
       <div className="p-6 md:p-8">
+        <div className="max-w-4xl mx-auto">
         {/* Welcome Banner */}
         <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-3xl p-6 md:p-8 mb-8 shadow-2xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
@@ -202,7 +203,7 @@ export default function UserDashboard() {
                 <ChevronRight className="w-4 h-4" />
               </Link>
               <Link
-                href="/user/profile"
+                href="/user/points"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-white/20 backdrop-blur text-white font-semibold rounded-xl hover:bg-white/30 transition-all border border-white/30"
               >
                 <Gift className="w-5 h-5" />
@@ -399,6 +400,7 @@ export default function UserDashboard() {
               Read more articles <ChevronRight className="w-4 h-4" />
             </a>
           </div>
+        </div>
         </div>
       </div>
     </SidebarLayout>

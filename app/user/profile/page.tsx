@@ -4,9 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import SidebarLayout from '@/components/SidebarLayout'
-import { User, Lock, Camera, Coins, Star, Settings, Save, Eye, EyeOff, Sparkles } from 'lucide-react'
-
-const elementOptions = ['Metal', 'Wood', 'Water', 'Fire', 'Earth']
+import { User, Lock, Camera, Coins, Star, Settings, Save, Eye, EyeOff, Sparkles, Gem, Flame, Droplets, Leaf, Mountain } from 'lucide-react'
 
 const zodiacAnimals = [
   { name: 'Rat', emoji: '🐀', chinese: '鼠' },
@@ -23,12 +21,35 @@ const zodiacAnimals = [
   { name: 'Pig', emoji: '🐖', chinese: '猪' },
 ]
 
-function getZodiacFromBirthday(birthday: string): { name: string; emoji: string; chinese: string } | null {
+const fiveElements = [
+  { name: 'Metal', chinese: '金', emoji: '⚔️', icon: Gem, color: 'text-amber-600', bgColor: 'bg-amber-50', borderColor: 'border-amber-200', gradient: 'from-amber-400 to-yellow-500' },
+  { name: 'Water', chinese: '水', emoji: '💧', icon: Droplets, color: 'text-blue-600', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', gradient: 'from-blue-400 to-cyan-500' },
+  { name: 'Wood', chinese: '木', emoji: '🌿', icon: Leaf, color: 'text-emerald-600', bgColor: 'bg-emerald-50', borderColor: 'border-emerald-200', gradient: 'from-emerald-400 to-green-500' },
+  { name: 'Fire', chinese: '火', emoji: '🔥', icon: Flame, color: 'text-red-600', bgColor: 'bg-red-50', borderColor: 'border-red-200', gradient: 'from-red-400 to-orange-500' },
+  { name: 'Earth', chinese: '土', emoji: '⛰️', icon: Mountain, color: 'text-stone-600', bgColor: 'bg-stone-50', borderColor: 'border-stone-200', gradient: 'from-stone-400 to-amber-600' },
+]
+
+function getZodiacFromBirthday(birthday: string): typeof zodiacAnimals[0] | null {
   if (!birthday) return null
   const year = new Date(birthday).getFullYear()
   if (isNaN(year)) return null
-  const index = (year - 1900) % 12
+  const index = ((year - 1900) % 12 + 12) % 12
   return zodiacAnimals[index]
+}
+
+function getElementFromBirthday(birthday: string): typeof fiveElements[0] | null {
+  if (!birthday) return null
+  const year = new Date(birthday).getFullYear()
+  if (isNaN(year) || year < 1900) return null
+  const lastDigit = year % 10
+  const elementMap: Record<number, number> = {
+    0: 0, 1: 0,
+    2: 1, 3: 1,
+    4: 2, 5: 2,
+    6: 3, 7: 3,
+    8: 4, 9: 4,
+  }
+  return fiveElements[elementMap[lastDigit]]
 }
 
 export default function ProfilePage() {
@@ -40,7 +61,6 @@ export default function ProfilePage() {
   
   const [nickname, setNickname] = useState('')
   const [birthday, setBirthday] = useState('')
-  const [favoriteElement, setFavoriteElement] = useState('')
   const [interests, setInterests] = useState('')
   
   const [currentPassword, setCurrentPassword] = useState('')
@@ -51,6 +71,8 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState('')
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
+
+  const maxDate = new Date().toISOString().split('T')[0]
 
   useEffect(() => {
     async function fetchData() {
@@ -67,7 +89,6 @@ export default function ProfilePage() {
         
         setNickname(userProfile?.nickname || userProfile?.name || '')
         setBirthday(userProfile?.birthday || '')
-        setFavoriteElement(userProfile?.favorite_element || '')
         setInterests(userProfile?.interests || '')
         setAvatarUrl(userProfile?.avatar_url || '')
       } catch (error) {
@@ -81,6 +102,7 @@ export default function ProfilePage() {
   }, [])
 
   const zodiac = getZodiacFromBirthday(birthday)
+  const element = getElementFromBirthday(birthday)
 
   const showSuccess = (msg: string) => {
     setSuccessMessage(msg)
@@ -148,16 +170,18 @@ export default function ProfilePage() {
     if (!user) return
 
     setSaving(true)
+    setSuccessMessage('')
 
     try {
       const zodiacSign = zodiac?.name || null
+      const elementName = element?.name || null
       
       const updateData: any = {
-        nickname: nickname || null,
+        nickname: nickname.trim() || null,
         birthday: birthday || null,
         zodiac_sign: zodiacSign,
-        favorite_element: favoriteElement || null,
-        interests: interests || null,
+        favorite_element: elementName,
+        interests: interests.trim() || null,
         updated_at: new Date().toISOString(),
       }
 
@@ -185,7 +209,7 @@ export default function ProfilePage() {
   }
 
   const handleUpdatePassword = async () => {
-    if (!currentPassword || !newPassword) {
+    if (!user || !currentPassword || !newPassword) {
       alert('Please fill in all fields')
       return
     }
@@ -196,6 +220,7 @@ export default function ProfilePage() {
     }
 
     setSaving(true)
+    setSuccessMessage('')
 
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -248,7 +273,7 @@ export default function ProfilePage() {
   return (
     <SidebarLayout>
       <div className="p-6 md:p-8">
-        <div className="max-w-2xl">
+        <div className="max-w-4xl mx-auto">
 
           {successMessage && (
             <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 font-medium flex items-center gap-2">
@@ -257,11 +282,41 @@ export default function ProfilePage() {
             </div>
           )}
 
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-stone-100">
-          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-6 text-white">
-            <h1 className="text-2xl font-bold mb-2">Profile Center</h1>
-            <p className="text-emerald-100">Manage your personal information and settings</p>
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg mb-4">
+              <Settings className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold text-stone-800 mb-2">Profile Center</h1>
+            <p className="text-stone-500">Manage your personal information and settings</p>
           </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="bg-white rounded-2xl p-4 shadow-lg border border-stone-100 text-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                <Coins className="w-5 h-5 text-amber-600" />
+              </div>
+              <p className="text-sm text-stone-500">My Coins</p>
+              <p className="text-xl font-bold text-amber-600">{points.toLocaleString()}</p>
+            </div>
+            <div className="bg-white rounded-2xl p-4 shadow-lg border border-stone-100 text-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-pink-100 to-rose-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                <span className="text-lg">{zodiac?.emoji || '✨'}</span>
+              </div>
+              <p className="text-sm text-stone-500">Zodiac</p>
+              <p className="text-lg font-bold text-stone-800">{zodiac?.chinese || '-'}</p>
+            </div>
+            <div className="bg-white rounded-2xl p-4 shadow-lg border border-stone-100 text-center">
+              <div className={`w-10 h-10 bg-gradient-to-br ${element ? element.gradient : 'from-stone-100 to-stone-200'} rounded-xl flex items-center justify-center mx-auto mb-2`}>
+                <span className="text-lg">{element?.emoji || '☯️'}</span>
+              </div>
+              <p className="text-sm text-stone-500">Life Element</p>
+              <p className="text-lg font-bold text-stone-800">{element?.chinese || '-'}</p>
+            </div>
+          </div>
+
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-stone-100">
 
           <div className="border-b border-stone-200">
             <div className="flex gap-4 px-6 overflow-x-auto">
@@ -304,17 +359,17 @@ export default function ProfilePage() {
           <div className="p-6">
             {activeTab === 'profile' && (
               <div className="space-y-6">
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100">
                   <div className="relative">
                     {avatarUrl ? (
                       <img
                         src={avatarUrl}
                         alt="Avatar"
-                        className="w-20 h-20 rounded-full object-cover border-2 border-emerald-200"
+                        className="w-20 h-20 rounded-full object-cover border-2 border-white shadow-md"
                       />
                     ) : (
-                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center border-2 border-emerald-200">
-                        <User className="w-8 h-8 text-emerald-600" />
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-200 to-teal-200 flex items-center justify-center border-2 border-white shadow-md">
+                        <User className="w-10 h-10 text-white" />
                       </div>
                     )}
                     <label className="absolute bottom-0 right-0 w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition-colors shadow-lg">
@@ -334,9 +389,9 @@ export default function ProfilePage() {
                     )}
                   </div>
                   <div>
-                    <p className="font-medium text-stone-800">{nickname || user?.email?.split('@')[0]}</p>
+                    <p className="font-bold text-stone-800 text-lg">{nickname || user?.email?.split('@')[0]}</p>
                     <p className="text-sm text-stone-500">{user?.email}</p>
-                    <p className="text-xs text-stone-400 mt-1">Click camera icon to change avatar</p>
+                    <p className="text-xs text-emerald-600 mt-1">📷 Click camera to change avatar</p>
                   </div>
                 </div>
 
@@ -347,6 +402,7 @@ export default function ProfilePage() {
                       type="text"
                       value={nickname}
                       onChange={(e) => setNickname(e.target.value)}
+                      maxLength={30}
                       className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                       placeholder="Your nickname"
                     />
@@ -356,38 +412,77 @@ export default function ProfilePage() {
                     <input
                       type="date"
                       value={birthday}
-                      onChange={(e) => setBirthday(e.target.value)}
+                      min="1900-01-01"
+                      max={maxDate}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        if (val) {
+                          const year = parseInt(val.split('-')[0])
+                          if (year >= 1900 && year <= new Date().getFullYear()) {
+                            setBirthday(val)
+                          }
+                        } else {
+                          setBirthday('')
+                        }
+                      }}
                       className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     />
+                    <p className="text-xs text-stone-400 mt-1">Enter your birthday to calculate zodiac and life element</p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-2">Your Zodiac Sign</label>
-                    <div className="w-full px-4 py-3 border border-stone-200 rounded-xl bg-stone-50">
-                      {zodiac ? (
-                        <div className="flex items-center gap-3">
-                          <span className="text-3xl">{zodiac.emoji}</span>
-                          <div>
-                            <p className="font-semibold text-stone-800">{zodiac.name}</p>
-                            <p className="text-sm text-stone-500">{zodiac.chinese} 生肖</p>
-                          </div>
+                </div>
+
+                {/* Zodiac & Life Element */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className={`p-5 rounded-xl border-2 ${zodiac ? 'bg-gradient-to-br from-pink-50 to-rose-50 border-pink-200' : 'bg-stone-50 border-stone-200'}`}>
+                    <h3 className="font-semibold text-stone-800 mb-3 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-pink-500" />
+                      Your Zodiac Sign
+                    </h3>
+                    {zodiac ? (
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 bg-white rounded-xl shadow-sm flex items-center justify-center text-4xl">
+                          {zodiac.emoji}
                         </div>
-                      ) : (
-                        <p className="text-stone-400">Select your birthday to see your zodiac</p>
-                      )}
-                    </div>
+                        <div>
+                          <p className="font-bold text-xl text-stone-800">{zodiac.name}</p>
+                          <p className="text-stone-500">{zodiac.chinese} 生肖</p>
+                          <p className="text-xs text-pink-600 mt-1">Calculated from birth year</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3 text-stone-400">
+                        <div className="w-16 h-16 bg-stone-100 rounded-xl flex items-center justify-center text-2xl">
+                          ❓
+                        </div>
+                        <p className="text-sm">Enter your birthday to see your zodiac sign</p>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-2">Favorite Element</label>
-                    <select
-                      value={favoriteElement}
-                      onChange={(e) => setFavoriteElement(e.target.value)}
-                      className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    >
-                      <option value="">Please select</option>
-                      {elementOptions.map(e => (
-                        <option key={e} value={e}>{e}</option>
-                      ))}
-                    </select>
+
+                  <div className={`p-5 rounded-xl border-2 ${element ? `bg-gradient-to-br ${element.bgColor} ${element.borderColor}` : 'bg-stone-50 border-stone-200'}`}>
+                    <h3 className="font-semibold text-stone-800 mb-3 flex items-center gap-2">
+                      <Gem className={`w-4 h-4 ${element ? element.color : 'text-stone-400'}`} />
+                      Life Element (命格)
+                    </h3>
+                    {element ? (
+                      <div className="flex items-center gap-4">
+                        <div className={`w-16 h-16 bg-gradient-to-br ${element.gradient} rounded-xl shadow-sm flex items-center justify-center text-3xl`}>
+                          {element.emoji}
+                        </div>
+                        <div>
+                          <p className="font-bold text-xl text-stone-800">{element.name}</p>
+                          <p className="text-stone-500">{element.chinese} 命格</p>
+                          <p className="text-xs text-emerald-600 mt-1">Based on birth year</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3 text-stone-400">
+                        <div className="w-16 h-16 bg-stone-100 rounded-xl flex items-center justify-center text-2xl">
+                          ☯️
+                        </div>
+                        <p className="text-sm">Enter your birthday to see your life element</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -397,25 +492,27 @@ export default function ProfilePage() {
                     value={interests}
                     onChange={(e) => setInterests(e.target.value)}
                     rows={3}
+                    maxLength={500}
                     className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
                     placeholder="e.g., Feng Shui, I Ching, meditation, yoga..."
                   />
+                  <p className="text-xs text-stone-400 mt-1 text-right">{interests.length}/500</p>
                 </div>
 
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-100">
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-5 border border-amber-200">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
-                        <Coins className="w-6 h-6 text-amber-600" />
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <Coins className="w-7 h-7 text-white" />
                       </div>
                       <div>
                         <p className="text-sm text-stone-500">My Coins</p>
-                        <p className="text-2xl font-bold text-amber-600">{points.toLocaleString()}</p>
+                        <p className="text-3xl font-bold text-amber-700">{points.toLocaleString()}</p>
                       </div>
                     </div>
-                    <div className="text-right text-sm text-stone-500">
-                      <p>Complete profile for bonus!</p>
-                      <p className="text-emerald-600 font-semibold">+100 coins</p>
+                    <div className="text-right">
+                      <p className="text-sm text-stone-500">Complete profile bonus</p>
+                      <p className="text-xl font-bold text-emerald-600">+100 coins</p>
                     </div>
                   </div>
                 </div>
@@ -423,7 +520,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleSaveProfile}
                   disabled={saving}
-                  className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+                  className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                 >
                   {saving ? (
                     <span className="flex items-center justify-center gap-2">
@@ -441,8 +538,8 @@ export default function ProfilePage() {
             )}
 
             {activeTab === 'password' && (
-              <div className="space-y-6">
-                <div className="bg-stone-50 rounded-xl p-4 mb-6">
+              <div className="space-y-6 max-w-md mx-auto">
+                <div className="bg-stone-50 rounded-xl p-4">
                   <p className="text-sm text-stone-600">
                     Please enter your current password and new password to change your login password. New password must be at least 6 characters.
                   </p>
@@ -476,7 +573,7 @@ export default function ProfilePage() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       className="w-full px-4 py-3 pr-12 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                      placeholder="Enter new password"
+                      placeholder="Enter new password (min 6 chars)"
                     />
                     <button
                       type="button"
@@ -491,7 +588,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleUpdatePassword}
                   disabled={saving || !currentPassword || !newPassword}
-                  className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+                  className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                 >
                   {saving ? (
                     <span className="flex items-center justify-center gap-2">
@@ -513,13 +610,19 @@ export default function ProfilePage() {
                 <div className="bg-stone-50 rounded-xl p-6">
                   <h3 className="font-semibold text-stone-800 mb-4">Account Info</h3>
                   <div className="space-y-3 text-sm">
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-stone-500">Email</span>
-                      <span className="text-stone-800">{user?.email}</span>
+                      <span className="text-stone-800 font-medium">{user?.email}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-stone-500">Role</span>
-                      <span className="text-stone-800">{profile?.role === 'admin' ? 'Admin' : 'Member'}</span>
+                      <span className={`font-medium ${profile?.role === 'admin' ? 'text-emerald-600' : 'text-stone-800'}`}>
+                        {profile?.role === 'admin' ? '👑 Admin' : 'Member'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-stone-500">Member since</span>
+                      <span className="text-stone-800">{user?.created_at ? formatDate(user.created_at) : '-'}</span>
                     </div>
                   </div>
                 </div>
@@ -529,7 +632,7 @@ export default function ProfilePage() {
                   <div className="grid grid-cols-2 gap-3">
                     <a
                       href="/fortune"
-                      className="flex items-center gap-2 p-3 bg-white rounded-xl hover:bg-emerald-50 transition-colors border border-stone-100"
+                      className="flex items-center gap-2 p-3 bg-white rounded-xl hover:bg-amber-50 transition-colors border border-stone-100"
                     >
                       <Star className="w-5 h-5 text-amber-500" />
                       <span className="text-stone-700 text-sm">Fortune Center</span>
