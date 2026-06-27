@@ -4,36 +4,40 @@ import { useState, useEffect } from 'react'
 import { supabase, ADMIN_EMAIL } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import SidebarLayout from '@/components/SidebarLayout'
-import { Users, Trash2, Search, RefreshCw, Eye } from 'lucide-react'
+import { Users, Trash2, Search, RefreshCw, Eye, Coins, Plus, Minus, X, Check } from 'lucide-react'
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [adjustingUser, setAdjustingUser] = useState<any>(null)
+  const [adjustAmount, setAdjustAmount] = useState('')
+  const [adjustReason, setAdjustReason] = useState('')
+  const [adjusting, setAdjusting] = useState(false)
+
+  const fetchUsers = async () => {
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      if (!authUser || authUser.email !== ADMIN_EMAIL) {
+        window.location.href = '/login'
+        return
+      }
+
+      const { data: profiles } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      setUsers(profiles || [])
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    async function fetchUsers() {
-      try {
-        const { data: { user: authUser } } = await supabase.auth.getUser()
-        if (!authUser || authUser.email !== ADMIN_EMAIL) {
-          window.location.href = '/login'
-          return
-        }
-
-        const { data: profiles } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .order('created_at', { ascending: false })
-        
-        setUsers(profiles || [])
-      } catch (error) {
-        console.error('Error fetching users:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchUsers()
   }, [])
 
@@ -65,15 +69,74 @@ export default function AdminUsersPage() {
     }
   }
 
+  const handleAdjustPoints = async (type: 'add' | 'subtract') => {
+    if (!adjustingUser || !adjustAmount) return
+
+    const amount = parseInt(adjustAmount)
+    if (isNaN(amount) || amount <= 0) {
+      alert('Please enter a valid positive number')
+      return
+    }
+
+    const finalAmount = type === 'add' ? amount : -amount
+
+    setAdjusting(true)
+
+    try {
+      const currentPoints = adjustingUser.points || 0
+      const newPoints = currentPoints + finalAmount
+
+      if (newPoints < 0) {
+        alert('Insufficient points to deduct')
+        return
+      }
+
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ points: newPoints })
+        .eq('id', adjustingUser.id)
+
+      if (error) {
+        alert('Adjustment failed: ' + error.message)
+        return
+      }
+
+      await supabase
+        .from('point_transactions')
+        .insert({
+          user_id: adjustingUser.id,
+          description: `${type === 'add' ? 'Admin bonus' : 'Admin deduction'}${adjustReason ? ` - ${adjustReason}` : ''}`,
+          points: finalAmount
+        })
+
+      setUsers(users.map((u: any) => 
+        u.id === adjustingUser.id 
+          ? { ...u, points: newPoints }
+          : u
+      ))
+
+      alert(`Points ${type === 'add' ? 'added' : 'deducted'} successfully!`)
+      setAdjustingUser(null)
+      setAdjustAmount('')
+      setAdjustReason('')
+    } catch (error: any) {
+      console.error('Error adjusting points:', error)
+      alert('Adjustment failed: ' + (error?.message || ''))
+    } finally {
+      setAdjusting(false)
+    }
+  }
+
   const filteredUsers = users.filter((u: any) => 
-    u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    u.nickname?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   if (loading) {
     return (
       <SidebarLayout>
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
               <span className="text-2xl">☯</span>
@@ -87,17 +150,23 @@ export default function AdminUsersPage() {
 
   return (
     <SidebarLayout>
-      <div className="p-8">
+      <div className="p-6 md:p-8">
         <div className="max-w-6xl">
-          <div className="mb-8">
+          <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-stone-800">Manage Users</h1>
               <p className="text-stone-500 mt-1">View and manage all registered users</p>
             </div>
+            <div className="flex items-center gap-3">
+              <div className="bg-white rounded-xl px-4 py-2 border border-stone-200">
+                <span className="text-stone-500 text-sm">Total Users: </span>
+                <span className="font-bold text-emerald-600">{users.length}</span>
+              </div>
+            </div>
           </div>
 
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-2xl shadow-lg p-6 border border-stone-100">
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
               <input
@@ -109,8 +178,8 @@ export default function AdminUsersPage() {
               />
             </div>
             <button
-              onClick={() => window.location.reload()}
-              className="ml-4 flex items-center gap-2 px-4 py-3 bg-stone-100 text-stone-700 rounded-xl hover:bg-stone-200 transition-colors"
+              onClick={fetchUsers}
+              className="flex items-center gap-2 px-4 py-3 bg-stone-100 text-stone-700 rounded-xl hover:bg-stone-200 transition-colors"
             >
               <RefreshCw className="w-5 h-5" />
               Refresh
@@ -136,10 +205,17 @@ export default function AdminUsersPage() {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full flex items-center justify-center">
                           <span className="text-stone-600 font-semibold">
-                            {user.name?.charAt(0) || 'U'}
+                            {user.name?.charAt(0) || user.nickname?.charAt(0) || user.email?.charAt(0).toUpperCase() || 'U'}
                           </span>
                         </div>
-                        <span className="font-medium text-stone-800">{user.name || 'N/A'}</span>
+                        <div>
+                          <span className="font-medium text-stone-800 block">
+                            {user.nickname || user.name || 'N/A'}
+                          </span>
+                          {user.nickname && user.name && (
+                            <span className="text-xs text-stone-400">{user.name}</span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="py-4 px-4 text-stone-600">{user.email}</td>
@@ -152,12 +228,24 @@ export default function AdminUsersPage() {
                         {user.role === 'admin' ? 'Admin' : 'User'}
                       </span>
                     </td>
-                    <td className="py-4 px-4 text-right font-semibold text-amber-600">{user.points || 0}</td>
+                    <td className="py-4 px-4 text-right">
+                      <span className="font-bold text-amber-600 text-lg">
+                        {(user.points || 0).toLocaleString()}
+                      </span>
+                    </td>
                     <td className="py-4 px-4 text-stone-500 text-sm">{formatDate(user.created_at)}</td>
                     <td className="py-4 px-4">
                       <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 text-stone-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="View details">
-                          <Eye className="w-5 h-5" />
+                        <button
+                          onClick={() => {
+                            setAdjustingUser(user)
+                            setAdjustAmount('')
+                            setAdjustReason('')
+                          }}
+                          className="p-2 text-amber-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                          title="Adjust points"
+                        >
+                          <Coins className="w-5 h-5" />
                         </button>
                         {user.email !== ADMIN_EMAIL && (
                           <button
@@ -190,6 +278,98 @@ export default function AdminUsersPage() {
         </div>
         </div>
       </div>
+
+      {/* Points Adjustment Modal */}
+      {adjustingUser && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-6 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                    <Coins className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">Adjust Points</h3>
+                    <p className="text-amber-100 text-sm">{adjustingUser.email}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setAdjustingUser(null)
+                    setAdjustAmount('')
+                    setAdjustReason('')
+                  }}
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-5">
+              <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                <div className="flex items-center justify-between">
+                  <span className="text-stone-600">Current Points</span>
+                  <span className="text-2xl font-bold text-amber-600">
+                    {(adjustingUser.points || 0).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-2">
+                  Adjustment Amount
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={adjustAmount}
+                  onChange={(e) => setAdjustAmount(e.target.value)}
+                  placeholder="Enter points amount"
+                  className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-2">
+                  Reason (optional)
+                </label>
+                <input
+                  type="text"
+                  value={adjustReason}
+                  onChange={(e) => setAdjustReason(e.target.value)}
+                  placeholder="e.g., Bonus, Correction, Promotion"
+                  className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <button
+                  onClick={() => handleAdjustPoints('subtract')}
+                  disabled={adjusting || !adjustAmount}
+                  className="flex items-center justify-center gap-2 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
+                >
+                  <Minus className="w-5 h-5" />
+                  Deduct
+                </button>
+                <button
+                  onClick={() => handleAdjustPoints('add')}
+                  disabled={adjusting || !adjustAmount}
+                  className="flex items-center justify-center gap-2 py-3 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                >
+                  {adjusting ? (
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Plus className="w-5 h-5" />
+                  )}
+                  Add Points
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </SidebarLayout>
   )
 }

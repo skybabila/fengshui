@@ -4,10 +4,32 @@ import { useState, useEffect } from 'react'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import SidebarLayout from '@/components/SidebarLayout'
-import { User, Lock, Camera, Coins, Calendar, Star, Settings, ArrowLeft, Save, Eye, EyeOff } from 'lucide-react'
+import { User, Lock, Camera, Coins, Star, Settings, Save, Eye, EyeOff, Sparkles } from 'lucide-react'
 
-const zodiacOptions = ['Rat', 'Ox', 'Tiger', 'Rabbit', 'Dragon', 'Snake', 'Horse', 'Goat', 'Monkey', 'Rooster', 'Dog', 'Pig']
 const elementOptions = ['Metal', 'Wood', 'Water', 'Fire', 'Earth']
+
+const zodiacAnimals = [
+  { name: 'Rat', emoji: '🐀', chinese: '鼠' },
+  { name: 'Ox', emoji: '🐂', chinese: '牛' },
+  { name: 'Tiger', emoji: '🐅', chinese: '虎' },
+  { name: 'Rabbit', emoji: '🐇', chinese: '兔' },
+  { name: 'Dragon', emoji: '🐉', chinese: '龙' },
+  { name: 'Snake', emoji: '🐍', chinese: '蛇' },
+  { name: 'Horse', emoji: '🐴', chinese: '马' },
+  { name: 'Goat', emoji: '🐐', chinese: '羊' },
+  { name: 'Monkey', emoji: '🐒', chinese: '猴' },
+  { name: 'Rooster', emoji: '🐓', chinese: '鸡' },
+  { name: 'Dog', emoji: '🐕', chinese: '狗' },
+  { name: 'Pig', emoji: '🐖', chinese: '猪' },
+]
+
+function getZodiacFromBirthday(birthday: string): { name: string; emoji: string; chinese: string } | null {
+  if (!birthday) return null
+  const year = new Date(birthday).getFullYear()
+  if (isNaN(year)) return null
+  const index = (year - 1900) % 12
+  return zodiacAnimals[index]
+}
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null)
@@ -18,7 +40,6 @@ export default function ProfilePage() {
   
   const [nickname, setNickname] = useState('')
   const [birthday, setBirthday] = useState('')
-  const [zodiacSign, setZodiacSign] = useState('')
   const [favoriteElement, setFavoriteElement] = useState('')
   const [interests, setInterests] = useState('')
   
@@ -29,6 +50,7 @@ export default function ProfilePage() {
   
   const [avatarUrl, setAvatarUrl] = useState('')
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
     async function fetchData() {
@@ -45,7 +67,6 @@ export default function ProfilePage() {
         
         setNickname(userProfile?.nickname || userProfile?.name || '')
         setBirthday(userProfile?.birthday || '')
-        setZodiacSign(userProfile?.zodiac_sign || '')
         setFavoriteElement(userProfile?.favorite_element || '')
         setInterests(userProfile?.interests || '')
         setAvatarUrl(userProfile?.avatar_url || '')
@@ -58,6 +79,13 @@ export default function ProfilePage() {
 
     fetchData()
   }, [])
+
+  const zodiac = getZodiacFromBirthday(birthday)
+
+  const showSuccess = (msg: string) => {
+    setSuccessMessage(msg)
+    setTimeout(() => setSuccessMessage(''), 3000)
+  }
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -107,7 +135,7 @@ export default function ProfilePage() {
       const updatedProfile = await getUserProfile(user.id)
       setProfile(updatedProfile)
 
-      alert('Avatar updated successfully!')
+      showSuccess('Avatar updated successfully!')
     } catch (error) {
       console.error('Error uploading avatar:', error)
       alert('Avatar upload failed')
@@ -122,25 +150,35 @@ export default function ProfilePage() {
     setSaving(true)
 
     try {
-      await supabase
+      const zodiacSign = zodiac?.name || null
+      
+      const updateData: any = {
+        nickname: nickname || null,
+        birthday: birthday || null,
+        zodiac_sign: zodiacSign,
+        favorite_element: favoriteElement || null,
+        interests: interests || null,
+        updated_at: new Date().toISOString(),
+      }
+
+      const { error } = await supabase
         .from('user_profiles')
-        .update({
-          nickname,
-          birthday,
-          zodiac_sign: zodiacSign,
-          favorite_element: favoriteElement,
-          interests,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq('id', user.id)
+
+      if (error) {
+        console.error('Update error:', error)
+        alert('Save failed: ' + error.message)
+        return
+      }
 
       const updatedProfile = await getUserProfile(user.id)
       setProfile(updatedProfile)
 
-      alert('Profile saved successfully!')
-    } catch (error) {
+      showSuccess('Profile saved successfully!')
+    } catch (error: any) {
       console.error('Error saving profile:', error)
-      alert('Save failed, please try again later')
+      alert('Save failed: ' + (error?.message || 'Please try again later'))
     } finally {
       setSaving(false)
     }
@@ -181,10 +219,10 @@ export default function ProfilePage() {
 
       setCurrentPassword('')
       setNewPassword('')
-      alert('Password changed successfully!')
-    } catch (error) {
+      showSuccess('Password changed successfully!')
+    } catch (error: any) {
       console.error('Error updating password:', error)
-      alert('Password change failed')
+      alert('Password change failed: ' + (error?.message || ''))
     } finally {
       setSaving(false)
     }
@@ -193,7 +231,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <SidebarLayout>
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
               <span className="text-2xl">☯</span>
@@ -209,20 +247,27 @@ export default function ProfilePage() {
 
   return (
     <SidebarLayout>
-      <div className="p-8">
+      <div className="p-6 md:p-8">
         <div className="max-w-2xl">
 
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          {successMessage && (
+            <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 font-medium flex items-center gap-2">
+              <Sparkles className="w-5 h-5" />
+              {successMessage}
+            </div>
+          )}
+
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-stone-100">
           <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-6 text-white">
             <h1 className="text-2xl font-bold mb-2">Profile Center</h1>
             <p className="text-emerald-100">Manage your personal information and settings</p>
           </div>
 
           <div className="border-b border-stone-200">
-            <div className="flex gap-4 px-6">
+            <div className="flex gap-4 px-6 overflow-x-auto">
               <button
                 onClick={() => setActiveTab('profile')}
-                className={`py-4 px-2 font-medium transition-colors ${
+                className={`py-4 px-2 font-medium transition-colors whitespace-nowrap ${
                   activeTab === 'profile'
                     ? 'text-emerald-600 border-b-2 border-emerald-600'
                     : 'text-stone-500 hover:text-stone-700'
@@ -233,7 +278,7 @@ export default function ProfilePage() {
               </button>
               <button
                 onClick={() => setActiveTab('password')}
-                className={`py-4 px-2 font-medium transition-colors ${
+                className={`py-4 px-2 font-medium transition-colors whitespace-nowrap ${
                   activeTab === 'password'
                     ? 'text-emerald-600 border-b-2 border-emerald-600'
                     : 'text-stone-500 hover:text-stone-700'
@@ -244,7 +289,7 @@ export default function ProfilePage() {
               </button>
               <button
                 onClick={() => setActiveTab('settings')}
-                className={`py-4 px-2 font-medium transition-colors ${
+                className={`py-4 px-2 font-medium transition-colors whitespace-nowrap ${
                   activeTab === 'settings'
                     ? 'text-emerald-600 border-b-2 border-emerald-600'
                     : 'text-stone-500 hover:text-stone-700'
@@ -316,17 +361,20 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-2">Zodiac Sign</label>
-                    <select
-                      value={zodiacSign}
-                      onChange={(e) => setZodiacSign(e.target.value)}
-                      className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    >
-                      <option value="">Please select</option>
-                      {zodiacOptions.map(z => (
-                        <option key={z} value={z}>{z}</option>
-                      ))}
-                    </select>
+                    <label className="block text-sm font-medium text-stone-700 mb-2">Your Zodiac Sign</label>
+                    <div className="w-full px-4 py-3 border border-stone-200 rounded-xl bg-stone-50">
+                      {zodiac ? (
+                        <div className="flex items-center gap-3">
+                          <span className="text-3xl">{zodiac.emoji}</span>
+                          <div>
+                            <p className="font-semibold text-stone-800">{zodiac.name}</p>
+                            <p className="text-sm text-stone-500">{zodiac.chinese} 生肖</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-stone-400">Select your birthday to see your zodiac</p>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-stone-700 mb-2">Favorite Element</label>
@@ -354,12 +402,20 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4">
-                  <div className="flex items-center gap-3">
-                    <Coins className="w-6 h-6 text-amber-600" />
-                    <div>
-                      <p className="text-sm text-stone-500">My Coins</p>
-                      <p className="text-xl font-bold text-amber-600">{points}</p>
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-100">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
+                        <Coins className="w-6 h-6 text-amber-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-stone-500">My Coins</p>
+                        <p className="text-2xl font-bold text-amber-600">{points.toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div className="text-right text-sm text-stone-500">
+                      <p>Complete profile for bonus!</p>
+                      <p className="text-emerald-600 font-semibold">+100 coins</p>
                     </div>
                   </div>
                 </div>
@@ -367,7 +423,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleSaveProfile}
                   disabled={saving}
-                  className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+                  className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                 >
                   {saving ? (
                     <span className="flex items-center justify-center gap-2">
@@ -435,7 +491,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleUpdatePassword}
                   disabled={saving || !currentPassword || !newPassword}
-                  className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+                  className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                 >
                   {saving ? (
                     <span className="flex items-center justify-center gap-2">
@@ -462,10 +518,6 @@ export default function ProfilePage() {
                       <span className="text-stone-800">{user?.email}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-stone-500">Registered</span>
-                      <span className="text-stone-800">{formatDate(user?.created_at)}</span>
-                    </div>
-                    <div className="flex justify-between">
                       <span className="text-stone-500">Role</span>
                       <span className="text-stone-800">{profile?.role === 'admin' ? 'Admin' : 'Member'}</span>
                     </div>
@@ -477,36 +529,36 @@ export default function ProfilePage() {
                   <div className="grid grid-cols-2 gap-3">
                     <a
                       href="/fortune"
-                      className="flex items-center gap-2 p-3 bg-white rounded-xl hover:bg-emerald-50 transition-colors"
+                      className="flex items-center gap-2 p-3 bg-white rounded-xl hover:bg-emerald-50 transition-colors border border-stone-100"
                     >
                       <Star className="w-5 h-5 text-amber-500" />
-                      <span className="text-stone-700">Fortune Center</span>
+                      <span className="text-stone-700 text-sm">Fortune Center</span>
                     </a>
                     <a
                       href="/wish-wall"
-                      className="flex items-center gap-2 p-3 bg-white rounded-xl hover:bg-pink-50 transition-colors"
+                      className="flex items-center gap-2 p-3 bg-white rounded-xl hover:bg-pink-50 transition-colors border border-stone-100"
                     >
                       <span className="text-lg">💝</span>
-                      <span className="text-stone-700">My Wishes</span>
+                      <span className="text-stone-700 text-sm">My Wishes</span>
                     </a>
                     <a
                       href="/user/points"
-                      className="flex items-center gap-2 p-3 bg-white rounded-xl hover:bg-amber-50 transition-colors"
+                      className="flex items-center gap-2 p-3 bg-white rounded-xl hover:bg-amber-50 transition-colors border border-stone-100"
                     >
                       <Coins className="w-5 h-5 text-amber-600" />
-                      <span className="text-stone-700">Coin History</span>
+                      <span className="text-stone-700 text-sm">Coin History</span>
                     </a>
                     <a
                       href="/user/prayer"
-                      className="flex items-center gap-2 p-3 bg-white rounded-xl hover:bg-orange-50 transition-colors"
+                      className="flex items-center gap-2 p-3 bg-white rounded-xl hover:bg-orange-50 transition-colors border border-stone-100"
                     >
                       <span className="text-lg">🙏</span>
-                      <span className="text-stone-700">Prayer Center</span>
+                      <span className="text-stone-700 text-sm">Prayer Center</span>
                     </a>
                   </div>
                 </div>
 
-                <div className="bg-red-50 rounded-xl p-4">
+                <div className="bg-red-50 rounded-xl p-4 border border-red-100">
                   <p className="text-sm text-red-600">
                     To delete your account or for other issues, please contact the administrator.
                   </p>
