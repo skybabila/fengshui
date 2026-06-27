@@ -207,8 +207,8 @@ export default function MonthlyFortunePage() {
 
   return (
     <SidebarLayout>
-      <div className="p-8">
-        <div className="max-w-2xl">
+      <div className="p-6 md:p-8">
+        <div className="max-w-2xl mx-auto">
             {/* Error Message */}
             {errorMsg && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm mb-6">

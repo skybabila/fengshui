@@ -98,8 +98,8 @@ export default function FortunePage() {
 
   return (
     <SidebarLayout>
-      <div className="p-8">
-        <div className="max-w-3xl">
+      <div className="p-6 md:p-8">
+        <div className="max-w-4xl mx-auto">
             {/* Welcome Header */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-stone-800 mb-2">Welcome to Fortune Center</h2>

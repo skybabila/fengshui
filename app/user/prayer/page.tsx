@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import SidebarLayout from '@/components/SidebarLayout'
-import { Flame, Coins, Star, Bell, Heart, Gem, Sparkles, Info, Clock, CheckCircle2 } from 'lucide-react'
+import { Flame, Coins, Star, Heart, Sparkles, Info, Clock, CheckCircle2, TrendingUp } from 'lucide-react'
 
 const prayerTypes = [
   { 
@@ -14,7 +15,8 @@ const prayerTypes = [
     cost: 10, 
     description: 'Traditional incense offering for peace and blessings',
     longDesc: 'Light a stick of incense and let the smoke carry your prayers to the heavens. A timeless tradition for seeking peace, health, and good fortune.',
-    benefits: ['Peace of mind', 'Family health', 'Good luck']
+    benefits: ['Peace of mind', 'Family health', 'Good luck'],
+    gradient: 'from-amber-400 to-orange-500'
   },
   { 
     id: 'worship', 
@@ -23,7 +25,8 @@ const prayerTypes = [
     cost: 20, 
     description: 'Deep spiritual connection and devotion',
     longDesc: 'Offer your most sincere prayers with full devotion. This prayer is for those seeking deeper spiritual connection and guidance in life.',
-    benefits: ['Spiritual growth', 'Inner peace', 'Divine guidance']
+    benefits: ['Spiritual growth', 'Inner peace', 'Divine guidance'],
+    gradient: 'from-violet-400 to-purple-500'
   },
   { 
     id: 'light', 
@@ -32,7 +35,8 @@ const prayerTypes = [
     cost: 15, 
     description: 'Light offering for wisdom and enlightenment',
     longDesc: 'Offer a light to illuminate the path ahead. Symbolizes wisdom, clarity, and the dispelling of darkness from your life.',
-    benefits: ['Wisdom', 'Clarity', 'Bright future']
+    benefits: ['Wisdom', 'Clarity', 'Bright future'],
+    gradient: 'from-yellow-400 to-amber-500'
   },
   { 
     id: 'wish', 
@@ -41,7 +45,8 @@ const prayerTypes = [
     cost: 30, 
     description: 'Special prayer for making your wishes come true',
     longDesc: 'A powerful prayer dedicated to making your deepest wishes come true. Combined with sincere heart, your wishes may be answered.',
-    benefits: ['Wish fulfillment', 'Dreams come true', 'Good fortune']
+    benefits: ['Wish fulfillment', 'Dreams come true', 'Good fortune'],
+    gradient: 'from-pink-400 to-rose-500'
   },
 ]
 
@@ -54,11 +59,19 @@ export default function PrayerPage() {
   const [prayerResult, setPrayerResult] = useState<string>('')
   const [recentPrayers, setRecentPrayers] = useState<any[]>([])
   const [totalPrayers, setTotalPrayers] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [pageError, setPageError] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const { data: { user: authUser } } = await supabase.auth.getUser()
+        setPageError(null)
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+        
+        if (authError) {
+          console.error('Auth error:', authError)
+        }
+        
         if (!authUser) {
           window.location.href = '/login'
           return
@@ -68,17 +81,31 @@ export default function PrayerPage() {
         const userProfile = await getUserProfile(authUser.id)
         setProfile(userProfile)
 
-        const { data: prayers } = await supabase
-          .from('prayers')
-          .select('*')
-          .eq('user_id', authUser.id)
-          .order('created_at', { ascending: false })
-          .limit(5)
-        
-        setRecentPrayers(prayers || [])
-        setTotalPrayers(prayers?.length || 0)
+        // Fetch prayers with error handling
+        try {
+          const { data: prayers, error: prayersError } = await supabase
+            .from('prayers')
+            .select('*')
+            .eq('user_id', authUser.id)
+            .order('created_at', { ascending: false })
+            .limit(5)
+          
+          if (prayersError) {
+            console.error('Error fetching prayers:', prayersError)
+            // Don't fail the whole page, just show empty
+          }
+          
+          setRecentPrayers(prayers || [])
+          setTotalPrayers(prayers?.length || 0)
+        } catch (prayerErr) {
+          console.error('Prayer fetch exception:', prayerErr)
+          // Continue anyway
+        }
       } catch (error) {
         console.error('Error fetching data:', error)
+        setPageError('Failed to load page. Please try again.')
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -113,20 +140,42 @@ export default function PrayerPage() {
     setIsPraying(true)
 
     try {
-      await supabase
+      // Deduct points
+      const { error: updateError } = await supabase
         .from('user_profiles')
         .update({ points: points - prayer.cost })
         .eq('id', user.id)
 
-      const { data: newPrayer } = await supabase
+      if (updateError) {
+        console.error('Points update error:', updateError)
+        alert('Failed to deduct points: ' + updateError.message)
+        setIsPraying(false)
+        return
+      }
+
+      // Insert prayer record
+      const { error: insertError } = await supabase
         .from('prayers')
         .insert({
           user_id: user.id,
           prayer_type: prayer.name,
           points_spent: prayer.cost,
         })
-        .select()
-        .single()
+
+      if (insertError) {
+        console.error('Prayer insert error:', insertError)
+        alert('Failed to record prayer: ' + insertError.message)
+        // Still show success since points were deducted
+      }
+
+      // Record transaction
+      await supabase
+        .from('point_transactions')
+        .insert({
+          user_id: user.id,
+          description: `${prayer.name} prayer`,
+          points: -prayer.cost
+        })
 
       const randomMessage = prayerMessages[Math.floor(Math.random() * prayerMessages.length)]
       setPrayerResult(randomMessage)
@@ -135,20 +184,64 @@ export default function PrayerPage() {
       const updatedProfile = await getUserProfile(user.id)
       setProfile(updatedProfile)
 
-      const { data: prayers } = await supabase
-        .from('prayers')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(5)
+      // Refresh prayers list
+      try {
+        const { data: prayers } = await supabase
+          .from('prayers')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5)
+        
+        setRecentPrayers(prayers || [])
+      } catch (e) {
+        console.error('Error refreshing prayers:', e)
+      }
       
-      setRecentPrayers(prayers || [])
       setTotalPrayers(prev => prev + 1)
     } catch (error) {
       console.error('Error performing prayer:', error)
+      alert('An error occurred. Please try again.')
     } finally {
       setIsPraying(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
+              <Flame className="w-8 h-8 text-orange-500" />
+            </div>
+            <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
+          </div>
+        </div>
+      </SidebarLayout>
+    )
+  }
+
+  if (pageError) {
+    return (
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center max-w-md">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">😔</span>
+            </div>
+            <h2 className="text-xl font-semibold text-stone-700 mb-2">Something went wrong</h2>
+            <p className="text-stone-500 mb-4">{pageError}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors"
+            >
+              Reload Page
+            </button>
+          </div>
+        </div>
+      </SidebarLayout>
+    )
   }
 
   return (
@@ -256,7 +349,7 @@ export default function PrayerPage() {
                     </div>
                     {selectedPrayer === prayer.id && (
                       <div className="absolute top-4 right-4">
-                        <div className="w-6 h-6 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center shadow-md">
+                        <div className={`w-6 h-6 bg-gradient-to-br ${prayer.gradient} rounded-full flex items-center justify-center shadow-md`}>
                           <Star className="w-4 h-4 text-white fill-white" />
                         </div>
                       </div>
@@ -268,7 +361,7 @@ export default function PrayerPage() {
 
             {/* Selected Prayer Details */}
             {selectedPrayerData && (
-              <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-6 mb-6 border border-orange-200">
+              <div className={`bg-gradient-to-br ${selectedPrayerData.gradient} bg-opacity-10 rounded-2xl p-6 mb-6 border-2 border-current border-opacity-20`}>
                 <div className="flex items-start gap-4">
                   <div className="text-5xl">{selectedPrayerData.emoji}</div>
                   <div className="flex-1">
@@ -276,7 +369,7 @@ export default function PrayerPage() {
                     <p className="text-stone-600 mb-4">{selectedPrayerData.longDesc}</p>
                     <div className="flex flex-wrap gap-2 mb-4">
                       {selectedPrayerData.benefits.map((benefit, i) => (
-                        <span key={i} className="inline-flex items-center gap-1 px-3 py-1 bg-white rounded-full text-sm text-orange-700 border border-orange-200">
+                        <span key={i} className="inline-flex items-center gap-1 px-3 py-1 bg-white rounded-full text-sm text-stone-700 border border-stone-200">
                           ✨ {benefit}
                         </span>
                       ))}
@@ -310,9 +403,20 @@ export default function PrayerPage() {
             </button>
 
             {selectedPrayer && points < (selectedPrayerData?.cost || 0) && (
-              <p className="text-center text-red-500 text-sm mt-3">
-                Not enough coins. Need {(selectedPrayerData?.cost || 0) - points} more coins.
-              </p>
+              <div className="mt-4 p-4 bg-red-50 rounded-xl border border-red-200">
+                <p className="text-red-600 text-sm text-center mb-3">
+                  Not enough coins. Need {(selectedPrayerData?.cost || 0) - points} more coins.
+                </p>
+                <Link
+                  href="/user/points"
+                  className="block w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl text-center hover:shadow-lg transition-all"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <TrendingUp className="w-4 h-4" />
+                    Earn More Coins
+                  </span>
+                </Link>
+              </div>
             )}
 
             {/* Recent Prayers */}
@@ -346,6 +450,16 @@ export default function PrayerPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {recentPrayers.length === 0 && (
+              <div className="mt-8 bg-white rounded-2xl shadow-lg p-12 text-center border border-stone-100">
+                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Flame className="w-8 h-8 text-orange-400" />
+                </div>
+                <p className="text-stone-500 mb-2">No prayers yet</p>
+                <p className="text-stone-400 text-sm">Start your spiritual journey with a prayer above!</p>
               </div>
             )}
           </>

@@ -1,12 +1,24 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import SidebarLayout from '@/components/SidebarLayout'
-import { Heart, Send, Sparkles, Lock, Coins, Trash2, CheckCircle, PartyPopper, Star, Clock } from 'lucide-react'
+import { Heart, Send, Sparkles, Lock, Coins, Trash2, CheckCircle, PartyPopper, Star, Clock, Sparkle } from 'lucide-react'
 
 const WISH_COST = 10
+
+const wishBackgrounds = [
+  { from: 'from-pink-100', to: 'to-rose-100', border: 'border-pink-200' },
+  { from: 'from-purple-100', to: 'to-violet-100', border: 'border-purple-200' },
+  { from: 'from-blue-100', to: 'to-cyan-100', border: 'border-blue-200' },
+  { from: 'from-emerald-100', to: 'to-teal-100', border: 'border-emerald-200' },
+  { from: 'from-amber-100', to: 'to-orange-100', border: 'border-amber-200' },
+  { from: 'from-red-100', to: 'to-pink-100', border: 'border-red-200' },
+  { from: 'from-indigo-100', to: 'to-purple-100', border: 'border-indigo-200' },
+  { from: 'from-cyan-100', to: 'to-blue-100', border: 'border-cyan-200' },
+]
 
 export default function WishWallPage() {
   const [wishes, setWishes] = useState<any[]>([])
@@ -15,7 +27,7 @@ export default function WishWallPage() {
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [posting, setPosting] = useState(false)
-  const [activeTab, setActiveTab] = useState<'active' | 'fulfilled'>('active')
+  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'fulfilled'>('all')
 
   useEffect(() => {
     async function fetchData() {
@@ -26,15 +38,20 @@ export default function WishWallPage() {
           return
         }
         setUser(authUser)
+        
         const userProfile = await getUserProfile(authUser.id)
         setProfile(userProfile)
 
-        const { data: wishData } = await supabase
+        const { data: wishData, error } = await supabase
           .from('wishes')
           .select('*')
           .eq('user_id', authUser.id)
           .order('created_at', { ascending: false })
           .limit(100)
+        
+        if (error) {
+          console.error('Error fetching wishes:', error)
+        }
         
         setWishes(wishData || [])
       } catch (error) {
@@ -82,7 +99,7 @@ export default function WishWallPage() {
           points: -WISH_COST
         })
 
-      const { data: newWishData } = await supabase
+      const { data: newWishData, error } = await supabase
         .from('wishes')
         .insert({
           user_id: user.id,
@@ -92,6 +109,12 @@ export default function WishWallPage() {
         })
         .select()
         .single()
+
+      if (error) {
+        console.error('Error inserting wish:', error)
+        alert('Failed to make a wish: ' + error.message)
+        return
+      }
 
       if (newWishData) {
         setWishes([newWishData, ...wishes])
@@ -154,17 +177,8 @@ export default function WishWallPage() {
   const activeWishes = wishes.filter((w: any) => !w.is_fulfilled)
   const fulfilledWishes = wishes.filter((w: any) => w.is_fulfilled)
 
-  const getRandomColor = () => {
-    const colors = [
-      'from-pink-100 to-rose-100 border-pink-200',
-      'from-purple-100 to-violet-100 border-purple-200',
-      'from-blue-100 to-cyan-100 border-blue-200',
-      'from-emerald-100 to-teal-100 border-emerald-200',
-      'from-amber-100 to-orange-100 border-amber-200',
-      'from-red-100 to-pink-100 border-red-200',
-      'from-indigo-100 to-purple-100 border-indigo-200',
-    ]
-    return colors[Math.floor(Math.random() * colors.length)]
+  const getBackground = (index: number) => {
+    return wishBackgrounds[index % wishBackgrounds.length]
   }
 
   if (loading) {
@@ -182,7 +196,13 @@ export default function WishWallPage() {
     )
   }
 
-  const displayWishes = activeTab === 'active' ? activeWishes : fulfilledWishes
+  const displayWishes = activeTab === 'active' 
+    ? activeWishes 
+    : activeTab === 'fulfilled' 
+      ? fulfilledWishes 
+      : wishes
+
+  const userName = profile?.nickname || profile?.name || user?.email?.split('@')[0] || 'Me'
 
   return (
     <SidebarLayout>
@@ -226,6 +246,17 @@ export default function WishWallPage() {
           <div className="bg-white rounded-2xl shadow-lg border border-stone-100 mb-6 overflow-hidden">
             <div className="flex border-b border-stone-100">
               <button
+                onClick={() => setActiveTab('all')}
+                className={`flex-1 py-4 font-medium transition-colors flex items-center justify-center gap-2 ${
+                  activeTab === 'all'
+                    ? 'text-violet-600 border-b-2 border-violet-500 bg-violet-50/50'
+                    : 'text-stone-500 hover:text-stone-700 hover:bg-stone-50'
+                }`}
+              >
+                <Sparkle className="w-4 h-4" />
+                All ({wishes.length})
+              </button>
+              <button
                 onClick={() => setActiveTab('active')}
                 className={`flex-1 py-4 font-medium transition-colors flex items-center justify-center gap-2 ${
                   activeTab === 'active'
@@ -253,59 +284,59 @@ export default function WishWallPage() {
             <div className="p-6">
               {displayWishes.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {displayWishes.map((wish: any, index: number) => (
-                    <div
-                      key={wish.id}
-                      className={`relative border rounded-xl p-5 shadow-sm hover:shadow-md transition-all ${
-                        wish.is_fulfilled
-                          ? 'bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200'
-                          : `bg-gradient-to-br ${getRandomColor()}`
-                      }`}
-                    >
-                      {wish.is_fulfilled && (
-                        <div className="absolute -top-2 -right-2">
-                          <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg">
-                            <PartyPopper className="w-4 h-4 text-white" />
+                  {displayWishes.map((wish: any, index: number) => {
+                    const bg = getBackground(index)
+                    return (
+                      <div
+                        key={wish.id}
+                        className={`relative border-2 rounded-xl p-5 shadow-sm hover:shadow-lg transition-all ${
+                          wish.is_fulfilled
+                            ? 'bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-300'
+                            : `bg-gradient-to-br ${bg.from} ${bg.to} ${bg.border}`
+                        }`}
+                      >
+                        {wish.is_fulfilled && (
+                          <div className="absolute -top-3 -right-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                              <PartyPopper className="w-5 h-5 text-white" />
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      
-                      <div className="flex items-start justify-between mb-3">
-                        <p className="text-stone-700 pr-6 font-medium">{wish.content}</p>
-                      </div>
-                      
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-stone-500">
-                          {profile?.nickname || profile?.name || user?.email?.split('@')[0] || 'Me'}
-                        </span>
-                        <span className="text-stone-400 text-xs">
-                          {wish.is_fulfilled && wish.fulfilled_at
-                            ? `Fulfilled: ${formatDate(wish.fulfilled_at)}`
-                            : formatDate(wish.created_at)}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-white/50">
-                        {!wish.is_fulfilled && (
-                          <button
-                            onClick={() => handleFulfillWish(wish.id)}
-                            className="flex items-center gap-1 px-3 py-1.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100/50 rounded-lg transition-colors text-sm font-medium"
-                            title="Mark as fulfilled"
-                          >
-                            <Star className="w-4 h-4" />
-                            Fulfilled
-                          </button>
                         )}
-                        <button
-                          onClick={() => handleDeleteWish(wish.id)}
-                          className="p-1.5 text-stone-400 hover:text-red-500 hover:bg-white/50 rounded-lg transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        
+                        <div className="mb-3">
+                          <p className="text-stone-700 font-medium leading-relaxed">{wish.content}</p>
+                        </div>
+                        
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-stone-500 font-medium">{userName}</span>
+                          <span className="text-stone-400">
+                            {wish.is_fulfilled && wish.fulfilled_at
+                              ? `✨ ${formatDate(wish.fulfilled_at)}`
+                              : formatDate(wish.created_at)}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-white/50">
+                          {!wish.is_fulfilled && (
+                            <button
+                              onClick={() => handleFulfillWish(wish.id)}
+                              className="flex items-center gap-1 px-3 py-1.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100/50 rounded-lg transition-colors text-sm font-medium"
+                            >
+                              <Star className="w-4 h-4" />
+                              Fulfilled
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDeleteWish(wish.id)}
+                            className="p-1.5 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-12">
@@ -315,11 +346,17 @@ export default function WishWallPage() {
                       <p className="text-stone-500 mb-2">No wishes yet</p>
                       <p className="text-stone-400 text-sm">Make your first wish below!</p>
                     </>
-                  ) : (
+                  ) : activeTab === 'fulfilled' ? (
                     <>
                       <PartyPopper className="w-16 h-16 text-stone-300 mx-auto mb-4" />
                       <p className="text-stone-500 mb-2">No fulfilled wishes yet</p>
                       <p className="text-stone-400 text-sm">May your wishes come true soon! ✨</p>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkle className="w-16 h-16 text-stone-300 mx-auto mb-4" />
+                      <p className="text-stone-500 mb-2">No wishes yet</p>
+                      <p className="text-stone-400 text-sm">Start making wishes below!</p>
                     </>
                   )}
                 </div>
@@ -370,7 +407,7 @@ export default function WishWallPage() {
                 </div>
                 {(profile?.points || 0) < WISH_COST && (
                   <p className="mt-3 text-sm text-red-500">
-                    Not enough coins to make a wish. Please visit the profile center to see how to get more coins.
+                    Not enough coins to make a wish. Please visit the coins page to earn more.
                   </p>
                 )}
               </>
@@ -378,9 +415,9 @@ export default function WishWallPage() {
               <div className="flex flex-col items-center justify-center py-8 bg-stone-50 rounded-xl">
                 <Lock className="w-12 h-12 text-stone-400 mb-4" />
                 <p className="text-stone-500 mb-2">Please log in to make a wish</p>
-                <a href="/login" className="text-pink-600 font-medium hover:underline">
+                <Link href="/login" className="text-pink-600 font-medium hover:underline">
                   Login / Register
-                </a>
+                </Link>
               </div>
             )}
           </div>

@@ -70,8 +70,8 @@ export default function AdminDashboard() {
 
   return (
     <SidebarLayout>
-      <div className="p-8">
-        <div className="max-w-6xl">
+      <div className="p-6 md:p-8">
+        <div className="max-w-6xl mx-auto">
           <div className="mb-8">
             <div>
               <h1 className="text-3xl font-bold text-stone-800">Admin Dashboard</h1>
