@@ -30,16 +30,25 @@ const articles = [
     title: 'Understanding the Five Elements in Feng Shui',
     excerpt: 'Learn how the five elements - Wood, Fire, Earth, Metal, and Water - interact and influence your life and environment.',
     image: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=feng%20shui%20five%20elements%20meditation%20peaceful&image_size=landscape_4_3',
+    slug: 'five-elements-feng-shui',
+    date: '2024-01-15',
+    category: 'Feng Shui',
   },
   {
     title: 'Creating Harmonious Spaces',
     excerpt: 'Discover practical tips for arranging your home and workspace to promote positive energy flow and balance.',
     image: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=harmonious%20chinese%20interior%20design%20feng%20shui&image_size=landscape_4_3',
+    slug: 'harmonious-spaces',
+    date: '2024-01-10',
+    category: 'Interior Design',
   },
   {
     title: 'Daily Feng Shui Practices',
     excerpt: 'Simple rituals and practices to align your daily life with natural energy patterns for greater well-being.',
     image: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=morning%20meditation%20zen%20peaceful%20garden&image_size=landscape_4_3',
+    slug: 'daily-feng-shui-practices',
+    date: '2024-01-05',
+    category: 'Daily Practice',
   },
 ]
 
@@ -156,9 +165,10 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-8">
             {articles.map((article, index) => (
-              <article
+              <Link
                 key={index}
-                className="group rounded-2xl overflow-hidden border border-stone-200 hover:shadow-xl transition-all duration-300 animate-fade-in-up cursor-pointer"
+                href={`/articles/${article.slug}`}
+                className="group rounded-2xl overflow-hidden border border-stone-200 hover:shadow-xl transition-all duration-300 animate-fade-in-up"
                 style={{ animationDelay: `${index * 0.15}s` }}
               >
                 <div className="relative h-48 overflow-hidden">
@@ -168,21 +178,28 @@ export default function Home() {
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                  <div className="absolute top-4 left-4">
+                    <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-emerald-700 text-xs font-medium rounded-full">
+                      {article.category}
+                    </span>
+                  </div>
                 </div>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-stone-800 mb-2 group-hover:text-emerald-700 transition-colors">
+                <div className="p-6 bg-white">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs text-stone-400">{article.date}</span>
+                    <span className="text-stone-300">•</span>
+                    <span className="text-xs text-emerald-600 font-medium">5 min read</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-stone-800 mb-2 group-hover:text-emerald-700 transition-colors leading-snug">
                     {article.title}
                   </h3>
-                  <p className="text-stone-500 text-sm line-clamp-2">{article.excerpt}</p>
-                  <Link
-                    href="/articles"
-                    className="inline-flex items-center gap-1 mt-4 text-emerald-600 font-medium text-sm hover:text-emerald-700 transition-colors"
-                  >
-                    Read more <span>→</span>
-                  </Link>
+                  <p className="text-stone-500 text-sm line-clamp-2 mb-4">{article.excerpt}</p>
+                  <div className="inline-flex items-center gap-1 text-emerald-600 font-medium text-sm group-hover:gap-2 transition-all">
+                    Read article <span>→</span>
+                  </div>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
 
