@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import SidebarLayout from '@/components/SidebarLayout'
@@ -192,21 +193,21 @@ export default function UserDashboard() {
               Explore your fortune, make wishes, and pray for blessings. May good luck be with you today!
             </p>
             <div className="flex flex-wrap gap-4">
-              <a
+              <Link
                 href="/fortune/daily"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-white text-emerald-700 font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
               >
                 <Sparkles className="w-5 h-5" />
                 Get Daily Fortune
                 <ChevronRight className="w-4 h-4" />
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/user/profile"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-white/20 backdrop-blur text-white font-semibold rounded-xl hover:bg-white/30 transition-all border border-white/30"
               >
                 <Gift className="w-5 h-5" />
                 Earn Free Coins
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -263,9 +264,9 @@ export default function UserDashboard() {
               <Star className="w-5 h-5 text-amber-500" />
               <h2 className="text-lg font-bold text-stone-800">Today&rsquo;s Fortune</h2>
             </div>
-            <a href="/fortune" className="text-sm text-emerald-600 font-medium hover:text-emerald-700 flex items-center gap-1">
+            <Link href="/fortune" className="text-sm text-emerald-600 font-medium hover:text-emerald-700 flex items-center gap-1">
               View all <ChevronRight className="w-4 h-4" />
-            </a>
+            </Link>
           </div>
 
           {dailyFortune ? (
@@ -317,7 +318,7 @@ export default function UserDashboard() {
             {features.map((feature, index) => {
               const Icon = feature.icon
               return (
-                <a
+                <Link
                   key={index}
                   href={feature.href}
                   className="group bg-white rounded-2xl p-5 shadow-lg border border-stone-100 hover:shadow-xl hover:-translate-y-1 transition-all"
@@ -333,7 +334,7 @@ export default function UserDashboard() {
                     </span>
                     <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
                   </div>
-                </a>
+                </Link>
               )
             })}
           </div>
