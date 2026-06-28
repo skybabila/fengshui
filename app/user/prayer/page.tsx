@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import SidebarLayout from '@/components/SidebarLayout'
-import { Flame, Coins, Star, Heart, Sparkles, Info, Clock, CheckCircle2, TrendingUp, Lightbulb } from 'lucide-react'
+import { Flame, Coins, Star, Heart, Sparkles, Clock, CheckCircle2, TrendingUp, Scroll, Cloud, Sunrise, Mountain, Sun } from 'lucide-react'
 
 const prayerTypes = [
   { 
@@ -16,7 +16,10 @@ const prayerTypes = [
     goal: 'Family Safety & Home Harmony',
     description: 'Ward off negative energy, protect your whole family, and keep your home peaceful and stable.',
     benefits: ['Negative energy removed', 'Family protection', 'Home stability'],
-    gradient: 'from-amber-400 to-orange-500'
+    color: 'from-amber-500 to-orange-600',
+    bgColor: 'bg-amber-50',
+    borderColor: 'border-amber-300',
+    iconBg: 'bg-gradient-to-br from-amber-400 to-orange-500',
   },
   { 
     id: 'light', 
@@ -26,7 +29,10 @@ const prayerTypes = [
     goal: 'Career & Future Opportunities',
     description: 'Pray for wisdom and clear judgment, attract new job chances and brighter career prospects.',
     benefits: ['Wisdom & clarity', 'New opportunities', 'Career growth'],
-    gradient: 'from-yellow-400 to-amber-500'
+    color: 'from-yellow-500 to-amber-600',
+    bgColor: 'bg-yellow-50',
+    borderColor: 'border-yellow-300',
+    iconBg: 'bg-gradient-to-br from-yellow-400 to-amber-500',
   },
   { 
     id: 'worship', 
@@ -36,7 +42,10 @@ const prayerTypes = [
     goal: 'Physical Health & Inner Peace',
     description: 'Calm anxiety, improve physical wellness, and gain long-term stability of body and mind.',
     benefits: ['Anxiety relief', 'Physical wellness', 'Mental balance'],
-    gradient: 'from-violet-400 to-purple-500'
+    color: 'from-violet-500 to-purple-600',
+    bgColor: 'bg-violet-50',
+    borderColor: 'border-violet-300',
+    iconBg: 'bg-gradient-to-br from-violet-400 to-purple-500',
   },
   { 
     id: 'wish', 
@@ -46,9 +55,29 @@ const prayerTypes = [
     goal: 'Wealth, Promotion & Life Goals',
     description: 'Powerful blessing for salary raise, business growth and the realization of your biggest life wishes.',
     benefits: ['Salary increase', 'Business growth', 'Wish fulfillment'],
-    gradient: 'from-pink-400 to-rose-500'
+    color: 'from-pink-500 to-rose-600',
+    bgColor: 'bg-pink-50',
+    borderColor: 'border-pink-300',
+    iconBg: 'bg-gradient-to-br from-pink-400 to-rose-500',
   },
 ]
+
+// Scroll decoration component
+function ScrollDecoration() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Floating clouds/smoke */}
+      <div className="absolute top-10 left-10 w-20 h-20 bg-gradient-to-r from-amber-100/30 to-orange-100/30 rounded-full blur-2xl animate-float"></div>
+      <div className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-r from-orange-100/20 to-amber-100/20 rounded-full blur-3xl animate-float-delayed"></div>
+      <div className="absolute bottom-20 left-1/4 w-24 h-24 bg-gradient-to-r from-yellow-100/20 to-orange-100/20 rounded-full blur-2xl animate-float-slow"></div>
+      
+      {/* Temple pattern overlay */}
+      <div className="absolute inset-0 opacity-5" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c2410c' fill-opacity='1'%3E%3Cpath d='M40 0L0 40L40 80L80 40L40 0zM40 10L10 40L40 70L70 40L40 10z'/%3E%3C/g%3E%3C/svg%3E")`,
+      }}></div>
+    </div>
+  )
+}
 
 export default function PrayerPage() {
   const [user, setUser] = useState<any>(null)
@@ -66,11 +95,7 @@ export default function PrayerPage() {
     async function fetchData() {
       try {
         setPageError(null)
-        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
-        
-        if (authError) {
-          console.error('Auth error:', authError)
-        }
+        const { data: { user: authUser } } = await supabase.auth.getUser()
         
         if (!authUser) {
           window.location.href = '/login'
@@ -81,25 +106,18 @@ export default function PrayerPage() {
         const userProfile = await getUserProfile(authUser.id)
         setProfile(userProfile)
 
-        // Fetch prayers with error handling
         try {
-          const { data: prayers, error: prayersError } = await supabase
+          const { data: prayers } = await supabase
             .from('prayers')
             .select('*')
             .eq('user_id', authUser.id)
             .order('created_at', { ascending: false })
             .limit(50)
           
-          if (prayersError) {
-            console.error('Error fetching prayers:', prayersError)
-            // Don't fail the whole page, just show empty
-          }
-          
           setRecentPrayers(prayers || [])
           setTotalPrayers(prayers?.length || 0)
         } catch (prayerErr) {
           console.error('Prayer fetch exception:', prayerErr)
-          // Continue anyway
         }
       } catch (error) {
         console.error('Error fetching data:', error)
@@ -127,67 +145,49 @@ export default function PrayerPage() {
     }
 
     setIsPraying(true)
-    let pointsDeducted = false
 
     try {
-      // Step 1: Deduct points
-      const { error: updateError, data: updateData } = await supabase
+      const { error: updateError } = await supabase
         .from('user_profiles')
         .update({ points: points - prayer.cost })
         .eq('id', user.id)
         .select()
 
       if (updateError) {
-        console.error('Points update error:', updateError)
         alert('Failed to deduct points: ' + updateError.message)
         return
       }
 
-      pointsDeducted = true
-
-      // Step 2: Insert prayer record (with error handling but don't block)
       try {
-        await supabase
-          .from('prayers')
-          .insert({
-            user_id: user.id,
-            prayer_type: prayer.name,
-            points_spent: prayer.cost,
-          })
-      } catch (prayerInsertErr) {
-        console.warn('Prayer record insert failed (non-critical):', prayerInsertErr)
+        await supabase.from('prayers').insert({
+          user_id: user.id,
+          prayer_type: prayer.name,
+          points_spent: prayer.cost,
+        })
+      } catch (e) {
+        console.warn('Prayer insert failed (non-critical):', e)
       }
 
-      // Step 3: Record transaction (with error handling but don't block)
       try {
-        await supabase
-          .from('point_transactions')
-          .insert({
-            user_id: user.id,
-            description: `${prayer.name} prayer`,
-            points: -prayer.cost
-          })
-      } catch (txErr) {
-        console.warn('Transaction record insert failed (non-critical):', txErr)
+        await supabase.from('point_transactions').insert({
+          user_id: user.id,
+          description: `${prayer.name} prayer`,
+          points: -prayer.cost
+        })
+      } catch (e) {
+        console.warn('Transaction failed (non-critical):', e)
       }
 
-      // Step 4: Show success result
       setPrayerResult('Your prayer has been sent to the temple. Stay positive, good fortune will arrive soon.')
       setShowResult(true)
 
-      // Step 5: Refresh profile data
       try {
         const updatedProfile = await getUserProfile(user.id)
-        if (updatedProfile) {
-          setProfile(updatedProfile)
-        }
-      } catch (profileErr) {
-        console.warn('Profile refresh failed:', profileErr)
-        // Fallback: manually update points
+        if (updatedProfile) setProfile(updatedProfile)
+      } catch (e) {
         setProfile((prev: any) => ({ ...prev, points: points - prayer.cost }))
       }
 
-      // Step 6: Refresh prayers list
       try {
         const { data: prayers } = await supabase
           .from('prayers')
@@ -195,29 +195,17 @@ export default function PrayerPage() {
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(50)
-        
         if (prayers) {
           setRecentPrayers(prayers)
           setTotalPrayers(prayers.length)
-        } else {
-          setTotalPrayers(prev => prev + 1)
         }
       } catch (e) {
-        console.warn('Error refreshing prayers list:', e)
         setTotalPrayers(prev => prev + 1)
       }
       
     } catch (error: any) {
       console.error('Error performing prayer:', error)
-      if (!pointsDeducted) {
-        alert('An error occurred. Please try again.')
-      } else {
-        // Points were deducted but something else failed - still show success
-        setPrayerResult('Your prayer has been sent to the temple. Stay positive, good fortune will arrive soon.')
-        setShowResult(true)
-        setProfile((prev: any) => ({ ...prev, points: points - prayer.cost }))
-        setTotalPrayers(prev => prev + 1)
-      }
+      alert('An error occurred. Please try again.')
     } finally {
       setIsPraying(false)
     }
@@ -228,10 +216,10 @@ export default function PrayerPage() {
       <SidebarLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
-              <Flame className="w-8 h-8 text-orange-500" />
+            <div className="w-20 h-20 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+              <Flame className="w-10 h-10 text-orange-500" />
             </div>
-            <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
+            <h2 className="text-xl font-semibold text-stone-700">Entering the Temple...</h2>
           </div>
         </div>
       </SidebarLayout>
@@ -263,196 +251,258 @@ export default function PrayerPage() {
   return (
     <SidebarLayout>
       <div className="p-6 md:p-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
 
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-lg mb-4">
-              <Flame className="w-8 h-8 text-white" />
+          {/* Success Result */}
+          {showResult && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-3xl shadow-2xl p-8 text-center max-w-md w-full relative overflow-hidden">
+                {/* Decorative top border */}
+                <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400"></div>
+                
+                <div className="w-24 h-24 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <div className="text-6xl">{selectedPrayerData?.emoji}</div>
+                </div>
+                
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 rounded-full text-sm font-semibold mb-4">
+                  <CheckCircle2 className="w-5 h-5" />
+                  Prayer Successfully Offered
+                </div>
+                
+                <h2 className="text-2xl font-bold text-stone-800 mb-3">
+                  {selectedPrayerData?.name}
+                </h2>
+                
+                <p className="text-stone-600 leading-relaxed mb-6">
+                  Your prayer has been sent to the temple. Stay positive, good fortune will arrive soon.
+                </p>
+                
+                <div className="flex items-center justify-center gap-2 text-amber-600 font-semibold mb-6">
+                  <Coins className="w-5 h-5" />
+                  <span>Remaining: {profile?.points || 0} coins</span>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    setShowResult(false)
+                    setSelectedPrayer(null)
+                  }}
+                  className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                >
+                  Return to Temple
+                </button>
+              </div>
             </div>
-            <h1 className="text-3xl font-bold text-stone-800 mb-2">Temple of Blessings</h1>
-            <p className="text-stone-500">Offer sincere prayers and receive divine protection & lasting good fortune</p>
-          </div>
+          )}
 
-          {/* Stats Bar */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-2xl p-4 shadow-lg border border-stone-100 text-center">
-              <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-                <Coins className="w-5 h-5 text-amber-600" />
+          {/* Main Temple Card */}
+          <div className="relative bg-gradient-to-b from-stone-100 via-amber-50/50 to-orange-50/30 rounded-3xl shadow-2xl border border-amber-200/50 overflow-hidden">
+            <ScrollDecoration />
+            
+            {/* Temple Roof Header */}
+            <div className="relative bg-gradient-to-b from-amber-700 via-amber-600 to-orange-700 px-8 py-10 text-center overflow-hidden">
+              {/* Roof pattern */}
+              <div className="absolute inset-0 opacity-10" style={{
+                backgroundImage: `repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(255,255,255,0.1) 20px, rgba(255,255,255,0.1) 22px)`,
+              }}></div>
+              
+              {/* Floating flames */}
+              <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-amber-900/20 to-transparent"></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-center gap-4 mb-3">
+                  <Flame className="w-8 h-8 text-amber-200 animate-pulse" />
+                  <Flame className="w-10 h-10 text-amber-300 animate-pulse" style={{ animationDelay: '0.2s' }} />
+                  <Flame className="w-8 h-8 text-amber-200 animate-pulse" style={{ animationDelay: '0.4s' }} />
+                </div>
+                
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 tracking-wide">
+                  Temple of Blessings
+                </h1>
+                
+                <p className="text-amber-100/80 text-sm md:text-base">
+                  Offer sincere prayers and receive divine protection
+                </p>
               </div>
-              <p className="text-xs text-stone-500 mb-1">My Merit Coins</p>
-              <p className="text-xl font-bold text-amber-600">{points.toLocaleString()}</p>
-              <p className="text-xs text-stone-400 mt-1">Available for prayers & fortune readings</p>
             </div>
-            <div className="bg-white rounded-2xl p-4 shadow-lg border border-stone-100 text-center">
-              <div className="w-10 h-10 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-                <Flame className="w-5 h-5 text-orange-500" />
-              </div>
-              <p className="text-xs text-stone-500 mb-1">Total Prayers Offered</p>
-              <p className="text-xl font-bold text-stone-800">{totalPrayers}</p>
-              <p className="text-xs text-stone-400 mt-1">Your spiritual devotion record</p>
-            </div>
-            <div className="bg-white rounded-2xl p-4 shadow-lg border border-stone-100 text-center">
-              <div className="w-10 h-10 bg-gradient-to-br from-pink-100 to-rose-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-                <Heart className="w-5 h-5 text-pink-500" />
-              </div>
-              <p className="text-xs text-stone-500 mb-1">Blessings Received</p>
-              <p className="text-xl font-bold text-pink-600">∞</p>
-              <p className="text-xs text-stone-400 mt-1">Good luck coming your way</p>
-            </div>
-          </div>
 
-        {showResult ? (
-          <div className="bg-white rounded-2xl shadow-xl p-8 text-center border border-stone-100">
-            <div className="w-24 h-24 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Sparkles className="w-12 h-12 text-amber-500" />
-            </div>
-            <div className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-4">
-              <CheckCircle2 className="w-4 h-4" />
-              Prayer Complete
-            </div>
-            <h2 className="text-2xl font-bold text-stone-800 mb-4">
-              {selectedPrayerData?.name}
-            </h2>
-            <div className="text-5xl mb-6">{selectedPrayerData?.emoji}</div>
-            <p className="text-stone-600 text-lg mb-6 leading-relaxed">{prayerResult}</p>
-            <div className="inline-flex items-center gap-2 px-6 py-3 bg-amber-50 text-amber-700 rounded-full font-medium border border-amber-200">
-              <Coins className="w-5 h-5" />
-              Balance: {profile?.points || 0} coins
-            </div>
-            <div>
-              <button
-                onClick={() => {
-                  setShowResult(false)
-                  setSelectedPrayer(null)
-                }}
-                className="mt-6 px-8 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-              >
-                Offer Another Prayer
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Prayer Selection */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-stone-100">
-              <h2 className="text-lg font-bold text-stone-800 mb-1 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-amber-500" />
-                Choose Your Blessing Today
-              </h2>
-              <p className="text-stone-500 text-sm mb-6">Pick one prayer that matches what you wish to attract</p>
-              <div className="grid md:grid-cols-2 gap-4">
-                {prayerTypes.map((prayer) => (
-                  <button
-                    key={prayer.id}
-                    onClick={() => setSelectedPrayer(prayer.id)}
-                    className={`relative p-5 rounded-2xl border-2 transition-all text-left ${
-                      selectedPrayer === prayer.id
-                        ? 'border-orange-400 bg-gradient-to-br from-orange-50 to-amber-50 shadow-lg'
-                        : 'border-stone-200 bg-white hover:border-orange-200 hover:shadow-md'
-                    }`}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-3xl transition-all ${
-                        selectedPrayer === prayer.id ? 'bg-orange-200 scale-110' : 'bg-stone-100'
-                      }`}>
-                        {prayer.emoji}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-bold text-stone-800 mb-1">{prayer.name}</h3>
-                        <p className="text-xs text-amber-600 font-medium mb-2">Goal: {prayer.goal}</p>
-                        <p className="text-sm text-stone-500 mb-3">{prayer.description}</p>
-                        <div className="inline-flex items-center gap-1 text-amber-600 font-bold">
-                          <Coins className="w-4 h-4" />
-                          {prayer.cost} coins
-                        </div>
-                      </div>
-                    </div>
-                    {selectedPrayer === prayer.id && (
-                      <div className="absolute top-4 right-4">
-                        <div className={`w-6 h-6 bg-gradient-to-br ${prayer.gradient} rounded-full flex items-center justify-center shadow-md`}>
-                          <Star className="w-4 h-4 text-white fill-white" />
-                        </div>
-                      </div>
-                    )}
-                  </button>
+            {/* Content Area */}
+            <div className="relative z-10 p-6 md:p-8">
+              
+              {/* Stats Bar - Temple Pillars Style */}
+              <div className="grid grid-cols-3 gap-4 mb-8">
+                {[
+                  { icon: Coins, label: 'My Coins', value: points.toLocaleString(), color: 'amber', bg: 'from-amber-100 to-orange-100' },
+                  { icon: Flame, label: 'Prayers', value: totalPrayers, color: 'orange', bg: 'from-orange-100 to-red-100' },
+                  { icon: Heart, label: 'Blessings', value: '∞', color: 'pink', bg: 'from-pink-100 to-rose-100' },
+                ].map((stat, i) => (
+                  <div key={i} className={`bg-gradient-to-br ${stat.bg} rounded-2xl p-4 text-center border border-${stat.color}-200 shadow-lg`}>
+                    <stat.icon className={`w-6 h-6 mx-auto mb-2 text-${stat.color}-500`} />
+                    <p className={`text-2xl font-bold text-${stat.color}-700`}>{stat.value}</p>
+                    <p className="text-xs text-stone-500 mt-1">{stat.label}</p>
+                  </div>
                 ))}
               </div>
-            </div>
 
-            {/* Selected Prayer Details */}
-            {selectedPrayerData && (
-              <div className={`bg-gradient-to-br ${selectedPrayerData.gradient} bg-opacity-10 rounded-2xl p-6 mb-6 border-2 border-current border-opacity-20`}>
-                <div className="flex items-start gap-4">
-                  <div className="text-5xl">{selectedPrayerData.emoji}</div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-xl text-stone-800 mb-2">{selectedPrayerData.name}</h3>
-                    <p className="text-stone-600 mb-4">{selectedPrayerData.description}</p>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {selectedPrayerData.benefits.map((benefit, i) => (
-                        <span key={i} className="inline-flex items-center gap-1 px-3 py-1 bg-white rounded-full text-sm text-stone-700 border border-stone-200">
-                          ✨ {benefit}
-                        </span>
-                      ))}
+              {/* Prayer Selection - Offering Tables */}
+              <div className="mb-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <Sun className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-stone-800">Choose Your Offering</h2>
+                    <p className="text-sm text-stone-500">Select a prayer that resonates with your heart</p>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  {prayerTypes.map((prayer) => (
+                    <button
+                      key={prayer.id}
+                      onClick={() => setSelectedPrayer(prayer.id)}
+                      className={`relative p-5 rounded-2xl border-2 transition-all text-left group hover:-translate-y-1 ${
+                        selectedPrayer === prayer.id
+                          ? `${prayer.borderColor} ${prayer.bgColor} shadow-xl`
+                          : 'border-stone-200 bg-white hover:border-amber-200 hover:shadow-lg'
+                      }`}
+                    >
+                      {/* Selected indicator */}
+                      {selectedPrayer === prayer.id && (
+                        <div className={`absolute -top-2 -right-2 w-8 h-8 ${prayer.iconBg} rounded-full flex items-center justify-center shadow-lg`}>
+                          <Star className="w-4 h-4 text-white fill-white" />
+                        </div>
+                      )}
+
+                      <div className="flex items-start gap-4">
+                        <div className={`w-16 h-16 ${prayer.bgColor} rounded-xl flex items-center justify-center text-3xl transition-transform ${
+                          selectedPrayer === prayer.id ? 'scale-110 rotate-3' : 'group-hover:scale-105'
+                        }`}>
+                          {prayer.emoji}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-stone-800 text-lg mb-1">{prayer.name}</h3>
+                          <p className="text-xs text-amber-600 font-semibold mb-2">✨ {prayer.goal}</p>
+                          <p className="text-sm text-stone-500 mb-3 line-clamp-2">{prayer.description}</p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1 text-amber-600 font-bold">
+                              <Coins className="w-4 h-4" />
+                              <span>{prayer.cost} coins</span>
+                            </div>
+                            {selectedPrayer === prayer.id && (
+                              <span className="text-xs text-emerald-600 font-medium">Selected</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Benefits preview on hover */}
+                      {selectedPrayer === prayer.id && (
+                        <div className="mt-4 pt-4 border-t border-stone-200">
+                          <div className="flex flex-wrap gap-2">
+                            {prayer.benefits.map((benefit, i) => (
+                              <span key={i} className="text-xs px-2 py-1 bg-white rounded-full text-stone-600 border border-stone-200">
+                                ✨ {benefit}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Selected Prayer Details & Action */}
+              {selectedPrayerData && (
+                <div className={`mb-8 p-6 rounded-2xl bg-gradient-to-br ${selectedPrayerData.bgColor} border-2 ${selectedPrayerData.borderColor} relative overflow-hidden`}>
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/20 to-transparent rounded-bl-full"></div>
+                  
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="text-5xl">{selectedPrayerData.emoji}</div>
+                      <div>
+                        <h3 className="text-xl font-bold text-stone-800">{selectedPrayerData.name}</h3>
+                        <p className="text-sm text-amber-600">Goal: {selectedPrayerData.goal}</p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-stone-500">
-                      <Info className="w-4 h-4" />
+                    
+                    <p className="text-stone-600 mb-4 leading-relaxed">{selectedPrayerData.description}</p>
+                    
+                    <div className="flex items-center gap-2 text-sm text-stone-500 mb-4">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                       <span>Offer with sincere heart for best results</span>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* Perform Button */}
-            <button
-              onClick={performPrayer}
-              disabled={!selectedPrayer || isPraying || (points < (selectedPrayerData?.cost || 0))}
-              className="w-full py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-lg rounded-xl shadow-lg shadow-orange-200 hover:shadow-xl hover:shadow-orange-300 transition-all hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-            >
-              {isPraying ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                  Offering Prayer...
-                </span>
-              ) : (
-                <span className="flex items-center justify-center gap-2">
-                  <Flame className="w-5 h-5" />
-                  {selectedPrayer ? `Offer ${selectedPrayerData?.name}` : 'Start Your Prayer Ritual'}
-                </span>
               )}
-            </button>
 
-            {selectedPrayer && points < (selectedPrayerData?.cost || 0) && (
-              <div className="mt-4 p-4 bg-red-50 rounded-xl border border-red-200">
-                <p className="text-red-600 text-sm text-center mb-3">
-                  Not enough coins. Need {(selectedPrayerData?.cost || 0) - points} more coins.
-                </p>
-                <Link
-                  href="/user/points"
-                  className="block w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl text-center hover:shadow-lg transition-all"
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    <TrendingUp className="w-4 h-4" />
-                    Earn More Coins
-                  </span>
-                </Link>
+              {/* Action Button */}
+              {selectedPrayerData ? (
+                points >= selectedPrayerData.cost ? (
+                  <button
+                    onClick={performPrayer}
+                    disabled={isPraying}
+                    className={`w-full py-4 bg-gradient-to-r ${selectedPrayerData.color} text-white font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 relative overflow-hidden group`}
+                  >
+                    <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:translate-x-full transition-transform duration-700"></span>
+                    {isPraying ? (
+                      <span className="flex items-center justify-center gap-2 relative z-10">
+                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                        Offering Your Prayer...
+                      </span>
+                    ) : (
+                      <span className="flex items-center justify-center gap-3 relative z-10">
+                        <Flame className="w-6 h-6" />
+                        Offer {selectedPrayerData.name}
+                      </span>
+                    )}
+                  </button>
+                ) : (
+                  <div className="text-center p-6 bg-red-50 rounded-2xl border border-red-200">
+                    <p className="text-red-600 font-semibold mb-3">
+                      Need {selectedPrayerData.cost - points} more coins for this prayer
+                    </p>
+                    <Link
+                      href="/user/points"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-full hover:shadow-lg transition-all"
+                    >
+                      <TrendingUp className="w-5 h-5" />
+                      Earn Free Coins
+                    </Link>
+                  </div>
+                )
+              ) : (
+                <div className="text-center p-6 bg-stone-100 rounded-2xl">
+                  <p className="text-stone-500">Select a prayer above to begin your offering</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Prayer History - Scroll Style */}
+          {recentPrayers.length > 0 && (
+            <div className="mt-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-stone-300 to-stone-400 rounded-xl flex items-center justify-center shadow-lg">
+                  <Scroll className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-stone-800">Your Prayer Scroll</h2>
+                  <p className="text-sm text-stone-500">Records of your spiritual offerings</p>
+                </div>
               </div>
-            )}
 
-            {/* Prayer History */}
-            <div className="mt-8 bg-white rounded-2xl shadow-lg p-6 border border-stone-100">
-              <h2 className="text-lg font-bold text-stone-800 mb-1 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-amber-500" />
-                Your Prayer History
-              </h2>
-              <p className="text-stone-500 text-sm mb-6">Every sincere wish will be recorded and blessed.</p>
-              {recentPrayers.length > 0 ? (
+              <div className="bg-gradient-to-b from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-6 shadow-lg">
                 <div className="space-y-3">
-                  {recentPrayers.map((prayer: any) => (
-                    <div key={prayer.id} className="flex items-center justify-between p-4 bg-stone-50 rounded-xl hover:bg-stone-100 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-orange-100 to-amber-100 rounded-lg flex items-center justify-center text-xl">
+                  {recentPrayers.map((prayer: any, index: number) => (
+                    <div 
+                      key={prayer.id} 
+                      className="flex items-center justify-between p-4 bg-white rounded-xl border border-stone-200 hover:border-amber-300 hover:shadow-md transition-all"
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg flex items-center justify-center text-2xl">
                           {prayer.prayer_type === 'Burning Incense' && '🪔'}
                           {prayer.prayer_type === 'Devotion Prayer' && '🙏'}
                           {prayer.prayer_type === 'Light Offering' && '🕯️'}
@@ -460,7 +510,7 @@ export default function PrayerPage() {
                         </div>
                         <div>
                           <p className="font-semibold text-stone-800">{prayer.prayer_type}</p>
-                          <p className="text-sm text-stone-500 flex items-center gap-1">
+                          <p className="text-xs text-stone-500 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {formatDate(prayer.created_at)}
                           </p>
@@ -468,44 +518,56 @@ export default function PrayerPage() {
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-amber-600">-{prayer.points_spent}</p>
+                        <p className="text-xs text-emerald-600 flex items-center justify-end gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Offered
+                        </p>
                       </div>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Flame className="w-8 h-8 text-orange-400" />
-                  </div>
-                  <p className="text-stone-500 mb-2">No prayers yet</p>
-                  <p className="text-stone-400 text-sm">Start your spiritual journey with a prayer above!</p>
-                </div>
-              )}
-              {recentPrayers.length > 0 && (
+                
                 <p className="text-xs text-stone-400 mt-4 text-center italic">
-                  *Your wish has been recorded in the temple archive.*
+                  * All prayers are recorded in the temple archive and answered with divine timing *
                 </p>
-              )}
-            </div>
-
-            {/* Pro Tip */}
-            <div className="mt-6 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-5 border border-amber-100">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Lightbulb className="w-5 h-5 text-amber-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-amber-800 mb-1">Pro Tip</h3>
-                  <p className="text-sm text-amber-700">
-                    Complete daily check-ins and fill out your profile to earn free merit coins and keep sending blessings every day.
-                  </p>
-                </div>
               </div>
             </div>
-          </>
-        )}
+          )}
+
+          {/* Empty State */}
+          {recentPrayers.length === 0 && !loading && (
+            <div className="mt-8 text-center py-12 bg-gradient-to-b from-stone-100 to-stone-50 rounded-2xl border border-stone-200">
+              <div className="w-20 h-20 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Flame className="w-10 h-10 text-orange-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-stone-700 mb-2">Your Prayer Scroll is Empty</h3>
+              <p className="text-stone-500 text-sm max-w-md mx-auto">
+                Begin your spiritual journey by offering your first prayer above. The temple awaits your sincere devotion.
+              </p>
+            </div>
+          )}
+
         </div>
       </div>
+
+      {/* Custom CSS for animations */}
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) translateX(0px); }
+          50% { transform: translateY(-20px) translateX(10px); }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+        .animate-float-delayed {
+          animation: float 8s ease-in-out infinite;
+          animation-delay: 2s;
+        }
+        .animate-float-slow {
+          animation: float 10s ease-in-out infinite;
+          animation-delay: 4s;
+        }
+      `}</style>
     </SidebarLayout>
   )
 }
