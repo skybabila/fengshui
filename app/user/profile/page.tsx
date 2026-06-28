@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import SidebarLayout from '@/components/SidebarLayout'
-import { User, Lock, Camera, Coins, Star, Settings, Save, Eye, EyeOff, Sparkles, Gem, Flame, Droplets, Leaf, Mountain } from 'lucide-react'
+import { User, Lock, Camera, Coins, Star, Settings, Save, Eye, EyeOff, Sparkles, Gem, Edit2, X, Check } from 'lucide-react'
 
 const zodiacAnimals = [
   { name: 'Rat', emoji: '🐀', chinese: '鼠' },
@@ -22,11 +22,11 @@ const zodiacAnimals = [
 ]
 
 const fiveElements = [
-  { name: 'Metal', chinese: '金', emoji: '⚔️', icon: Gem, color: 'text-amber-600', bgColor: 'bg-amber-50', borderColor: 'border-amber-200', gradient: 'from-amber-400 to-yellow-500' },
-  { name: 'Water', chinese: '水', emoji: '💧', icon: Droplets, color: 'text-blue-600', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', gradient: 'from-blue-400 to-cyan-500' },
-  { name: 'Wood', chinese: '木', emoji: '🌿', icon: Leaf, color: 'text-emerald-600', bgColor: 'bg-emerald-50', borderColor: 'border-emerald-200', gradient: 'from-emerald-400 to-green-500' },
-  { name: 'Fire', chinese: '火', emoji: '🔥', icon: Flame, color: 'text-red-600', bgColor: 'bg-red-50', borderColor: 'border-red-200', gradient: 'from-red-400 to-orange-500' },
-  { name: 'Earth', chinese: '土', emoji: '⛰️', icon: Mountain, color: 'text-stone-600', bgColor: 'bg-stone-50', borderColor: 'border-stone-200', gradient: 'from-stone-400 to-amber-600' },
+  { name: 'Metal', chinese: '金', emoji: '⚔️', color: 'text-amber-600', bgColor: 'bg-amber-50', borderColor: 'border-amber-200', gradient: 'from-amber-400 to-yellow-500' },
+  { name: 'Water', chinese: '水', emoji: '💧', color: 'text-blue-600', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', gradient: 'from-blue-400 to-cyan-500' },
+  { name: 'Wood', chinese: '木', emoji: '🌿', color: 'text-emerald-600', bgColor: 'bg-emerald-50', borderColor: 'border-emerald-200', gradient: 'from-emerald-400 to-green-500' },
+  { name: 'Fire', chinese: '火', emoji: '🔥', color: 'text-red-600', bgColor: 'bg-red-50', borderColor: 'border-red-200', gradient: 'from-red-400 to-orange-500' },
+  { name: 'Earth', chinese: '土', emoji: '⛰️', color: 'text-stone-600', bgColor: 'bg-stone-50', borderColor: 'border-stone-200', gradient: 'from-stone-400 to-amber-600' },
 ]
 
 function getZodiacFromBirthday(birthday: string): typeof zodiacAnimals[0] | null {
@@ -58,7 +58,9 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'settings'>('profile')
+  const [isEditing, setIsEditing] = useState(false)
   
+  // Form states
   const [nickname, setNickname] = useState('')
   const [birthday, setBirthday] = useState('')
   const [interests, setInterests] = useState('')
@@ -74,6 +76,21 @@ export default function ProfilePage() {
 
   const maxDate = new Date().toISOString().split('T')[0]
 
+  const fetchProfile = useCallback(async () => {
+    if (!user?.id) return
+    try {
+      const userProfile = await getUserProfile(user.id)
+      setProfile(userProfile)
+      // Sync form states with profile data
+      setNickname(userProfile?.nickname || userProfile?.name || '')
+      setBirthday(userProfile?.birthday || '')
+      setInterests(userProfile?.interests || '')
+      setAvatarUrl(userProfile?.avatar_url || '')
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    }
+  }, [user?.id])
+
   useEffect(() => {
     async function fetchData() {
       try {
@@ -83,14 +100,7 @@ export default function ProfilePage() {
           return
         }
         setUser(authUser)
-
-        const userProfile = await getUserProfile(authUser.id)
-        setProfile(userProfile)
-        
-        setNickname(userProfile?.nickname || userProfile?.name || '')
-        setBirthday(userProfile?.birthday || '')
-        setInterests(userProfile?.interests || '')
-        setAvatarUrl(userProfile?.avatar_url || '')
+        await fetchProfile()
       } catch (error) {
         console.error('Error fetching data:', error)
       } finally {
@@ -99,7 +109,7 @@ export default function ProfilePage() {
     }
 
     fetchData()
-  }, [])
+  }, [fetchProfile])
 
   const zodiac = getZodiacFromBirthday(birthday)
   const element = getElementFromBirthday(birthday)
@@ -107,6 +117,19 @@ export default function ProfilePage() {
   const showSuccess = (msg: string) => {
     setSuccessMessage(msg)
     setTimeout(() => setSuccessMessage(''), 3000)
+  }
+
+  const handleEdit = () => {
+    setIsEditing(true)
+    setSuccessMessage('')
+  }
+
+  const handleCancel = () => {
+    // Reset form to current profile values
+    setNickname(profile?.nickname || profile?.name || '')
+    setBirthday(profile?.birthday || '')
+    setInterests(profile?.interests || '')
+    setIsEditing(false)
   }
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,9 +177,7 @@ export default function ProfilePage() {
         .update({ avatar_url: publicUrl })
         .eq('id', user.id)
 
-      const updatedProfile = await getUserProfile(user.id)
-      setProfile(updatedProfile)
-
+      await fetchProfile()
       showSuccess('Avatar updated successfully!')
     } catch (error) {
       console.error('Error uploading avatar:', error)
@@ -193,12 +214,13 @@ export default function ProfilePage() {
       if (error) {
         console.error('Update error:', error)
         alert('Save failed: ' + error.message)
+        setSaving(false)
         return
       }
 
-      const updatedProfile = await getUserProfile(user.id)
-      setProfile(updatedProfile)
-
+      // Refresh profile data
+      await fetchProfile()
+      setIsEditing(false)
       showSuccess('Profile saved successfully!')
     } catch (error: any) {
       console.error('Error saving profile:', error)
@@ -230,6 +252,7 @@ export default function ProfilePage() {
 
       if (signInError) {
         alert('Current password is incorrect')
+        setSaving(false)
         return
       }
 
@@ -239,6 +262,7 @@ export default function ProfilePage() {
 
       if (updateError) {
         alert(updateError.message)
+        setSaving(false)
         return
       }
 
@@ -276,8 +300,8 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto">
 
           {successMessage && (
-            <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 font-medium flex items-center gap-2">
-              <Sparkles className="w-5 h-5" />
+            <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 font-medium flex items-center gap-2 animate-fade-in">
+              <Check className="w-5 h-5" />
               {successMessage}
             </div>
           )}
@@ -311,17 +335,17 @@ export default function ProfilePage() {
               <div className={`w-10 h-10 bg-gradient-to-br ${element ? element.gradient : 'from-stone-100 to-stone-200'} rounded-xl flex items-center justify-center mx-auto mb-2`}>
                 <span className="text-lg">{element?.emoji || '☯️'}</span>
               </div>
-              <p className="text-sm text-stone-500">Life Element (Destiny)</p>
+              <p className="text-sm text-stone-500">Life Element</p>
               <p className="text-lg font-bold text-stone-800">{element?.chinese || '-'}</p>
             </div>
           </div>
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-stone-100">
 
-          <div className="border-b border-stone-200">
-            <div className="flex gap-4 px-6 overflow-x-auto">
+          <div className="border-b border-stone-200 flex items-center justify-between px-6">
+            <div className="flex gap-4 overflow-x-auto">
               <button
-                onClick={() => setActiveTab('profile')}
+                onClick={() => { setActiveTab('profile'); setIsEditing(false); }}
                 className={`py-4 px-2 font-medium transition-colors whitespace-nowrap ${
                   activeTab === 'profile'
                     ? 'text-emerald-600 border-b-2 border-emerald-600'
@@ -332,7 +356,7 @@ export default function ProfilePage() {
                 Personal Info
               </button>
               <button
-                onClick={() => setActiveTab('password')}
+                onClick={() => { setActiveTab('password'); setIsEditing(false); }}
                 className={`py-4 px-2 font-medium transition-colors whitespace-nowrap ${
                   activeTab === 'password'
                     ? 'text-emerald-600 border-b-2 border-emerald-600'
@@ -343,7 +367,7 @@ export default function ProfilePage() {
                 Change Password
               </button>
               <button
-                onClick={() => setActiveTab('settings')}
+                onClick={() => { setActiveTab('settings'); setIsEditing(false); }}
                 className={`py-4 px-2 font-medium transition-colors whitespace-nowrap ${
                   activeTab === 'settings'
                     ? 'text-emerald-600 border-b-2 border-emerald-600'
@@ -354,11 +378,21 @@ export default function ProfilePage() {
                 Settings
               </button>
             </div>
+            {activeTab === 'profile' && !isEditing && (
+              <button
+                onClick={handleEdit}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors font-medium text-sm"
+              >
+                <Edit2 className="w-4 h-4" />
+                Edit
+              </button>
+            )}
           </div>
 
           <div className="p-6">
             {activeTab === 'profile' && (
               <div className="space-y-6">
+                {/* Avatar Section */}
                 <div className="flex items-center gap-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100">
                   <div className="relative">
                     {avatarUrl ? (
@@ -372,7 +406,7 @@ export default function ProfilePage() {
                         <User className="w-10 h-10 text-white" />
                       </div>
                     )}
-                    <label className="absolute bottom-0 right-0 w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition-colors shadow-lg">
+                    <label className={`absolute bottom-0 right-0 w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition-colors shadow-lg ${isEditing ? '' : 'hidden'}`}>
                       <Camera className="w-4 h-4 text-white" />
                       <input
                         type="file"
@@ -391,13 +425,16 @@ export default function ProfilePage() {
                   <div>
                     <p className="font-bold text-stone-800 text-lg">{nickname || user?.email?.split('@')[0]}</p>
                     <p className="text-sm text-stone-500">{user?.email}</p>
-                    <p className="text-xs text-emerald-600 mt-1">📷 Click camera to change avatar</p>
+                    {isEditing && (
+                      <p className="text-xs text-emerald-600 mt-1">Click camera icon to change avatar</p>
+                    )}
                   </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-2">Nickname</label>
+                {/* Nickname */}
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-2">Nickname</label>
+                  {isEditing ? (
                     <input
                       type="text"
                       value={nickname}
@@ -406,9 +443,17 @@ export default function ProfilePage() {
                       className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                       placeholder="Your nickname"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-2">Birthday</label>
+                  ) : (
+                    <div className="px-4 py-3 bg-stone-50 rounded-xl text-stone-800">
+                      {nickname || <span className="text-stone-400">Not set</span>}
+                    </div>
+                  )}
+                </div>
+
+                {/* Birthday */}
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-2">Birthday</label>
+                  {isEditing ? (
                     <input
                       type="date"
                       value={birthday}
@@ -427,11 +472,15 @@ export default function ProfilePage() {
                       }}
                       className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     />
-                    <p className="text-xs text-stone-400 mt-1">Enter your birth date to generate your zodiac and life element</p>
-                  </div>
+                  ) : (
+                    <div className="px-4 py-3 bg-stone-50 rounded-xl text-stone-800">
+                      {birthday ? formatDate(birthday) : <span className="text-stone-400">Not set</span>}
+                    </div>
+                  )}
+                  <p className="text-xs text-stone-400 mt-1">Enter your birth date to generate your zodiac and life element</p>
                 </div>
 
-                {/* Zodiac & Life Element */}
+                {/* Zodiac & Life Element - Display Only */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className={`p-5 rounded-xl border-2 ${zodiac ? 'bg-gradient-to-br from-pink-50 to-rose-50 border-pink-200' : 'bg-stone-50 border-stone-200'}`}>
                     <h3 className="font-semibold text-stone-800 mb-3 flex items-center gap-2">
@@ -486,43 +535,68 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
+                {/* Interests */}
                 <div>
                   <label className="block text-sm font-medium text-stone-700 mb-2">Interests</label>
-                  <textarea
-                    value={interests}
-                    onChange={(e) => setInterests(e.target.value)}
-                    rows={3}
-                    maxLength={500}
-                    className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
-                    placeholder="e.g. Feng Shui, horoscope reading, home layout, wellness…"
-                  />
-                  <p className="text-xs text-stone-400 mt-1 text-right">{interests.length}/500</p>
-                </div>
-
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-5 border border-amber-200">
-                  <div className="flex items-center justify-center gap-3">
-                    <Coins className="w-6 h-6 text-amber-600" />
-                    <p className="text-lg font-semibold text-amber-800">Complete your full profile → Claim +100 Free Coins</p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={handleSaveProfile}
-                  disabled={saving}
-                  className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
-                >
-                  {saving ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                      Saving...
-                    </span>
+                  {isEditing ? (
+                    <>
+                      <textarea
+                        value={interests}
+                        onChange={(e) => setInterests(e.target.value)}
+                        rows={3}
+                        maxLength={500}
+                        className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
+                        placeholder="e.g. Feng Shui, horoscope reading, home layout, wellness…"
+                      />
+                      <p className="text-xs text-stone-400 mt-1 text-right">{interests.length}/500</p>
+                    </>
                   ) : (
-                    <span className="flex items-center justify-center gap-2">
-                      <Save className="w-5 h-5" />
-                      Save Profile
-                    </span>
+                    <div className="px-4 py-3 bg-stone-50 rounded-xl text-stone-800 min-h-[80px]">
+                      {interests || <span className="text-stone-400">No interests added yet</span>}
+                    </div>
                   )}
-                </button>
+                </div>
+
+                {/* Coin Bonus Banner */}
+                {!isEditing && (
+                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-5 border border-amber-200">
+                    <div className="flex items-center justify-center gap-3">
+                      <Coins className="w-6 h-6 text-amber-600" />
+                      <p className="text-lg font-semibold text-amber-800">Complete your full profile → Claim +100 Free Coins</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                {isEditing && (
+                  <div className="flex gap-4">
+                    <button
+                      onClick={handleCancel}
+                      disabled={saving}
+                      className="flex-1 py-3.5 bg-stone-100 text-stone-700 font-semibold rounded-xl hover:bg-stone-200 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <X className="w-5 h-5" />
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveProfile}
+                      disabled={saving}
+                      className="flex-1 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0 flex items-center justify-center gap-2"
+                    >
+                      {saving ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-5 h-5" />
+                          Save Profile
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
