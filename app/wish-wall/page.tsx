@@ -172,9 +172,13 @@ export default function WishWallPage() {
           is_public: false,
           is_fulfilled: false,
         })
+        .select()
 
       if (insertError) {
         console.error('Wish insert error:', insertError)
+        alert('Failed to submit wish: ' + insertError.message)
+        setSubmitting(false)
+        return
       }
 
       try {
