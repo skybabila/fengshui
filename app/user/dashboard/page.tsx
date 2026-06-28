@@ -123,43 +123,43 @@ export default function UserDashboard() {
     {
       icon: Sparkles,
       title: 'Daily Fortune',
-      desc: 'Unlock your daily luck',
+      desc: 'Today\'s Lucky Horoscope',
       href: '/fortune/daily',
-      cost: '5 coins',
+      cost: '5 Coins',
       gradient: 'from-amber-500 to-orange-500',
       bgGradient: 'from-amber-50 to-orange-50',
     },
     {
       icon: Star,
       title: 'Weekly Fortune',
-      desc: 'Plan your week ahead',
+      desc: '7-Day Wealth & Love Forecast',
       href: '/fortune/weekly',
-      cost: '20 coins',
+      cost: '20 Coins',
       gradient: 'from-purple-500 to-indigo-500',
       bgGradient: 'from-purple-50 to-indigo-50',
     },
     {
       icon: Crown,
       title: 'Monthly Fortune',
-      desc: 'Detailed monthly forecast',
+      desc: 'Full Monthly Destiny Reading',
       href: '/fortune/monthly',
-      cost: '50 coins',
+      cost: '50 Coins',
       gradient: 'from-cyan-500 to-blue-500',
       bgGradient: 'from-cyan-50 to-blue-50',
     },
     {
       icon: Heart,
       title: 'Wish Wall',
-      desc: 'Make your wishes come true',
+      desc: 'Post Your Wishes for Blessings',
       href: '/wish-wall',
-      cost: '10 coins',
+      cost: '10 Coins',
       gradient: 'from-pink-500 to-rose-500',
       bgGradient: 'from-pink-50 to-rose-50',
     },
     {
       icon: Flame,
       title: 'Prayer Center',
-      desc: 'Pray for blessings',
+      desc: 'Offer Prayers for Peace & Prosperity',
       href: '/user/prayer',
       cost: 'Varies',
       gradient: 'from-red-500 to-orange-500',
@@ -167,8 +167,8 @@ export default function UserDashboard() {
     },
     {
       icon: Gift,
-      title: 'Earn Coins',
-      desc: 'Get more free coins',
+      title: 'Earn Free Coins',
+      desc: 'Complete Tasks to Get More Readings',
       href: '/user/points',
       cost: 'Free',
       gradient: 'from-emerald-500 to-teal-500',
@@ -185,13 +185,9 @@ export default function UserDashboard() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
           <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">👋</span>
-              <p className="text-emerald-100 text-sm">Welcome back</p>
-            </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Hello, {userName}!</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Welcome Back!</h1>
             <p className="text-emerald-100 mb-6 max-w-lg">
-              Explore your fortune, make wishes, and pray for blessings. May good luck be with you today!
+              Today&apos;s fortune is waiting for you. Check your lucky direction and avoid bad luck ahead.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
@@ -207,7 +203,7 @@ export default function UserDashboard() {
                 className="inline-flex items-center gap-2 px-6 py-3 bg-white/20 backdrop-blur text-white font-semibold rounded-xl hover:bg-white/30 transition-all border border-white/30"
               >
                 <Gift className="w-5 h-5" />
-                Earn Free Coins
+                Earn Free Merit Coins
               </Link>
             </div>
           </div>
@@ -231,9 +227,9 @@ export default function UserDashboard() {
                 <Calendar className="w-6 h-6 text-emerald-600" />
               </div>
             </div>
-            <p className="text-stone-500 text-sm">Daily Fortune</p>
+            <p className="text-stone-500 text-sm">Today&apos;s Fortune</p>
             <p className="text-2xl font-bold text-stone-800">
-              {dailyFortune ? 'Done' : 'New'}
+              {dailyFortune ? 'Completed' : 'New'}
             </p>
           </div>
 
@@ -243,7 +239,7 @@ export default function UserDashboard() {
                 <Activity className="w-6 h-6 text-red-500" />
               </div>
             </div>
-            <p className="text-stone-500 text-sm">Prayers</p>
+            <p className="text-stone-500 text-sm">Prayers Made</p>
             <p className="text-2xl font-bold text-stone-800">{recentPrayers.length}</p>
           </div>
 
@@ -253,7 +249,7 @@ export default function UserDashboard() {
                 <Heart className="w-6 h-6 text-pink-500" />
               </div>
             </div>
-            <p className="text-stone-500 text-sm">Wishes</p>
+            <p className="text-stone-500 text-sm">Wishes Saved</p>
             <p className="text-2xl font-bold text-stone-800">{wishCount}</p>
           </div>
         </div>
@@ -263,10 +259,10 @@ export default function UserDashboard() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Star className="w-5 h-5 text-amber-500" />
-              <h2 className="text-lg font-bold text-stone-800">Today&rsquo;s Fortune</h2>
+              <h2 className="text-lg font-bold text-stone-800">Today&apos;s Lucky Outlook</h2>
             </div>
             <Link href="/fortune" className="text-sm text-emerald-600 font-medium hover:text-emerald-700 flex items-center gap-1">
-              View all <ChevronRight className="w-4 h-4" />
+              View All <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
 
@@ -277,15 +273,15 @@ export default function UserDashboard() {
               </div>
               <div className="flex-1 text-center md:text-left">
                 <h3 className="text-2xl font-bold text-stone-800 mb-2">{dailyFortune.fortune_type}</h3>
-                <p className="text-stone-600 mb-3">{dailyFortune.description}</p>
+                <p className="text-stone-600 mb-3">Positive energy ahead. Stay focused, and good opportunities will come naturally.</p>
                 <div className="flex items-center justify-center md:justify-start gap-4 text-sm text-stone-500">
+                  <span className="flex items-center gap-1">
+                    <Zap className="w-4 h-4 text-amber-500" />
+                    Zodiac: {profile?.zodiac_sign || dailyFortune.zodiac_sign || 'Horse'}
+                  </span>
                   <span className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
                     {formatDate(dailyFortune.created_at)}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Zap className="w-4 h-4 text-amber-500" />
-                    Zodiac: {dailyFortune.zodiac_sign}
                   </span>
                 </div>
               </div>
@@ -297,7 +293,7 @@ export default function UserDashboard() {
               </div>
               <div className="flex-1 text-center md:text-left">
                 <h3 className="text-xl font-bold text-stone-700 mb-2">Fortune Not Yet Unlocked</h3>
-                <p className="text-stone-500 mb-4">Get your personalized fortune reading for today and start your day with confidence!</p>
+                <p className="text-stone-500 mb-4">Positive energy ahead. Stay focused, and good opportunities will come naturally.</p>
                 <a
                   href="/fortune/daily"
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
@@ -349,7 +345,7 @@ export default function UserDashboard() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Award className="w-5 h-5 text-cyan-500" />
-                  <h2 className="text-lg font-bold text-stone-800">Recent Prayers</h2>
+                  <h2 className="text-lg font-bold text-stone-800">Your Recent Blessing Records</h2>
                 </div>
                 <a href="/user/prayer" className="text-sm text-cyan-600 font-medium hover:text-cyan-700">
                   View all
@@ -382,15 +378,15 @@ export default function UserDashboard() {
             <div className="space-y-3">
               <div className="flex gap-3">
                 <span className="text-violet-500 mt-0.5">✨</span>
-                <p className="text-sm text-stone-600">Check your daily fortune every morning to plan your day better</p>
+                <p className="text-sm text-stone-600">Check your daily fortune every morning to plan your day</p>
               </div>
               <div className="flex gap-3">
                 <span className="text-violet-500 mt-0.5">🎁</span>
-                <p className="text-sm text-stone-600">Complete your profile to get 100 free coins bonus</p>
+                <p className="text-sm text-stone-600">Fill out your birthday to claim 100 free bonus coins</p>
               </div>
               <div className="flex gap-3">
                 <span className="text-violet-500 mt-0.5">🙏</span>
-                <p className="text-sm text-stone-600">Pray sincerely and your wishes may come true</p>
+                <p className="text-sm text-stone-600">Sincere prayers greatly improve your chance of good luck</p>
               </div>
             </div>
             <a

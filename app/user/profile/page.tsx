@@ -287,8 +287,8 @@ export default function ProfilePage() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg mb-4">
               <Settings className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-stone-800 mb-2">Profile Center</h1>
-            <p className="text-stone-500">Manage your personal information and settings</p>
+            <h1 className="text-3xl font-bold text-stone-800 mb-2">Profile & Destiny Settings</h1>
+            <p className="text-stone-500">Fill in your info to calculate your zodiac sign and life element</p>
           </div>
 
           {/* Quick Stats */}
@@ -304,14 +304,14 @@ export default function ProfilePage() {
               <div className="w-10 h-10 bg-gradient-to-br from-pink-100 to-rose-100 rounded-xl flex items-center justify-center mx-auto mb-2">
                 <span className="text-lg">{zodiac?.emoji || '✨'}</span>
               </div>
-              <p className="text-sm text-stone-500">Zodiac</p>
+              <p className="text-sm text-stone-500">Your Zodiac Sign</p>
               <p className="text-lg font-bold text-stone-800">{zodiac?.chinese || '-'}</p>
             </div>
             <div className="bg-white rounded-2xl p-4 shadow-lg border border-stone-100 text-center">
               <div className={`w-10 h-10 bg-gradient-to-br ${element ? element.gradient : 'from-stone-100 to-stone-200'} rounded-xl flex items-center justify-center mx-auto mb-2`}>
                 <span className="text-lg">{element?.emoji || '☯️'}</span>
               </div>
-              <p className="text-sm text-stone-500">Life Element</p>
+              <p className="text-sm text-stone-500">Life Element (Destiny)</p>
               <p className="text-lg font-bold text-stone-800">{element?.chinese || '-'}</p>
             </div>
           </div>
@@ -427,7 +427,7 @@ export default function ProfilePage() {
                       }}
                       className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     />
-                    <p className="text-xs text-stone-400 mt-1">Enter your birthday to calculate zodiac and life element</p>
+                    <p className="text-xs text-stone-400 mt-1">Enter your birth date to generate your zodiac and life element</p>
                   </div>
                 </div>
 
@@ -454,7 +454,7 @@ export default function ProfilePage() {
                         <div className="w-16 h-16 bg-stone-100 rounded-xl flex items-center justify-center text-2xl">
                           ❓
                         </div>
-                        <p className="text-sm">Enter your birthday to see your zodiac sign</p>
+                        <p className="text-sm">Input birthday to view your animal sign & yearly luck</p>
                       </div>
                     )}
                   </div>
@@ -462,7 +462,7 @@ export default function ProfilePage() {
                   <div className={`p-5 rounded-xl border-2 ${element ? `bg-gradient-to-br ${element.bgColor} ${element.borderColor}` : 'bg-stone-50 border-stone-200'}`}>
                     <h3 className="font-semibold text-stone-800 mb-3 flex items-center gap-2">
                       <Gem className={`w-4 h-4 ${element ? element.color : 'text-stone-400'}`} />
-                      Life Element (命格)
+                      Life Element (Destiny)
                     </h3>
                     {element ? (
                       <div className="flex items-center gap-4">
@@ -480,7 +480,7 @@ export default function ProfilePage() {
                         <div className="w-16 h-16 bg-stone-100 rounded-xl flex items-center justify-center text-2xl">
                           ☯️
                         </div>
-                        <p className="text-sm">Enter your birthday to see your life element</p>
+                        <p className="text-sm">Calculate your core five-element energy based on your birth info</p>
                       </div>
                     )}
                   </div>
@@ -494,26 +494,15 @@ export default function ProfilePage() {
                     rows={3}
                     maxLength={500}
                     className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
-                    placeholder="e.g., Feng Shui, I Ching, meditation, yoga..."
+                    placeholder="e.g. Feng Shui, horoscope reading, home layout, wellness…"
                   />
                   <p className="text-xs text-stone-400 mt-1 text-right">{interests.length}/500</p>
                 </div>
 
                 <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-5 border border-amber-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                        <Coins className="w-7 h-7 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-stone-500">My Coins</p>
-                        <p className="text-3xl font-bold text-amber-700">{points.toLocaleString()}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-stone-500">Complete profile bonus</p>
-                      <p className="text-xl font-bold text-emerald-600">+100 coins</p>
-                    </div>
+                  <div className="flex items-center justify-center gap-3">
+                    <Coins className="w-6 h-6 text-amber-600" />
+                    <p className="text-lg font-semibold text-amber-800">Complete your full profile → Claim +100 Free Coins</p>
                   </div>
                 </div>
 

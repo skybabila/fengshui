@@ -58,7 +58,7 @@ export default function FortunePage() {
       emoji: '☀️',
       icon: Sun,
       cost: 5,
-      description: 'Get your daily fortune and make the most of each day',
+      description: 'Get your same-day luck, lucky direction and things to avoid.',
       color: 'from-amber-500 to-orange-500',
       bgColor: 'bg-amber-50',
       hoverBg: 'hover:bg-amber-50',
@@ -72,7 +72,7 @@ export default function FortunePage() {
       emoji: '🌙',
       icon: Moon,
       cost: 20,
-      description: 'Weekly overview to plan the next seven days ahead',
+      description: '7-day preview covering wealth, love and career peaks.',
       color: 'from-purple-500 to-indigo-500',
       bgColor: 'bg-purple-50',
       hoverBg: 'hover:bg-purple-50',
@@ -83,10 +83,10 @@ export default function FortunePage() {
     {
       id: 'monthly',
       name: 'Monthly Fortune',
-      emoji: '🌟',
+      emoji: '📅',
       icon: CalendarDays,
       cost: 50,
-      description: 'Detailed monthly forecast for the entire month ahead',
+      description: 'Full detailed forecast for the whole month with lucky dates.',
       color: 'from-cyan-500 to-blue-500',
       bgColor: 'bg-cyan-50',
       hoverBg: 'hover:bg-cyan-50',
@@ -102,8 +102,8 @@ export default function FortunePage() {
         <div className="max-w-4xl mx-auto">
             {/* Welcome Header */}
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-stone-800 mb-2">Welcome to Fortune Center</h2>
-              <p className="text-stone-500">Choose a fortune type from the menu to explore your destiny</p>
+              <h2 className="text-2xl font-bold text-stone-800 mb-2">Welcome to Your Fortune Center</h2>
+              <p className="text-stone-500">Pick a reading type to explore your upcoming destiny</p>
             </div>
 
             {/* Fortune Cards Grid */}
@@ -128,7 +128,7 @@ export default function FortunePage() {
                     <div className="flex items-center justify-between">
                       <span className="inline-flex items-center gap-1 text-amber-600 font-semibold">
                         <Coins className="w-4 h-4" />
-                        {fortune.cost} coins
+                        {fortune.cost} Coins
                       </span>
                       <span className="inline-flex items-center gap-1 text-stone-400 text-sm">
                         Get fortune <ArrowRight className="w-4 h-4" />
@@ -157,7 +157,7 @@ export default function FortunePage() {
                   </div>
                   <div>
                     <p className="font-semibold text-stone-800">Daily Fortune (5 coins)</p>
-                    <p>Get your daily fortune including overall luck, lucky direction, and things to watch for. Available once per day.</p>
+                    <p>Covers daily luck, best travel direction and taboos. Limited to 1 reading per day.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -166,16 +166,16 @@ export default function FortunePage() {
                   </div>
                   <div>
                     <p className="font-semibold text-stone-800">Weekly Fortune (20 coins)</p>
-                    <p>Weekly overview with trend analysis, focus areas, cautions, and lucky days for the week.</p>
+                    <p>Weekly trend analysis, key focus areas, warnings and your luckiest days of the week.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
                   <div className="w-8 h-8 bg-cyan-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-lg">🌟</span>
+                    <span className="text-lg">📅</span>
                   </div>
                   <div>
                     <p className="font-semibold text-stone-800">Monthly Fortune (50 coins)</p>
-                    <p>Detailed monthly forecast covering career, wealth, love, and health with specific lucky days.</p>
+                    <p>In-depth prediction for career, money, romance and health, with specific lucky dates.</p>
                   </div>
                 </div>
               </div>

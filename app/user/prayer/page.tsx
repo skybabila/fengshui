@@ -13,7 +13,7 @@ const prayerTypes = [
     name: 'Burning Incense', 
     emoji: '🪔', 
     cost: 10, 
-    description: 'Traditional incense offering for peace and blessings',
+    description: 'Pray for family peace, safety and stable home luck',
     longDesc: 'Light a stick of incense and let the smoke carry your prayers to the heavens. A timeless tradition for seeking peace, health, and good fortune.',
     benefits: ['Peace of mind', 'Family health', 'Good luck'],
     gradient: 'from-amber-400 to-orange-500'
@@ -23,7 +23,7 @@ const prayerTypes = [
     name: 'Devotion Prayer', 
     emoji: '🙏', 
     cost: 20, 
-    description: 'Deep spiritual connection and devotion',
+    description: 'Deep spiritual connection for health and inner peace',
     longDesc: 'Offer your most sincere prayers with full devotion. This prayer is for those seeking deeper spiritual connection and guidance in life.',
     benefits: ['Spiritual growth', 'Inner peace', 'Divine guidance'],
     gradient: 'from-violet-400 to-purple-500'
@@ -33,7 +33,7 @@ const prayerTypes = [
     name: 'Light Offering', 
     emoji: '🕯️', 
     cost: 15, 
-    description: 'Light offering for wisdom and enlightenment',
+    description: 'Pray for wisdom, career clarity and bright future opportunities',
     longDesc: 'Offer a light to illuminate the path ahead. Symbolizes wisdom, clarity, and the dispelling of darkness from your life.',
     benefits: ['Wisdom', 'Clarity', 'Bright future'],
     gradient: 'from-yellow-400 to-amber-500'
@@ -43,7 +43,7 @@ const prayerTypes = [
     name: 'Wish Prayer', 
     emoji: '⭐', 
     cost: 30, 
-    description: 'Special prayer for making your wishes come true',
+    description: 'Special blessing for wealth, career promotion and life goals',
     longDesc: 'A powerful prayer dedicated to making your deepest wishes come true. Combined with sincere heart, your wishes may be answered.',
     benefits: ['Wish fulfillment', 'Dreams come true', 'Good fortune'],
     gradient: 'from-pink-400 to-rose-500'
@@ -254,7 +254,7 @@ export default function PrayerPage() {
               <Flame className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-stone-800 mb-2">Temple of Blessings</h1>
-            <p className="text-stone-500">Offer prayers with sincerity and receive divine blessings</p>
+            <p className="text-stone-500">Offer sincere prayers and receive divine protection & good fortune</p>
           </div>
 
           {/* Stats Bar */}
@@ -277,7 +277,7 @@ export default function PrayerPage() {
               <div className="w-10 h-10 bg-gradient-to-br from-pink-100 to-rose-100 rounded-xl flex items-center justify-center mx-auto mb-2">
                 <Heart className="w-5 h-5 text-pink-500" />
               </div>
-              <p className="text-sm text-stone-500">Blessings</p>
+              <p className="text-sm text-stone-500">Blessings Received</p>
               <p className="text-xl font-bold text-pink-600">∞</p>
             </div>
           </div>
@@ -397,7 +397,7 @@ export default function PrayerPage() {
               ) : (
                 <span className="flex items-center justify-center gap-2">
                   <Flame className="w-5 h-5" />
-                  {selectedPrayer ? `Offer ${selectedPrayerData?.name}` : 'Select a prayer to begin'}
+                  {selectedPrayer ? `Offer ${selectedPrayerData?.name}` : 'Select a Prayer to Begin'}
                 </span>
               )}
             </button>
@@ -424,7 +424,7 @@ export default function PrayerPage() {
               <div className="mt-8 bg-white rounded-2xl shadow-lg p-6 border border-stone-100">
                 <h2 className="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
                   <Clock className="w-5 h-5 text-amber-500" />
-                  Recent Prayers
+                  Your Blessing History
                 </h2>
                 <div className="space-y-3">
                   {recentPrayers.map((prayer: any) => (

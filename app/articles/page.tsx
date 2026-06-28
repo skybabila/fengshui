@@ -183,8 +183,8 @@ export default function ArticlesPage() {
             <Sparkles className="w-4 h-4" />
             Ancient Wisdom for Modern Living
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Feng Shui Articles</h1>
-          <p className="text-emerald-100 text-lg max-w-2xl mx-auto">Discover ancient Chinese wisdom, practical Feng Shui tips, and spiritual insights to enhance your life and living spaces.</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Feng Shui Articles & Practical Guides</h1>
+          <p className="text-emerald-100 text-lg max-w-2xl mx-auto">Find actionable home Feng Shui tips, zodiac horoscopes and spiritual insights to improve your wealth, relationship and home environment.</p>
         </div>
       </div>
 
@@ -196,7 +196,7 @@ export default function ArticlesPage() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
               <input
                 type="text"
-                placeholder="Search articles..."
+                placeholder="Search home layout, zodiac luck & fortune tips…"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-12 pr-4 py-4 bg-white border border-stone-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent shadow-sm text-lg"
@@ -334,8 +334,8 @@ export default function ArticlesPage() {
             <Heart className="absolute bottom-5 right-10 w-12 h-12 animate-pulse" style={{ animationDelay: '0.5s' }} />
           </div>
           <div className="relative z-10">
-            <h3 className="text-2xl font-bold mb-3">Ready to transform your space?</h3>
-            <p className="text-emerald-100 mb-6 max-w-lg mx-auto">Join our community to access personalized Feng Shui consultations and daily fortune readings.</p>
+            <h3 className="text-2xl font-bold mb-3">Ready to Boost Your Personal Luck?</h3>
+            <p className="text-emerald-100 mb-6 max-w-lg mx-auto">Join our member community to get customized Feng Shui advice and daily fortune horoscopes.</p>
             <Link href="/daily-fortune" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-emerald-600 font-bold rounded-xl hover:bg-emerald-50 transition-colors shadow-lg">
               Get Your Daily Fortune
             </Link>

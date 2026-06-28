@@ -17,12 +17,12 @@ const rewardTiers = [
 ]
 
 const earnWays = [
-  { icon: Sparkles, title: 'Daily Check-in', points: '+5', desc: 'Get coins every day', href: '#', gradient: 'from-amber-400 to-orange-500', bgGradient: 'from-amber-50 to-orange-50' },
-  { icon: Star, title: 'Daily Fortune', points: '+10', desc: 'Unlock your daily luck', href: '/fortune/daily', gradient: 'from-purple-400 to-indigo-500', bgGradient: 'from-purple-50 to-indigo-50' },
-  { icon: Zap, title: 'Weekly Fortune', points: '+50', desc: 'Plan your week ahead', href: '/fortune/weekly', gradient: 'from-cyan-400 to-blue-500', bgGradient: 'from-cyan-50 to-blue-50' },
-  { icon: Trophy, title: 'Monthly Fortune', points: '+200', desc: 'Monthly detailed forecast', href: '/fortune/monthly', gradient: 'from-emerald-400 to-teal-500', bgGradient: 'from-emerald-50 to-teal-50' },
-  { icon: Heart, title: 'Invite Friends', points: '+50', desc: 'Invite friends to register', href: '#', gradient: 'from-pink-400 to-rose-500', bgGradient: 'from-pink-50 to-rose-50' },
-  { icon: Award, title: 'Complete Profile', points: '+100', desc: 'Fill in all your info', href: '/user/profile', gradient: 'from-violet-400 to-purple-500', bgGradient: 'from-violet-50 to-purple-50' },
+  { icon: Sparkles, title: 'Daily Check-in', points: '+5 Coins (Collect every day)', desc: '', href: '#', gradient: 'from-amber-400 to-orange-500', bgGradient: 'from-amber-50 to-orange-50' },
+  { icon: Star, title: 'Daily Fortune Reading', points: '+10 Coins', desc: '', href: '/fortune/daily', gradient: 'from-purple-400 to-indigo-500', bgGradient: 'from-purple-50 to-indigo-50' },
+  { icon: Zap, title: 'Weekly Fortune Reading', points: '+50 Coins', desc: '', href: '/fortune/weekly', gradient: 'from-cyan-400 to-blue-500', bgGradient: 'from-cyan-50 to-blue-50' },
+  { icon: Trophy, title: 'Monthly Fortune Reading', points: '+200 Coins', desc: '', href: '/fortune/monthly', gradient: 'from-emerald-400 to-teal-500', bgGradient: 'from-emerald-50 to-teal-50' },
+  { icon: Heart, title: 'Invite Friends', points: '+50 Coins per new member', desc: '', href: '#', gradient: 'from-pink-400 to-rose-500', bgGradient: 'from-pink-50 to-rose-50' },
+  { icon: Award, title: 'Complete Profile', points: '+100 One-Time Bonus', desc: '', href: '/user/profile', gradient: 'from-violet-400 to-purple-500', bgGradient: 'from-violet-50 to-purple-50' },
 ]
 
 export default function PointsPage() {
@@ -98,8 +98,8 @@ export default function PointsPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl shadow-lg mb-4">
               <Coins className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-stone-800 mb-2">My Coins</h1>
-            <p className="text-stone-500">Track your journey and earn more rewards</p>
+            <h1 className="text-3xl font-bold text-stone-800 mb-2">My Merit Coins</h1>
+            <p className="text-stone-500">Complete simple tasks to earn coins and unlock premium fortune readings</p>
           </div>
 
           {/* Big Balance Card */}
@@ -109,7 +109,7 @@ export default function PointsPage() {
             <div className="relative z-10">
               <div className="flex items-start justify-between mb-6">
                 <div>
-                  <p className="text-amber-100 text-sm mb-1">My Balance</p>
+                  <p className="text-amber-100 text-sm mb-1">Current Balance</p>
                   <p className="text-5xl md:text-6xl font-bold text-white">{points.toLocaleString()}</p>
                   <p className="text-amber-100 mt-2">Merit Coins</p>
                 </div>
@@ -133,7 +133,7 @@ export default function PointsPage() {
               </div>
               {nextTier && (
                 <p className="text-center text-amber-100 text-sm mt-3">
-                  {pointsToNext.toLocaleString()} more coins to reach {nextTier.tier} {nextTier.icon}
+                  Only {pointsToNext.toLocaleString()} more coins to upgrade to {nextTier.tier} Tier
                 </p>
               )}
             </div>
@@ -159,7 +159,7 @@ export default function PointsPage() {
               <div className={`w-10 h-10 bg-gradient-to-br ${currentTier.gradient} rounded-xl flex items-center justify-center mx-auto mb-2`}>
                 <Trophy className="w-5 h-5 text-white" />
               </div>
-              <p className="text-sm text-stone-500">Level</p>
+              <p className="text-sm text-stone-500">Current Tier</p>
               <p className={`text-lg font-bold ${currentTier.color}`}>{currentTier.tier}</p>
             </div>
           </div>

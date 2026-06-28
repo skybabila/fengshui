@@ -13,7 +13,7 @@ export default function Footer() {
               <span className="text-xl font-bold text-white">Feng Shui Wisdom</span>
             </div>
             <p className="text-sm text-stone-400 leading-relaxed">
-              Ancient Chinese wisdom for modern living. Discover the art of balancing your space and life energy.
+              Ancient Chinese wisdom for modern life. Balance your home layout and life energy to attract wealth, health and happiness.
             </p>
           </div>
 

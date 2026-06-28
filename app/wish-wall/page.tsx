@@ -214,7 +214,7 @@ export default function WishWallPage() {
               <Heart className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-stone-800 mb-2">My Wish Wall</h1>
-            <p className="text-stone-500">Record your beautiful wishes and find spiritual comfort</p>
+            <p className="text-stone-500">Record your heartfelt wishes and attract positive spiritual energy</p>
           </div>
 
           {/* Stats & Coins */}
@@ -237,7 +237,7 @@ export default function WishWallPage() {
               <div className="w-10 h-10 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-xl flex items-center justify-center mx-auto mb-2">
                 <PartyPopper className="w-5 h-5 text-emerald-500" />
               </div>
-              <p className="text-sm text-stone-500">Fulfilled</p>
+              <p className="text-sm text-stone-500">Wishes Fulfilled</p>
               <p className="text-xl font-bold text-emerald-600">{fulfilledWishes.length}</p>
             </div>
           </div>
@@ -291,7 +291,7 @@ export default function WishWallPage() {
                         key={wish.id}
                         className={`relative border-2 rounded-xl p-5 shadow-sm hover:shadow-lg transition-all ${
                           wish.is_fulfilled
-                            ? 'bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-300'
+                            ? 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-300'
                             : `bg-gradient-to-br ${bg.from} ${bg.to} ${bg.border}`
                         }`}
                       >
@@ -400,7 +400,7 @@ export default function WishWallPage() {
                     ) : (
                       <>
                         <Sparkles className="w-5 h-5" />
-                        Make a Wish ({WISH_COST} coins)
+                        Make a Wish (10 Coins)
                       </>
                     )}
                   </button>

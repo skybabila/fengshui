@@ -1,13 +1,13 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Compass, Sparkles, Heart, TrendingUp } from 'lucide-react'
+import { Compass, Sparkles, Heart, TrendingUp, ArrowRight } from 'lucide-react'
 
 const elements = [
-  { name: 'Wood', color: 'from-green-500 to-emerald-600', description: 'Growth, vitality, new beginnings' },
-  { name: 'Fire', color: 'from-orange-500 to-red-500', description: 'Passion, energy, transformation' },
-  { name: 'Earth', color: 'from-amber-500 to-yellow-600', description: 'Stability, nourishment, grounding' },
-  { name: 'Metal', color: 'from-stone-400 to-stone-600', description: 'Clarity, precision, strength' },
-  { name: 'Water', color: 'from-blue-500 to-cyan-600', description: 'Flow, wisdom, adaptability' },
+  { name: 'Wood', desc: 'Growth, vitality, new opportunities & fresh beginnings', color: 'from-green-500 to-emerald-600', emoji: '🌿' },
+  { name: 'Fire', desc: 'Passion, career momentum & life transformation', color: 'from-orange-500 to-red-500', emoji: '🔥' },
+  { name: 'Earth', desc: 'Stability, family luck, wealth accumulation & grounding', color: 'from-amber-500 to-yellow-600', emoji: '🪨' },
+  { name: 'Metal', desc: 'Clarity, decision-making, financial precision & inner strength', color: 'from-stone-400 to-stone-600', emoji: '⚔️' },
+  { name: 'Water', desc: 'Flow, prosperity, adaptability & continuous good fortune', color: 'from-blue-500 to-cyan-600', emoji: '💧' },
 ]
 
 const zodiacSigns = [
@@ -28,26 +28,26 @@ const zodiacSigns = [
 const articles = [
   {
     title: 'Understanding the Five Elements in Feng Shui',
-    excerpt: 'Learn how the five elements - Wood, Fire, Earth, Metal, and Water - interact and influence your life and environment.',
+    excerpt: 'Learn how Wood, Fire, Earth, Metal and Water interact. Fix stagnant energy in your house and attract positive wealth flow.',
     image: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=feng%20shui%20five%20elements%20meditation%20peaceful&image_size=landscape_4_3',
     slug: 'five-elements-feng-shui',
-    date: '2024-01-15',
+    date: 'Jan 15, 2026',
     category: 'Feng Shui',
   },
   {
     title: 'Creating Harmonious Spaces',
-    excerpt: 'Discover practical tips for arranging your home and workspace to promote positive energy flow and balance.',
+    excerpt: 'Easy home workspace tweaks to remove bad Qi and build a prosperous living environment.',
     image: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=harmonious%20chinese%20interior%20design%20feng%20shui&image_size=landscape_4_3',
     slug: 'harmonious-spaces',
-    date: '2024-01-10',
+    date: 'Jan 10, 2026',
     category: 'Interior Design',
   },
   {
     title: 'Daily Feng Shui Practices',
-    excerpt: 'Simple rituals and practices to align your daily life with natural energy patterns for greater well-being.',
+    excerpt: '5-minute morning rituals to align your energy and bring better luck every single day.',
     image: 'https://neeko-copilot.bytedance.net/api/text_to_image?prompt=morning%20meditation%20zen%20peaceful%20garden&image_size=landscape_4_3',
     slug: 'daily-feng-shui-practices',
-    date: '2024-01-05',
+    date: 'Jan 5, 2026',
     category: 'Daily Practice',
   },
 ]
@@ -55,6 +55,7 @@ const articles = [
 export default function Home() {
   return (
     <div className="min-h-screen">
+      {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 py-20 md:py-28">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-400 rounded-full blur-3xl animate-float-slow"></div>
@@ -65,43 +66,61 @@ export default function Home() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full mb-6 animate-fade-in">
             <Sparkles className="w-4 h-4 text-amber-500" />
-            <span className="text-sm font-medium text-emerald-700">Ancient Wisdom, Modern Living</span>
+            <span className="text-sm font-medium text-emerald-700">Ancient Wisdom, Modern Luck</span>
           </div>
 
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-stone-800 mb-6 animate-fade-in-up">
-            Embrace the Flow of
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-stone-800 mb-6 leading-tight animate-fade-in-up">
+            Unlock Your Good Fortune &
             <span className="block mt-2 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
-              Life Energy
+              Harmonize Your Living Space
             </span>
           </h1>
 
-          <p className="text-lg md:text-xl text-stone-600 max-w-2xl mx-auto mb-10 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            Discover the ancient art of Feng Shui. Learn to balance your space, enhance your well-being, and unlock your true potential through timeless Chinese wisdom.
+          <p className="text-lg text-stone-600 max-w-2xl mx-auto mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            Master authentic Chinese Feng Shui. Optimize your home energy, boost wealth and health, and reveal your true destiny with time-tested traditional wisdom.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-10 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             <Link
               href="/articles"
               className="px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-200 hover:shadow-xl hover:shadow-emerald-300 transition-all hover:-translate-y-1"
             >
-              Explore Knowledge
+              Grab My Free Home Feng Shui Guide
             </Link>
             <Link
-              href="/login"
-              className="px-8 py-4 border-2 border-emerald-200 text-emerald-700 font-semibold rounded-xl hover:bg-emerald-50 transition-all hover:-translate-y-1"
+              href="/daily-fortune"
+              className="px-8 py-4 border-2 border-emerald-200 bg-white text-emerald-700 font-semibold rounded-xl hover:bg-emerald-50 transition-all hover:-translate-y-1"
             >
-              Join Our Community
+              Check Your Free Zodiac Reading
             </Link>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-stone-500 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+              10,000+ Active Members
+            </span>
+            <span className="text-stone-300">•</span>
+            <span className="flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              Personalized Horoscopes
+            </span>
+            <span className="text-stone-300">•</span>
+            <span className="flex items-center gap-1.5">
+              <Heart className="w-4 h-4 text-pink-500" />
+              98% User Satisfaction
+            </span>
           </div>
         </div>
       </section>
 
+      {/* Five Elements Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-4">The Five Elements</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-4">The Five Core Elements</h2>
             <p className="text-stone-600 max-w-2xl mx-auto">
-              Everything in the universe is composed of five fundamental elements. Understanding their interactions is key to achieving balance.
+              Every corner of the universe is governed by these five energies. Master their cycles to balance your home and personal luck.
             </p>
           </div>
 
@@ -113,28 +132,23 @@ export default function Home() {
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${element.color} flex items-center justify-center mb-4 mx-auto shadow-lg group-hover:scale-110 transition-transform`}>
-                  <span className="text-3xl">
-                    {element.name === 'Wood' && '🌿'}
-                    {element.name === 'Fire' && '🔥'}
-                    {element.name === 'Earth' && '🪨'}
-                    {element.name === 'Metal' && '⚔️'}
-                    {element.name === 'Water' && '💧'}
-                  </span>
+                  <span className="text-3xl">{element.emoji}</span>
                 </div>
-                <h3 className="text-lg font-semibold text-stone-800 text-center mb-2">{element.name}</h3>
-                <p className="text-sm text-stone-500 text-center">{element.description}</p>
+                <h3 className="text-lg font-bold text-stone-800 text-center mb-2">{element.name}</h3>
+                <p className="text-sm text-stone-500 text-center leading-relaxed">{element.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* Chinese Zodiac Section */}
       <section className="py-20 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-4">Chinese Zodiac</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-4">Chinese Zodiac Forecast</h2>
             <p className="text-stone-600 max-w-2xl mx-auto">
-              Discover your zodiac sign and its characteristics according to Chinese astrology.
+              Find your animal sign and unlock your innate personality, yearly luck and life path from Chinese astrology.
             </p>
           </div>
 
@@ -154,12 +168,13 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Latest Insights Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-4">Latest Insights</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-4">Practical Feng Shui Guides</h2>
             <p className="text-stone-600 max-w-2xl mx-auto">
-              Explore our collection of articles on Feng Shui principles, daily practices, and holistic living.
+              Simple home layout tips, daily luck rituals and holistic wellness advice for modern life.
             </p>
           </div>
 
@@ -196,34 +211,52 @@ export default function Home() {
                   </h3>
                   <p className="text-stone-500 text-sm line-clamp-2 mb-4">{article.excerpt}</p>
                   <div className="inline-flex items-center gap-1 text-emerald-600 font-medium text-sm group-hover:gap-2 transition-all">
-                    Read article <span>→</span>
+                    Read article <ArrowRight className="w-4 h-4" />
                   </div>
                 </div>
               </Link>
             ))}
           </div>
 
-          <div className="text-center mt-10">
+          <div className="text-center mt-12">
             <Link
               href="/articles"
               className="inline-flex items-center gap-2 px-8 py-3 bg-white border-2 border-emerald-200 text-emerald-700 font-semibold rounded-xl hover:bg-emerald-50 transition-all"
             >
               View All Articles
-              <span>→</span>
+              <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-40 h-40 border-2 border-white rounded-full"></div>
+          <div className="absolute bottom-10 right-20 w-60 h-60 border-2 border-white rounded-full"></div>
+        </div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-6">
             <Heart className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Join Our Community</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Join Our Fortune Community</h2>
           <p className="text-emerald-100 text-lg mb-8 max-w-2xl mx-auto">
-            Sign up today to unlock exclusive features including daily fortune readings, personalized energy analysis, and access to our sacred temple prayer system.
+            Create your free account to unlock exclusive perks:
           </p>
+          <div className="grid sm:grid-cols-2 gap-3 max-w-xl mx-auto mb-10 text-left">
+            {[
+              'Daily personalized fortune predictions',
+              'Custom energy & zodiac analysis',
+              'Virtual temple prayer & wish wall blessings',
+              'Free merit coins for premium readings',
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-2 text-white/90">
+                <span className="text-emerald-300 text-lg">✅</span>
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/login"
@@ -235,42 +268,43 @@ export default function Home() {
               href="/daily-fortune"
               className="px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all"
             >
-              Check Today&apos;s Fortune
+              Check Today&apos;s Lucky Fortune
             </Link>
           </div>
         </div>
       </section>
 
+      {/* Stats Section */}
       <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div className="animate-fade-in">
               <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Compass className="w-6 h-6 text-emerald-600" />
               </div>
-              <h3 className="text-2xl font-bold text-stone-800">10K+</h3>
+              <h3 className="text-3xl font-bold text-stone-800">10K+</h3>
               <p className="text-stone-500 text-sm mt-1">Active Members</p>
             </div>
             <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
               <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="w-6 h-6 text-amber-600" />
               </div>
-              <h3 className="text-2xl font-bold text-stone-800">50K+</h3>
+              <h3 className="text-3xl font-bold text-stone-800">50K+</h3>
               <p className="text-stone-500 text-sm mt-1">Prayers Offered</p>
             </div>
             <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
               <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <TrendingUp className="w-6 h-6 text-cyan-600" />
               </div>
-              <h3 className="text-2xl font-bold text-stone-800">100+</h3>
-              <p className="text-stone-500 text-sm mt-1">Articles</p>
+              <h3 className="text-3xl font-bold text-stone-800">100+</h3>
+              <p className="text-stone-500 text-sm mt-1">In-depth Guides</p>
             </div>
             <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
               <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Heart className="w-6 h-6 text-teal-600" />
               </div>
-              <h3 className="text-2xl font-bold text-stone-800">98%</h3>
-              <p className="text-stone-500 text-sm mt-1">Satisfaction</p>
+              <h3 className="text-3xl font-bold text-stone-800">98%</h3>
+              <p className="text-stone-500 text-sm mt-1">Positive Feedback</p>
             </div>
           </div>
         </div>

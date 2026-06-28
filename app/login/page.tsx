@@ -150,14 +150,19 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 py-12 px-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg shadow-emerald-200 mb-4">
             <span className="text-3xl">☯</span>
           </div>
           <h1 className="text-2xl font-bold text-stone-800">Feng Shui Wisdom</h1>
           <p className="text-stone-500 mt-2">
-            {isLogin ? 'Welcome back' : 'Create your account'}
+            {isLogin ? 'Welcome Back' : 'Create your account'}
           </p>
+          {isLogin && (
+            <p className="text-sm text-stone-400 mt-2 max-w-xs mx-auto">
+              Join 10,000+ members reading daily horoscopes and submitting blessing prayers.
+            </p>
+          )}
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8 animate-fade-in-up">
@@ -248,7 +253,7 @@ export default function LoginPage() {
                 }}
                 className="ml-2 text-emerald-600 font-medium hover:text-emerald-700 transition-colors"
               >
-                {isLogin ? 'Sign Up' : 'Sign In'}
+                {isLogin ? 'Sign Up for Free & Get Your First Fortune Reading' : 'Sign In'}
               </button>
             </p>
           </div>
