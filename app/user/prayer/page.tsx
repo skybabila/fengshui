@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import SidebarLayout from '@/components/SidebarLayout'
-import { Flame, Coins, Star, Heart, Sparkles, Info, Clock, CheckCircle2, TrendingUp } from 'lucide-react'
+import { Flame, Coins, Star, Heart, Sparkles, Info, Clock, CheckCircle2, TrendingUp, Lightbulb } from 'lucide-react'
 
 const prayerTypes = [
   { 
@@ -13,39 +13,39 @@ const prayerTypes = [
     name: 'Burning Incense', 
     emoji: '🪔', 
     cost: 10, 
-    description: 'Pray for family peace, safety and stable home luck',
-    longDesc: 'Light a stick of incense and let the smoke carry your prayers to the heavens. A timeless tradition for seeking peace, health, and good fortune.',
-    benefits: ['Peace of mind', 'Family health', 'Good luck'],
+    goal: 'Family Safety & Home Harmony',
+    description: 'Ward off negative energy, protect your whole family, and keep your home peaceful and stable.',
+    benefits: ['Negative energy removed', 'Family protection', 'Home stability'],
     gradient: 'from-amber-400 to-orange-500'
-  },
-  { 
-    id: 'worship', 
-    name: 'Devotion Prayer', 
-    emoji: '🙏', 
-    cost: 20, 
-    description: 'Deep spiritual connection for health and inner peace',
-    longDesc: 'Offer your most sincere prayers with full devotion. This prayer is for those seeking deeper spiritual connection and guidance in life.',
-    benefits: ['Spiritual growth', 'Inner peace', 'Divine guidance'],
-    gradient: 'from-violet-400 to-purple-500'
   },
   { 
     id: 'light', 
     name: 'Light Offering', 
     emoji: '🕯️', 
     cost: 15, 
-    description: 'Pray for wisdom, career clarity and bright future opportunities',
-    longDesc: 'Offer a light to illuminate the path ahead. Symbolizes wisdom, clarity, and the dispelling of darkness from your life.',
-    benefits: ['Wisdom', 'Clarity', 'Bright future'],
+    goal: 'Career & Future Opportunities',
+    description: 'Pray for wisdom and clear judgment, attract new job chances and brighter career prospects.',
+    benefits: ['Wisdom & clarity', 'New opportunities', 'Career growth'],
     gradient: 'from-yellow-400 to-amber-500'
+  },
+  { 
+    id: 'worship', 
+    name: 'Devotion Prayer', 
+    emoji: '🙏', 
+    cost: 20, 
+    goal: 'Physical Health & Inner Peace',
+    description: 'Calm anxiety, improve physical wellness, and gain long-term stability of body and mind.',
+    benefits: ['Anxiety relief', 'Physical wellness', 'Mental balance'],
+    gradient: 'from-violet-400 to-purple-500'
   },
   { 
     id: 'wish', 
     name: 'Wish Prayer', 
     emoji: '⭐', 
     cost: 30, 
-    description: 'Special blessing for wealth, career promotion and life goals',
-    longDesc: 'A powerful prayer dedicated to making your deepest wishes come true. Combined with sincere heart, your wishes may be answered.',
-    benefits: ['Wish fulfillment', 'Dreams come true', 'Good fortune'],
+    goal: 'Wealth, Promotion & Life Goals',
+    description: 'Powerful blessing for salary raise, business growth and the realization of your biggest life wishes.',
+    benefits: ['Salary increase', 'Business growth', 'Wish fulfillment'],
     gradient: 'from-pink-400 to-rose-500'
   },
 ]
@@ -88,7 +88,7 @@ export default function PrayerPage() {
             .select('*')
             .eq('user_id', authUser.id)
             .order('created_at', { ascending: false })
-            .limit(5)
+            .limit(50)
           
           if (prayersError) {
             console.error('Error fetching prayers:', prayersError)
@@ -114,17 +114,6 @@ export default function PrayerPage() {
 
   const points = profile?.points || 0
   const selectedPrayerData = prayerTypes.find(p => p.id === selectedPrayer)
-
-  const prayerMessages = [
-    'Your prayers have been heard. May blessings come your way.',
-    'The divine has received your offering. Peace be with you.',
-    'Your devotion brings positive energy. Good fortune awaits.',
-    'May your prayers be answered according to the divine will.',
-    'The smoke carries your wishes to the heavens.',
-    'Blessings flow upon you like gentle rain.',
-    'Your heart-felt prayer has been received with gratitude.',
-    'Positive vibrations surround you. Stay open to receive.',
-  ]
 
   const performPrayer = async () => {
     if (!selectedPrayer || !user) return
@@ -177,8 +166,7 @@ export default function PrayerPage() {
           points: -prayer.cost
         })
 
-      const randomMessage = prayerMessages[Math.floor(Math.random() * prayerMessages.length)]
-      setPrayerResult(randomMessage)
+      setPrayerResult('Your prayer has been sent to the temple. Stay positive, good fortune will arrive soon.')
       setShowResult(true)
 
       const updatedProfile = await getUserProfile(user.id)
@@ -191,7 +179,7 @@ export default function PrayerPage() {
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(5)
+          .limit(50)
         
         setRecentPrayers(prayers || [])
       } catch (e) {
@@ -248,13 +236,14 @@ export default function PrayerPage() {
     <SidebarLayout>
       <div className="p-6 md:p-8">
         <div className="max-w-4xl mx-auto">
+
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-lg mb-4">
               <Flame className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-stone-800 mb-2">Temple of Blessings</h1>
-            <p className="text-stone-500">Offer sincere prayers and receive divine protection & good fortune</p>
+            <p className="text-stone-500">Offer sincere prayers and receive divine protection & lasting good fortune</p>
           </div>
 
           {/* Stats Bar */}
@@ -263,22 +252,25 @@ export default function PrayerPage() {
               <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center mx-auto mb-2">
                 <Coins className="w-5 h-5 text-amber-600" />
               </div>
-              <p className="text-sm text-stone-500">My Coins</p>
+              <p className="text-xs text-stone-500 mb-1">My Merit Coins</p>
               <p className="text-xl font-bold text-amber-600">{points.toLocaleString()}</p>
+              <p className="text-xs text-stone-400 mt-1">Available for prayers & fortune readings</p>
             </div>
             <div className="bg-white rounded-2xl p-4 shadow-lg border border-stone-100 text-center">
               <div className="w-10 h-10 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center mx-auto mb-2">
                 <Flame className="w-5 h-5 text-orange-500" />
               </div>
-              <p className="text-sm text-stone-500">Total Prayers</p>
+              <p className="text-xs text-stone-500 mb-1">Total Prayers Offered</p>
               <p className="text-xl font-bold text-stone-800">{totalPrayers}</p>
+              <p className="text-xs text-stone-400 mt-1">Your spiritual devotion record</p>
             </div>
             <div className="bg-white rounded-2xl p-4 shadow-lg border border-stone-100 text-center">
               <div className="w-10 h-10 bg-gradient-to-br from-pink-100 to-rose-100 rounded-xl flex items-center justify-center mx-auto mb-2">
                 <Heart className="w-5 h-5 text-pink-500" />
               </div>
-              <p className="text-sm text-stone-500">Blessings Received</p>
+              <p className="text-xs text-stone-500 mb-1">Blessings Received</p>
               <p className="text-xl font-bold text-pink-600">∞</p>
+              <p className="text-xs text-stone-400 mt-1">Good luck coming your way</p>
             </div>
           </div>
 
@@ -316,11 +308,11 @@ export default function PrayerPage() {
           <>
             {/* Prayer Selection */}
             <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-stone-100">
-              <h2 className="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-bold text-stone-800 mb-1 flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-amber-500" />
-                Choose Your Prayer
+                Choose Your Blessing Today
               </h2>
-              <p className="text-stone-500 text-sm mb-4">Select a prayer type that resonates with your heart today</p>
+              <p className="text-stone-500 text-sm mb-6">Pick one prayer that matches what you wish to attract</p>
               <div className="grid md:grid-cols-2 gap-4">
                 {prayerTypes.map((prayer) => (
                   <button
@@ -340,7 +332,8 @@ export default function PrayerPage() {
                       </div>
                       <div className="flex-1">
                         <h3 className="font-bold text-stone-800 mb-1">{prayer.name}</h3>
-                        <p className="text-sm text-stone-500 mb-2">{prayer.description}</p>
+                        <p className="text-xs text-amber-600 font-medium mb-2">Goal: {prayer.goal}</p>
+                        <p className="text-sm text-stone-500 mb-3">{prayer.description}</p>
                         <div className="inline-flex items-center gap-1 text-amber-600 font-bold">
                           <Coins className="w-4 h-4" />
                           {prayer.cost} coins
@@ -366,7 +359,7 @@ export default function PrayerPage() {
                   <div className="text-5xl">{selectedPrayerData.emoji}</div>
                   <div className="flex-1">
                     <h3 className="font-bold text-xl text-stone-800 mb-2">{selectedPrayerData.name}</h3>
-                    <p className="text-stone-600 mb-4">{selectedPrayerData.longDesc}</p>
+                    <p className="text-stone-600 mb-4">{selectedPrayerData.description}</p>
                     <div className="flex flex-wrap gap-2 mb-4">
                       {selectedPrayerData.benefits.map((benefit, i) => (
                         <span key={i} className="inline-flex items-center gap-1 px-3 py-1 bg-white rounded-full text-sm text-stone-700 border border-stone-200">
@@ -397,7 +390,7 @@ export default function PrayerPage() {
               ) : (
                 <span className="flex items-center justify-center gap-2">
                   <Flame className="w-5 h-5" />
-                  {selectedPrayer ? `Offer ${selectedPrayerData?.name}` : 'Select a Prayer to Begin'}
+                  {selectedPrayer ? `Offer ${selectedPrayerData?.name}` : 'Start Your Prayer Ritual'}
                 </span>
               )}
             </button>
@@ -419,13 +412,14 @@ export default function PrayerPage() {
               </div>
             )}
 
-            {/* Recent Prayers */}
-            {recentPrayers.length > 0 && (
-              <div className="mt-8 bg-white rounded-2xl shadow-lg p-6 border border-stone-100">
-                <h2 className="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-amber-500" />
-                  Your Blessing History
-                </h2>
+            {/* Prayer History */}
+            <div className="mt-8 bg-white rounded-2xl shadow-lg p-6 border border-stone-100">
+              <h2 className="text-lg font-bold text-stone-800 mb-1 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-amber-500" />
+                Your Prayer History
+              </h2>
+              <p className="text-stone-500 text-sm mb-6">Every sincere wish will be recorded and blessed.</p>
+              {recentPrayers.length > 0 ? (
                 <div className="space-y-3">
                   {recentPrayers.map((prayer: any) => (
                     <div key={prayer.id} className="flex items-center justify-between p-4 bg-stone-50 rounded-xl hover:bg-stone-100 transition-colors">
@@ -450,18 +444,36 @@ export default function PrayerPage() {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {recentPrayers.length === 0 && (
-              <div className="mt-8 bg-white rounded-2xl shadow-lg p-12 text-center border border-stone-100">
-                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Flame className="w-8 h-8 text-orange-400" />
+              ) : (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Flame className="w-8 h-8 text-orange-400" />
+                  </div>
+                  <p className="text-stone-500 mb-2">No prayers yet</p>
+                  <p className="text-stone-400 text-sm">Start your spiritual journey with a prayer above!</p>
                 </div>
-                <p className="text-stone-500 mb-2">No prayers yet</p>
-                <p className="text-stone-400 text-sm">Start your spiritual journey with a prayer above!</p>
+              )}
+              {recentPrayers.length > 0 && (
+                <p className="text-xs text-stone-400 mt-4 text-center italic">
+                  *Your wish has been recorded in the temple archive.*
+                </p>
+              )}
+            </div>
+
+            {/* Pro Tip */}
+            <div className="mt-6 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-5 border border-amber-100">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Lightbulb className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-amber-800 mb-1">Pro Tip</h3>
+                  <p className="text-sm text-amber-700">
+                    Complete daily check-ins and fill out your profile to earn free merit coins and keep sending blessings every day.
+                  </p>
+                </div>
               </div>
-            )}
+            </div>
           </>
         )}
         </div>
