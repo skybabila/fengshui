@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import SidebarLayout from '@/components/SidebarLayout'
-import { Flame, Coins, Star, Heart, Sparkles, Clock, CheckCircle2, TrendingUp, Scroll, Cloud, Sunrise, Mountain, Sun } from 'lucide-react'
+import { Flame, Coins, Star, Heart, Sparkles, Clock, CheckCircle2, TrendingUp, Scroll, Cloud, Sunrise, Mountain, Sun, Volume2 } from 'lucide-react'
 
 // Chinese Deities for Worship System - 6 most popular for overseas audience
 const deities = [
@@ -122,6 +122,114 @@ const deities = [
   },
 ]
 
+// Fortune Sticks - 20 unique readings
+const fortuneSticks = [
+  // Great Luck (5)
+  { id: 1, luck: 'Great Luck', luckLevel: 'great', luckColor: 'text-yellow-500', luckBg: 'bg-yellow-50', stickNo: 1,
+    poem: "Morning sunlight fills your door,\nProsperity comes more and more.\nNo barrier blocks your road ahead,\nAll your wishes will soon be spread.",
+    interpretation: { wealth: "Unexpected income or new business orders will arrive soon.", career: "Leaders recognize your work, promotion opportunities are near.", love: "Stable relationship, single people will meet good matches.", health: "Full of energy, no minor illnesses." },
+    deityRecommendation: { deity: 'God of Wealth', deityId: 'caishen' }
+  },
+  { id: 2, luck: 'Great Luck', luckLevel: 'great', luckColor: 'text-yellow-500', luckBg: 'bg-yellow-50', stickNo: 8,
+    poem: "Good fate follows your every step,\nYour hard work will get its reward.\nFamily stays safe all through the year,\nJoy and wealth will always appear.",
+    interpretation: { wealth: "Steady passive income keeps growing.", career: "Workplace disputes fade away smoothly.", love: "Family harmony, couples grow closer.", health: "Elders enjoy stable physical condition." },
+    deityRecommendation: { deity: 'Household Guardian', deityId: 'household' }
+  },
+  { id: 3, luck: 'Great Luck', luckLevel: 'great', luckColor: 'text-yellow-500', luckBg: 'bg-yellow-50', stickNo: 15,
+    poem: "Your mind becomes clear and bright,\nYou win success day and night.\nDoors of opportunity open wide,\nYou ride the tide with growing pride.",
+    interpretation: { wealth: "Investment judgment becomes sharp.", career: "Interviews and important examinations go perfectly.", love: "Communicate smoothly with your partner.", health: "Anxiety fades, sleep quality improves greatly." },
+    deityRecommendation: { deity: 'Wen Chang', deityId: 'wenchang' }
+  },
+  { id: 4, luck: 'Great Luck', luckLevel: 'great', luckColor: 'text-yellow-500', luckBg: 'bg-yellow-50', stickNo: 22,
+    poem: "Red fate thread slowly winds along,\nYour destined love will soon belong.\nGood luck flows without any stop,\nYour happy life will rise on top.",
+    interpretation: { wealth: "Small side projects bring continuous profit.", career: "New cooperative projects move forward smoothly.", love: "Singles meet soulmates; couples prepare for marriage.", health: "Peace of mind brings stable wellness." },
+    deityRecommendation: { deity: 'Yue Lao', deityId: 'yuelao' }
+  },
+  { id: 5, luck: 'Great Luck', luckLevel: 'great', luckColor: 'text-yellow-500', luckBg: 'bg-yellow-50', stickNo: 29,
+    poem: "Clouds disperse beneath the blue sky,\nYour long wait meets a reply.\nWealth and honor walk hand in hand,\nYour future stands on solid land.",
+    interpretation: { wealth: "Delayed payment or owed money will be returned.", career: "Long-term efforts finally get recognized and rewarded.", love: "Relationship bottlenecks are broken successfully.", health: "Recover quickly from mild discomfort." },
+    deityRecommendation: { deity: 'Guan Yu', deityId: 'guanyu' }
+  },
+  // Good Luck (5)
+  { id: 6, luck: 'Good Luck', luckLevel: 'good', luckColor: 'text-emerald-600', luckBg: 'bg-emerald-50', stickNo: 36,
+    poem: "Walk steadily on your journey,\nSmall gains build up into plenty.\nGuard your peace day after day,\nGood fortune will come your way.",
+    interpretation: { wealth: "Income rises slowly and steadily; avoid speculative gambling.", career: "Step-by-step progress, no sudden setbacks.", love: "Minor quarrels can be resolved with gentle communication.", health: "Keep regular schedules to stay in good shape." },
+    deityRecommendation: { deity: 'Household Guardian', deityId: 'household' }
+  },
+  { id: 7, luck: 'Good Luck', luckLevel: 'good', luckColor: 'text-emerald-600', luckBg: 'bg-emerald-50', stickNo: 43,
+    poem: "Plant seeds within the spring rain,\nYour harvest comes without pain.\nKeep faith through waiting days,\nYour fortune grows in gentle ways.",
+    interpretation: { wealth: "Long-term investment slowly brings returns.", career: "New projects start smoothly and gain gradual results.", love: "Relationship develops calmly and stably.", health: "Minor aches disappear after proper rest." },
+    deityRecommendation: { deity: 'God of Longevity', deityId: 'longevity' }
+  },
+  { id: 8, luck: 'Good Luck', luckLevel: 'good', luckColor: 'text-emerald-600', luckBg: 'bg-emerald-50', stickNo: 50,
+    poem: "Wisdom rises inside your mind,\nYou leave confusion far behind.\nMake careful plans before you act,\nYou avoid every risky trap.",
+    interpretation: { wealth: "Rational financial planning avoids unnecessary losses.", career: "Clear judgment helps you win competitive chances.", love: "Think calmly before arguing with your partner.", health: "Mental stress is greatly relieved." },
+    deityRecommendation: { deity: 'Wen Chang', deityId: 'wenchang' }
+  },
+  { id: 9, luck: 'Good Luck', luckLevel: 'good', luckColor: 'text-emerald-600', luckBg: 'bg-emerald-50', stickNo: 57,
+    poem: "A gentle wind pushes your boat forward,\nYour small wishes are soon rewarded.\nStay sincere and keep your mood bright,\nGood luck stays with you day and night.",
+    interpretation: { wealth: "Side hustles bring stable extra earnings.", career: "Colleagues offer help and teamwork goes well.", love: "Sweet small moments warm your relationship.", health: "Maintain light exercise to stay energetic." },
+    deityRecommendation: { deity: 'Guan Yu', deityId: 'guanyu' }
+  },
+  { id: 10, luck: 'Good Luck', luckLevel: 'good', luckColor: 'text-emerald-600', luckBg: 'bg-emerald-50', stickNo: 64,
+    poem: "Red thread draws two hearts near,\nYour true love slowly appears.\nTake your time and do not rush,\nYour happy bond will firmly hush.",
+    interpretation: { wealth: "Ordinary income stays stable; no big windfalls.", career: "Daily work goes smoothly without troubles.", love: "Singles gradually meet suitable people; avoid blind impulsive relationships.", health: "Emotional stability brings physical comfort." },
+    deityRecommendation: { deity: 'Yue Lao', deityId: 'yuelao' }
+  },
+  // Average Luck (5)
+  { id: 11, luck: 'Average Luck', luckLevel: 'average', luckColor: 'text-stone-500', luckBg: 'bg-stone-50', stickNo: 71,
+    poem: "Calm water flows without big waves,\nNo great gain, no heavy caves.\nHold on tight to what you own,\nWait patiently till luck is grown.",
+    interpretation: { wealth: "Keep existing income; do not make large new investments today.", career: "Maintain daily work; delay signing important contracts.", love: "Keep a low profile and avoid emotional conflicts.", health: "Guard against colds and fatigue." },
+    deityRecommendation: { deity: 'Household Guardian', deityId: 'household' }
+  },
+  { id: 12, luck: 'Average Luck', luckLevel: 'average', luckColor: 'text-stone-500', luckBg: 'bg-stone-50', stickNo: 78,
+    poem: "The road ahead stays plain and slow,\nNo sudden wind of fortune will blow.\nStick to your routine step by step,\nYour steady pace avoids regret.",
+    interpretation: { wealth: "Income stays flat; cut unnecessary consumption.", career: "No new promotion chances; focus on finishing current tasks.", love: "Keep a peaceful mood, do not force relationship progress.", health: "Avoid staying up late to prevent physical decline." },
+    deityRecommendation: { deity: 'God of Longevity', deityId: 'longevity' }
+  },
+  { id: 13, luck: 'Average Luck', luckLevel: 'average', luckColor: 'text-stone-500', luckBg: 'bg-stone-50', stickNo: 85,
+    poem: "Fog lightly covers the mountain road,\nPause your steps and lighten your load.\nWait until the mist drifts away,\nThen you may start your new display.",
+    interpretation: { wealth: "Postpone big financial decisions; wait for clearer market signals.", career: "Do not start new projects for now; sort out old unfinished work first.", love: "Slow down the relationship pace; do not rush to make commitments.", health: "Guard against mood swings and digestive discomfort." },
+    deityRecommendation: { deity: 'Wen Chang', deityId: 'wenchang' }
+  },
+  { id: 14, luck: 'Average Luck', luckLevel: 'average', luckColor: 'text-stone-500', luckBg: 'bg-stone-50', stickNo: 92,
+    poem: "Small trivial troubles come and go,\nDo not let your mood sink low.\nGuard your mouth and calm your heart,\nPeace will stay inside your part.",
+    interpretation: { wealth: "Beware of impulsive online shopping and unexpected small expenses.", career: "Avoid arguing with colleagues over trivial work details.", love: "Do not quarrel over small family chores.", health: "Stay away from crowded places to avoid minor infections." },
+    deityRecommendation: { deity: 'Guan Yu', deityId: 'guanyu' }
+  },
+  { id: 15, luck: 'Average Luck', luckLevel: 'average', luckColor: 'text-stone-500', luckBg: 'bg-stone-50', stickNo: 99,
+    poem: "Your fate stays in the waiting phase,\nNo big joy, no sudden haze.\nKeep your life simple and steady,\nBetter days will soon be ready.",
+    interpretation: { wealth: "No new profit opportunities; just protect your existing savings.", career: "Maintain the status quo; do not take risky job changes.", love: "Singles need more time to meet the right person.", health: "Keep a regular daily routine." },
+    deityRecommendation: { deity: 'Household Guardian', deityId: 'household' }
+  },
+  // Minor Caution (5)
+  { id: 16, luck: 'Minor Caution', luckLevel: 'caution', luckColor: 'text-orange-500', luckBg: 'bg-orange-50', stickNo: 106,
+    poem: "A cold wind blows across your way,\nPostpone big plans for today.\nStay indoors and guard your peace,\nLet the bad energy slowly cease.",
+    interpretation: { wealth: "Strictly avoid high-risk investment and loans.", career: "Do not sign important agreements or submit critical applications.", love: "Avoid intense emotional arguments with your partner.", health: "Watch out for accidental bumps and colds." },
+    deityRecommendation: { deity: 'God of Longevity', deityId: 'longevity' }
+  },
+  { id: 17, luck: 'Minor Caution', luckLevel: 'caution', luckColor: 'text-orange-500', luckBg: 'bg-orange-50', stickNo: 113,
+    poem: "Trivial troubles begin to rise,\nGuard your words and calm your eyes.\nDo not take on new heavy tasks,\nLet the storm pass with relaxed masks.",
+    interpretation: { wealth: "Beware of being cheated in small transactions.", career: "Refuse extra high-pressure new work temporarily.", love: "Keep emotional distance to avoid fierce quarrels.", health: "Reduce late nights and overwork." },
+    deityRecommendation: { deity: 'Guan Yu', deityId: 'guanyu' }
+  },
+  { id: 18, luck: 'Minor Caution', luckLevel: 'caution', luckColor: 'text-orange-500', luckBg: 'bg-orange-50', stickNo: 120,
+    poem: "Dark clouds gather above your door,\nSlow down every forward step more.\nHold tight to what you already gain,\nDo not chase profit through risky lane.",
+    interpretation: { wealth: "No new business expansion; cut extra spending strictly.", career: "Put off job hopping and new project launches.", love: "Avoid forcing relationship progress; keep a low profile.", health: "Guard against stomach discomfort and sleep loss." },
+    deityRecommendation: { deity: 'Household Guardian', deityId: 'household' }
+  },
+  { id: 19, luck: 'Minor Caution', luckLevel: 'caution', luckColor: 'text-orange-500', luckBg: 'bg-orange-50', stickNo: 127,
+    poem: "Hasty actions bring regret fast,\nPause your steps and make it last.\nWait until the gloomy sky clears,\nThen you may chase your coming years.",
+    interpretation: { wealth: "Reject all high-profit quick-money invitations.", career: "Do not make sudden career decisions on impulse.", love: "Do not make marriage or breakup choices on bad moods.", health: "Avoid outdoor activities with high accident risk." },
+    deityRecommendation: { deity: 'Wen Chang', deityId: 'wenchang' }
+  },
+  { id: 20, luck: 'Minor Caution', luckLevel: 'caution', luckColor: 'text-orange-500', luckBg: 'bg-orange-50', stickNo: 134,
+    poem: "Small misfortunes come one by one,\nKeep your mood warm under the sun.\nStay home and rest your tired mind,\nGood weather will soon be behind.",
+    interpretation: { wealth: "Prevent property loss and unnecessary fines.", career: "Be careful with work documents to avoid minor mistakes.", love: "Reduce emotional entanglement and keep peace.", health: "Prevent seasonal illness and over-fatigue." },
+    deityRecommendation: { deity: 'God of Longevity', deityId: 'longevity' }
+  },
+]
+
 // Scroll decoration component
 function ScrollDecoration() {
   return (
@@ -151,6 +259,14 @@ export default function PrayerPage() {
   const [loading, setLoading] = useState(true)
   const [pageError, setPageError] = useState<string | null>(null)
   const [resultDeity, setResultDeity] = useState<any>(null)
+  
+  // Fortune Stick states
+  const [showFortuneResult, setShowFortuneResult] = useState(false)
+  const [currentFortune, setCurrentFortune] = useState<any>(null)
+  const [isDrawing, setIsDrawing] = useState(false)
+  const [fortuneHistory, setFortuneHistory] = useState<any[]>([])
+  const [todayFreeDraw, setTodayFreeDraw] = useState(true)
+  const [showFortuneHistory, setShowFortuneHistory] = useState(false)
 
   useEffect(() => {
     async function fetchData() {
@@ -193,6 +309,79 @@ export default function PrayerPage() {
 
   const points = profile?.points || 0
   const selectedDeity = deities.find(d => d.id === selectedPrayer)
+
+  // Draw fortune stick
+  const drawFortune = async () => {
+    if (!user) return
+    
+    const cost = 10
+    
+    // Check free draw eligibility
+    if (todayFreeDraw) {
+      // Free draw - deduct nothing
+      const randomIndex = Math.floor(Math.random() * fortuneSticks.length)
+      const fortune = fortuneSticks[randomIndex]
+      setCurrentFortune(fortune)
+      setIsDrawing(true)
+      
+      setTimeout(() => {
+        setIsDrawing(false)
+        setShowFortuneResult(true)
+      }, 1500)
+      
+      // Save to history
+      const newEntry = { ...fortune, drawnAt: new Date().toISOString(), isFree: true }
+      setFortuneHistory(prev => [newEntry, ...prev].slice(0, 20))
+      setTodayFreeDraw(false)
+    } else if (points >= cost) {
+      // Paid draw
+      const { error: updateError } = await supabase
+        .from('user_profiles')
+        .update({ points: points - cost })
+        .eq('id', user.id)
+        .select()
+      
+      if (updateError) {
+        alert('Failed to deduct points: ' + updateError.message)
+        return
+      }
+      
+      setProfile((prev: any) => ({ ...prev, points: points - cost }))
+      
+      const randomIndex = Math.floor(Math.random() * fortuneSticks.length)
+      const fortune = fortuneSticks[randomIndex]
+      setCurrentFortune(fortune)
+      setIsDrawing(true)
+      
+      setTimeout(() => {
+        setIsDrawing(false)
+        setShowFortuneResult(true)
+      }, 1500)
+      
+      // Save to history and record transaction
+      const newEntry = { ...fortune, drawnAt: new Date().toISOString(), isFree: false }
+      setFortuneHistory(prev => [newEntry, ...prev].slice(0, 20))
+      
+      try {
+        await supabase.from('point_transactions').insert({
+          user_id: user.id,
+          description: 'Fortune Stick Draw',
+          points: -cost
+        })
+      } catch (e) {
+        console.warn('Transaction failed:', e)
+      }
+    } else {
+      alert('Not enough merit points for extra draw')
+    }
+  }
+
+  // Scroll to deity section
+  const scrollToDeity = (deityId: string) => {
+    setSelectedPrayer(deityId)
+    setShowFortuneResult(false)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const performPrayer = async () => {
     if (!selectedPrayer || !user) return
@@ -398,6 +587,91 @@ export default function PrayerPage() {
                   className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
                 >
                   Return to Temple
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Fortune Stick Result Modal */}
+          {showFortuneResult && currentFortune && (
+            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+              <div className={`bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 relative overflow-hidden ${currentFortune.luckBg}`}>
+                {/* Decorative border */}
+                <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400"></div>
+                
+                {/* Fortune Header */}
+                <div className="text-center mb-6">
+                  <p className="text-amber-600 text-sm font-medium mb-2 animate-pulse">
+                    🙏 Your fortune has been drawn 🙏
+                  </p>
+                  <div className={`text-3xl font-bold ${currentFortune.luckColor} mb-1`}>
+                    Fortune Stick No. {currentFortune.stickNo}
+                  </div>
+                  <div className={`inline-block px-4 py-1 rounded-full ${currentFortune.luckBg} border ${currentFortune.luckLevel === 'great' ? 'border-yellow-300' : currentFortune.luckLevel === 'good' ? 'border-emerald-300' : currentFortune.luckLevel === 'average' ? 'border-stone-300' : 'border-orange-300'}`}>
+                    <span className={`font-bold ${currentFortune.luckColor}`}>{currentFortune.luck}</span>
+                  </div>
+                </div>
+
+                {/* Fortune Poem */}
+                <div className="bg-white/80 rounded-xl p-4 mb-4 border border-stone-200">
+                  <p className="text-center text-stone-700 italic leading-relaxed">
+                    {currentFortune.poem}
+                  </p>
+                </div>
+
+                {/* Interpretation */}
+                <div className="bg-white/60 rounded-xl p-4 mb-4 space-y-2">
+                  <p className="text-xs text-stone-500 font-medium mb-2">Interpretation:</p>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="flex items-start gap-2">
+                      <span className="text-amber-500">💰</span>
+                      <span className="text-stone-600">{currentFortune.interpretation.wealth}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-blue-500">💼</span>
+                      <span className="text-stone-600">{currentFortune.interpretation.career}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-pink-500">❤️</span>
+                      <span className="text-stone-600">{currentFortune.interpretation.love}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-emerald-500">🏥</span>
+                      <span className="text-stone-600">{currentFortune.interpretation.health}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Deity Recommendation */}
+                <div className="bg-gradient-to-r from-amber-100 to-orange-100 rounded-xl p-4 mb-6 border border-amber-200">
+                  <p className="text-xs text-stone-500 font-medium mb-2">Deity Recommendation:</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {(() => {
+                        const recDeity = deities.find(d => d.id === currentFortune.deityRecommendation.deityId)
+                        return recDeity ? (
+                          <>
+                            <span className="text-2xl">{recDeity.emoji}</span>
+                            <span className="font-semibold text-stone-700">{currentFortune.deityRecommendation.deity}</span>
+                          </>
+                        ) : null
+                      })()}
+                    </div>
+                    <button
+                      onClick={() => scrollToDeity(currentFortune.deityRecommendation.deityId)}
+                      className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold rounded-full hover:shadow-lg transition-all"
+                    >
+                      Offer Worship
+                    </button>
+                  </div>
+                </div>
+
+                {/* Close Button */}
+                <button
+                  onClick={() => setShowFortuneResult(false)}
+                  className="w-full py-3 bg-stone-200 text-stone-700 font-semibold rounded-full hover:bg-stone-300 transition-colors"
+                >
+                  Close
                 </button>
               </div>
             </div>
@@ -639,6 +913,96 @@ export default function PrayerPage() {
                   <p className="text-stone-500">Select a deity above to begin your worship</p>
                 </div>
               )}
+
+              {/* Daily Fortune Stick Draw Section */}
+              <div className="mt-8 pt-8 border-t-2 border-dashed border-amber-200">
+                <div className="bg-gradient-to-b from-amber-50 via-orange-50/50 to-yellow-50/30 rounded-2xl border-2 border-amber-200/60 p-6 shadow-lg">
+                  
+                  {/* Section Header */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                      <span className="text-2xl">🎋</span>
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-stone-800">Daily Fortune Stick Draw</h2>
+                      <p className="text-sm text-stone-500">Receive divine guidance after your worship.</p>
+                    </div>
+                  </div>
+
+                  {/* Free draw info */}
+                  <div className="flex items-center justify-center gap-2 mb-4">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 rounded-full">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span className="text-sm text-emerald-700 font-medium">
+                        {todayFreeDraw ? '1 Free Draw Available Today' : 'Extra Draw: 10 Merit Coins'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Shake animation container */}
+                  <div className="flex flex-col items-center">
+                    <button
+                      onClick={drawFortune}
+                      disabled={isDrawing}
+                      className={`relative w-32 h-32 rounded-full bg-gradient-to-b from-amber-200 via-orange-200 to-amber-300 shadow-2xl flex items-center justify-center transition-all ${isDrawing ? 'animate-bounce' : 'hover:scale-105 active:scale-95'} ${!todayFreeDraw && points < 10 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                    >
+                      {/* Stick tube visual */}
+                      <div className="flex flex-col items-center">
+                        <span className="text-5xl mb-1">🎋</span>
+                        <span className="text-xs text-amber-700 font-bold">SHAKE</span>
+                      </div>
+                      
+                      {/* Shake animation overlay */}
+                      {isDrawing && (
+                        <div className="absolute inset-0 rounded-full bg-amber-400/30 animate-ping"></div>
+                      )}
+                    </button>
+                    
+                    <p className="text-sm text-stone-500 mt-3 text-center max-w-xs">
+                      {isDrawing ? 'The deity is selecting your fortune...' : 'Tap to shake the stick tube'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Past Fortune Sticks - Collapsible */}
+                {fortuneHistory.length > 0 && (
+                  <div className="mt-4">
+                    <button
+                      onClick={() => setShowFortuneHistory(!showFortuneHistory)}
+                      className="w-full flex items-center justify-between p-4 bg-stone-100 rounded-xl hover:bg-stone-200 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Scroll className="w-5 h-5 text-stone-500" />
+                        <span className="font-semibold text-stone-700">Past Fortune Sticks ({fortuneHistory.length})</span>
+                      </div>
+                      <span className={`transform transition-transform ${showFortuneHistory ? 'rotate-180' : ''}`}>
+                        ▼
+                      </span>
+                    </button>
+                    
+                    {showFortuneHistory && (
+                      <div className="mt-2 space-y-2 max-h-64 overflow-y-auto">
+                        {fortuneHistory.map((fortune: any, index: number) => (
+                          <div 
+                            key={index}
+                            className={`p-3 rounded-xl border ${fortune.luckLevel === 'great' ? 'bg-yellow-50 border-yellow-200' : fortune.luckLevel === 'good' ? 'bg-emerald-50 border-emerald-200' : fortune.luckLevel === 'average' ? 'bg-stone-50 border-stone-200' : 'bg-orange-50 border-orange-200'}`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className={`font-bold ${fortune.luckColor}`}>No.{fortune.stickNo}</span>
+                                <span className={`text-sm font-medium ${fortune.luckColor}`}>{fortune.luck}</span>
+                              </div>
+                              <span className="text-xs text-stone-400">
+                                {new Date(fortune.drawnAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

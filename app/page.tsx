@@ -168,68 +168,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Latest Insights Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold text-stone-800 mb-4">Practical Feng Shui Guides</h2>
-            <p className="text-stone-600 max-w-2xl mx-auto">
-              Simple home layout tips, daily luck rituals and holistic wellness advice for modern life.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {articles.map((article, index) => (
-              <Link
-                key={index}
-                href={`/articles/${article.slug}`}
-                className="group rounded-2xl overflow-hidden border border-stone-200 hover:shadow-xl transition-all duration-300 animate-fade-in-up"
-                style={{ animationDelay: `${index * 0.15}s` }}
-              >
-                <div className="relative h-48 overflow-hidden">
-                  <Image
-                    src={article.image}
-                    alt={article.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                  <div className="absolute top-4 left-4">
-                    <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-emerald-700 text-xs font-medium rounded-full">
-                      {article.category}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-6 bg-white">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs text-stone-400">{article.date}</span>
-                    <span className="text-stone-300">•</span>
-                    <span className="text-xs text-emerald-600 font-medium">5 min read</span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-stone-800 mb-2 group-hover:text-emerald-700 transition-colors leading-snug">
-                    {article.title}
-                  </h3>
-                  <p className="text-stone-500 text-sm line-clamp-2 mb-4">{article.excerpt}</p>
-                  <div className="inline-flex items-center gap-1 text-emerald-600 font-medium text-sm group-hover:gap-2 transition-all">
-                    Read article <ArrowRight className="w-4 h-4" />
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          <div className="text-center mt-12">
-            <Link
-              href="/articles"
-              className="inline-flex items-center gap-2 px-8 py-3 bg-white border-2 border-emerald-200 text-emerald-700 font-semibold rounded-xl hover:bg-emerald-50 transition-all"
-            >
-              View All Articles
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">

@@ -50,15 +50,18 @@ function hashCode(str: string): number {
 }
 
 function getDeterministicValues(wish: any) {
-  const hash = hashCode(wish.id)
-  const colorIndex = hash % (wish.is_fulfilled ? fulfilledColors.length : noteColors.length)
+  const wishId = String(wish?.id || Math.random().toString())
+  const isFulfilled = Boolean(wish?.is_fulfilled)
+  const hash = hashCode(wishId)
+  const colors = isFulfilled ? fulfilledColors : noteColors
+  const colorIndex = hash % colors.length
   const sizeIndex = Math.floor(hash / 7) % noteSizes.length
-  const rotation = ((hash % 12) - 6) * 0.8 // -4.8deg ~ +4.8deg
-  const topOffset = (hash % 30) - 10 // -10px ~ +20px
-  const leftOffset = (hash % 20) - 10 // -10px ~ +10px
+  const rotation = ((hash % 12) - 6) * 0.8
+  const topOffset = (hash % 30) - 10
+  const leftOffset = (hash % 20) - 10
   
   return {
-    color: wish.is_fulfilled ? fulfilledColors[colorIndex] : noteColors[colorIndex],
+    color: colors[colorIndex],
     size: noteSizes[sizeIndex],
     rotation,
     topOffset,
@@ -128,13 +131,13 @@ export default function WishWallPage() {
   }, [fetchWishes])
 
   const points = profile?.points || 0
-  const pendingWishes = wishes.filter((w: any) => !w.is_fulfilled)
-  const fulfilledWishes = wishes.filter((w: any) => w.is_fulfilled)
+  const pendingWishes = wishes.filter((w: any) => !w?.is_fulfilled)
+  const fulfilledWishes = wishes.filter((w: any) => w?.is_fulfilled)
   const displayWishes = activeTab === 'pending' 
     ? pendingWishes 
     : activeTab === 'fulfilled' 
       ? fulfilledWishes 
-      : wishes
+      : (wishes || [])
 
   const handleSubmitWish = async () => {
     if (!user || !newWish.trim()) return
@@ -420,7 +423,7 @@ export default function WishWallPage() {
                       <div className="absolute -top-1 -right-1 w-6 h-6 bg-white/30 rotate-45"></div>
 
                       {/* Fulfilled stamp */}
-                      {wish.is_fulfilled && (
+                      {wish?.is_fulfilled && (
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-12 pointer-events-none">
                           <div className="px-4 py-1.5 border-2 border-red-500 rounded-full">
                             <span className="text-red-500 font-bold text-lg">FULFILLED!</span>
