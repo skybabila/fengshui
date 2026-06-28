@@ -7,58 +7,103 @@ import { formatDate } from '@/lib/utils'
 import SidebarLayout from '@/components/SidebarLayout'
 import { Flame, Coins, Star, Heart, Sparkles, Clock, CheckCircle2, TrendingUp, Scroll, Cloud, Sunrise, Mountain, Sun } from 'lucide-react'
 
-const prayerTypes = [
+// Chinese Deities for Prayer System
+const deities = [
   { 
-    id: 'incense', 
-    name: 'Burning Incense', 
-    emoji: '🪔', 
-    cost: 10, 
-    goal: 'Family Safety & Home Harmony',
-    description: 'Ward off negative energy, protect your whole family, and keep your home peaceful and stable.',
-    benefits: ['Negative energy removed', 'Family protection', 'Home stability'],
-    color: 'from-amber-500 to-orange-600',
-    bgColor: 'bg-amber-50',
-    borderColor: 'border-amber-300',
-    iconBg: 'bg-gradient-to-br from-amber-400 to-orange-500',
-  },
-  { 
-    id: 'light', 
-    name: 'Light Offering', 
-    emoji: '🕯️', 
-    cost: 15, 
-    goal: 'Career & Future Opportunities',
-    description: 'Pray for wisdom and clear judgment, attract new job chances and brighter career prospects.',
-    benefits: ['Wisdom & clarity', 'New opportunities', 'Career growth'],
+    id: 'caishen', 
+    name: 'God of Wealth', 
+    deity: '赵公明',
+    emoji: '🧧', 
+    cost: 20, 
+    blessing: 'Wealth & Prosperity',
+    description: 'Zhao Gongming, the Supreme God of Wealth, commander of the celestial armies. He bestows financial blessings, business prosperity, and guards your assets against loss.',
+    domains: ['Business growth', 'Investment returns', 'Financial security', 'Lottery luck'],
     color: 'from-yellow-500 to-amber-600',
     bgColor: 'bg-yellow-50',
     borderColor: 'border-yellow-300',
     iconBg: 'bg-gradient-to-br from-yellow-400 to-amber-500',
+    colorName: 'text-yellow-700',
+    mantra: 'May wealth flow into my life continuously',
   },
   { 
-    id: 'worship', 
-    name: 'Devotion Prayer', 
-    emoji: '🙏', 
-    cost: 20, 
-    goal: 'Physical Health & Inner Peace',
-    description: 'Calm anxiety, improve physical wellness, and gain long-term stability of body and mind.',
-    benefits: ['Anxiety relief', 'Physical wellness', 'Mental balance'],
-    color: 'from-violet-500 to-purple-600',
-    bgColor: 'bg-violet-50',
-    borderColor: 'border-violet-300',
-    iconBg: 'bg-gradient-to-br from-violet-400 to-purple-500',
-  },
-  { 
-    id: 'wish', 
-    name: 'Wish Prayer', 
-    emoji: '⭐', 
-    cost: 30, 
-    goal: 'Wealth, Promotion & Life Goals',
-    description: 'Powerful blessing for salary raise, business growth and the realization of your biggest life wishes.',
-    benefits: ['Salary increase', 'Business growth', 'Wish fulfillment'],
-    color: 'from-pink-500 to-rose-600',
+    id: 'guanyin', 
+    name: 'Goddess of Mercy', 
+    deity: '观音菩萨',
+    emoji: '🪷', 
+    cost: 15, 
+    blessing: 'Love & Compassion',
+    description: 'Guanyin, the Bodhisattva of Compassion, hears the cries of all beings. She blesses families with harmony, heals emotional wounds, and guides souls toward peace.',
+    domains: ['Family harmony', 'Emotional healing', 'Relationship bliss', 'Inner peace'],
+    color: 'from-pink-400 to-rose-500',
     bgColor: 'bg-pink-50',
     borderColor: 'border-pink-300',
     iconBg: 'bg-gradient-to-br from-pink-400 to-rose-500',
+    colorName: 'text-pink-700',
+    mantra: 'May compassion fill every corner of my heart',
+  },
+  { 
+    id: 'yaoshi', 
+    name: 'Medicine Buddha', 
+    deity: '药师佛',
+    emoji: '⚕️', 
+    cost: 15, 
+    blessing: 'Health & Healing',
+    description: 'The Buddha of Healing Light, master of the eastern pure land. He eradicates diseases, strengthens immunity, and grants freedom from illness and suffering.',
+    domains: ['Disease prevention', 'Speedy recovery', 'Vitality boost', 'Longevity'],
+    color: 'from-emerald-400 to-teal-600',
+    bgColor: 'bg-emerald-50',
+    borderColor: 'border-emerald-300',
+    iconBg: 'bg-gradient-to-br from-emerald-400 to-teal-500',
+    colorName: 'text-emerald-700',
+    mantra: 'May the light of healing shine upon my body',
+  },
+  { 
+    id: 'wenchang', 
+    name: 'God of Literature', 
+    deity: '文昌帝君',
+    emoji: '📖', 
+    cost: 15, 
+    blessing: 'Wisdom & Exams',
+    description: 'Wenchang Dijun, the Lord of the Scarlet Bird, guardian of scholars. He sharpens intellect, ensures exam success, and opens doors to academic achievement.',
+    domains: ['Exam success', 'Memory enhancement', 'Creative insight', 'Academic promotion'],
+    color: 'from-blue-400 to-indigo-600',
+    bgColor: 'bg-blue-50',
+    borderColor: 'border-blue-300',
+    iconBg: 'bg-gradient-to-br from-blue-400 to-indigo-500',
+    colorName: 'text-blue-700',
+    mantra: 'May wisdom illuminate my mind like the stars',
+  },
+  { 
+    id: 'guandi', 
+    name: 'God of War', 
+    deity: '关帝',
+    emoji: '⚔️', 
+    cost: 20, 
+    blessing: 'Career & Protection',
+    description: 'Guan Yu, the Saintly Emperor Guan, symbol of loyalty and righteousness. He protects businesses, attracts noble helpers, and ensures career victories.',
+    domains: ['Career advancement', 'Noble connections', 'Business protection', 'Victory in competition'],
+    color: 'from-red-500 to-orange-600',
+    bgColor: 'bg-red-50',
+    borderColor: 'border-red-300',
+    iconBg: 'bg-gradient-to-br from-red-500 to-orange-500',
+    colorName: 'text-red-700',
+    mantra: 'May honor and victory accompany my path',
+  },
+  { 
+    id: 'mazu', 
+    name: 'Sea Goddess', 
+    deity: '妈祖',
+    emoji: '🌊', 
+    cost: 15, 
+    blessing: 'Safety & Journey',
+    description: 'Mazu, the Heavenly Mother of the South Sea, protector of sailors and travelers. She calms storms, ensures safe journeys, and guards against accidents.',
+    domains: ['Travel safety', 'Disaster avoidance', 'Smooth journeys', 'Protection from accidents'],
+    color: 'from-cyan-400 to-blue-600',
+    bgColor: 'bg-cyan-50',
+    borderColor: 'border-cyan-300',
+    iconBg: 'bg-gradient-to-br from-cyan-400 to-blue-500',
+    colorName: 'text-cyan-700',
+    mantra: 'May the waters be calm and my path always safe',
   },
 ]
 
@@ -131,15 +176,15 @@ export default function PrayerPage() {
   }, [])
 
   const points = profile?.points || 0
-  const selectedPrayerData = prayerTypes.find(p => p.id === selectedPrayer)
+  const selectedDeity = deities.find(d => d.id === selectedPrayer)
 
   const performPrayer = async () => {
     if (!selectedPrayer || !user) return
 
-    const prayer = prayerTypes.find(p => p.id === selectedPrayer)
-    if (!prayer) return
+    const deity = deities.find(d => d.id === selectedPrayer)
+    if (!deity) return
 
-    if (points < prayer.cost) {
+    if (points < deity.cost) {
       alert('Not enough merit points')
       return
     }
@@ -149,7 +194,7 @@ export default function PrayerPage() {
     try {
       const { error: updateError } = await supabase
         .from('user_profiles')
-        .update({ points: points - prayer.cost })
+        .update({ points: points - deity.cost })
         .eq('id', user.id)
         .select()
 
@@ -161,8 +206,8 @@ export default function PrayerPage() {
       try {
         await supabase.from('prayers').insert({
           user_id: user.id,
-          prayer_type: prayer.name,
-          points_spent: prayer.cost,
+          prayer_type: deity.name,
+          points_spent: deity.cost,
         })
       } catch (e) {
         console.warn('Prayer insert failed (non-critical):', e)
@@ -171,21 +216,21 @@ export default function PrayerPage() {
       try {
         await supabase.from('point_transactions').insert({
           user_id: user.id,
-          description: `${prayer.name} prayer`,
-          points: -prayer.cost
+          description: `Prayed to ${deity.name} (${deity.deity})`,
+          points: -deity.cost
         })
       } catch (e) {
         console.warn('Transaction failed (non-critical):', e)
       }
 
-      setPrayerResult('Your prayer has been sent to the temple. Stay positive, good fortune will arrive soon.')
+      setPrayerResult(`Your prayer has been sent to ${deity.deity}. Stay positive, ${deity.name} will intercede for you.`)
       setShowResult(true)
 
       try {
         const updatedProfile = await getUserProfile(user.id)
         if (updatedProfile) setProfile(updatedProfile)
       } catch (e) {
-        setProfile((prev: any) => ({ ...prev, points: points - prayer.cost }))
+        setProfile((prev: any) => ({ ...prev, points: points - deity.cost }))
       }
 
       try {
@@ -261,7 +306,7 @@ export default function PrayerPage() {
                 <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400"></div>
                 
                 <div className="w-24 h-24 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <div className="text-6xl">{selectedPrayerData?.emoji}</div>
+                  <div className="text-6xl">{selectedDeity?.emoji}</div>
                 </div>
                 
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 rounded-full text-sm font-semibold mb-4">
@@ -270,11 +315,11 @@ export default function PrayerPage() {
                 </div>
                 
                 <h2 className="text-2xl font-bold text-stone-800 mb-3">
-                  {selectedPrayerData?.name}
+                  {selectedDeity?.name}
                 </h2>
                 
                 <p className="text-stone-600 leading-relaxed mb-6">
-                  Your prayer has been sent to the temple. Stay positive, good fortune will arrive soon.
+                  {prayerResult}
                 </p>
                 
                 <div className="flex items-center justify-center gap-2 text-amber-600 font-semibold mb-6">
@@ -357,52 +402,53 @@ export default function PrayerPage() {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
-                  {prayerTypes.map((prayer) => (
+                  {deities.map((deity) => (
                     <button
-                      key={prayer.id}
-                      onClick={() => setSelectedPrayer(prayer.id)}
+                      key={deity.id}
+                      onClick={() => setSelectedPrayer(deity.id)}
                       className={`relative p-5 rounded-2xl border-2 transition-all text-left group hover:-translate-y-1 ${
-                        selectedPrayer === prayer.id
-                          ? `${prayer.borderColor} ${prayer.bgColor} shadow-xl`
+                        selectedPrayer === deity.id
+                          ? `${deity.borderColor} ${deity.bgColor} shadow-xl`
                           : 'border-stone-200 bg-white hover:border-amber-200 hover:shadow-lg'
                       }`}
                     >
                       {/* Selected indicator */}
-                      {selectedPrayer === prayer.id && (
-                        <div className={`absolute -top-2 -right-2 w-8 h-8 ${prayer.iconBg} rounded-full flex items-center justify-center shadow-lg`}>
+                      {selectedPrayer === deity.id && (
+                        <div className={`absolute -top-2 -right-2 w-8 h-8 ${deity.iconBg} rounded-full flex items-center justify-center shadow-lg`}>
                           <Star className="w-4 h-4 text-white fill-white" />
                         </div>
                       )}
 
                       <div className="flex items-start gap-4">
-                        <div className={`w-16 h-16 ${prayer.bgColor} rounded-xl flex items-center justify-center text-3xl transition-transform ${
-                          selectedPrayer === prayer.id ? 'scale-110 rotate-3' : 'group-hover:scale-105'
+                        <div className={`w-16 h-16 ${deity.bgColor} rounded-xl flex items-center justify-center text-3xl transition-transform ${
+                          selectedPrayer === deity.id ? 'scale-110 rotate-3' : 'group-hover:scale-105'
                         }`}>
-                          {prayer.emoji}
+                          {deity.emoji}
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-bold text-stone-800 text-lg mb-1">{prayer.name}</h3>
-                          <p className="text-xs text-amber-600 font-semibold mb-2">✨ {prayer.goal}</p>
-                          <p className="text-sm text-stone-500 mb-3 line-clamp-2">{prayer.description}</p>
+                          <h3 className="font-bold text-stone-800 text-lg mb-1">{deity.name}</h3>
+                          <p className={`text-xs ${deity.colorName} font-semibold mb-2`}>✨ {deity.deity}</p>
+                          <p className="text-sm text-stone-500 mb-3 line-clamp-2">{deity.description}</p>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1 text-amber-600 font-bold">
                               <Coins className="w-4 h-4" />
-                              <span>{prayer.cost} coins</span>
+                              <span>{deity.cost} coins</span>
                             </div>
-                            {selectedPrayer === prayer.id && (
+                            {selectedPrayer === deity.id && (
                               <span className="text-xs text-emerald-600 font-medium">Selected</span>
                             )}
                           </div>
                         </div>
                       </div>
 
-                      {/* Benefits preview on hover */}
-                      {selectedPrayer === prayer.id && (
+                      {/* Blessing domains preview */}
+                      {selectedPrayer === deity.id && (
                         <div className="mt-4 pt-4 border-t border-stone-200">
+                          <p className="text-xs text-stone-500 mb-2 font-medium">What {deity.deity} protects:</p>
                           <div className="flex flex-wrap gap-2">
-                            {prayer.benefits.map((benefit, i) => (
+                            {deity.domains.map((domain, i) => (
                               <span key={i} className="text-xs px-2 py-1 bg-white rounded-full text-stone-600 border border-stone-200">
-                                ✨ {benefit}
+                                ✨ {domain}
                               </span>
                             ))}
                           </div>
@@ -413,37 +459,43 @@ export default function PrayerPage() {
                 </div>
               </div>
 
-              {/* Selected Prayer Details & Action */}
-              {selectedPrayerData && (
-                <div className={`mb-8 p-6 rounded-2xl bg-gradient-to-br ${selectedPrayerData.bgColor} border-2 ${selectedPrayerData.borderColor} relative overflow-hidden`}>
+              {/* Selected Deity Details & Action */}
+              {selectedDeity && (
+                <div className={`mb-8 p-6 rounded-2xl bg-gradient-to-br ${selectedDeity.bgColor} border-2 ${selectedDeity.borderColor} relative overflow-hidden`}>
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/20 to-transparent rounded-bl-full"></div>
                   
                   <div className="relative z-10">
                     <div className="flex items-center gap-4 mb-4">
-                      <div className="text-5xl">{selectedPrayerData.emoji}</div>
+                      <div className="text-5xl">{selectedDeity.emoji}</div>
                       <div>
-                        <h3 className="text-xl font-bold text-stone-800">{selectedPrayerData.name}</h3>
-                        <p className="text-sm text-amber-600">Goal: {selectedPrayerData.goal}</p>
+                        <h3 className="text-xl font-bold text-stone-800">{selectedDeity.name}</h3>
+                        <p className={`text-sm ${selectedDeity.colorName}`}>✨ {selectedDeity.deity}</p>
                       </div>
                     </div>
                     
-                    <p className="text-stone-600 mb-4 leading-relaxed">{selectedPrayerData.description}</p>
+                    <p className="text-stone-600 mb-4 leading-relaxed">{selectedDeity.description}</p>
+
+                    {/* Mantra */}
+                    <div className="flex items-center gap-2 text-sm text-stone-500 mb-4 bg-white/50 rounded-xl p-3">
+                      <Scroll className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                      <p className="italic">{selectedDeity.mantra}</p>
+                    </div>
                     
-                    <div className="flex items-center gap-2 text-sm text-stone-500 mb-4">
+                    <div className="flex items-center gap-2 text-sm text-stone-500">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                      <span>Offer with sincere heart for best results</span>
+                      <span>Pray with sincere heart for best results</span>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Action Button */}
-              {selectedPrayerData ? (
-                points >= selectedPrayerData.cost ? (
+              {selectedDeity ? (
+                points >= selectedDeity.cost ? (
                   <button
                     onClick={performPrayer}
                     disabled={isPraying}
-                    className={`w-full py-4 bg-gradient-to-r ${selectedPrayerData.color} text-white font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 relative overflow-hidden group`}
+                    className={`w-full py-4 bg-gradient-to-r ${selectedDeity.color} text-white font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 relative overflow-hidden group`}
                   >
                     <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:translate-x-full transition-transform duration-700"></span>
                     {isPraying ? (
@@ -454,14 +506,14 @@ export default function PrayerPage() {
                     ) : (
                       <span className="flex items-center justify-center gap-3 relative z-10">
                         <Flame className="w-6 h-6" />
-                        Offer {selectedPrayerData.name}
+                        Pray to {selectedDeity.deity}
                       </span>
                     )}
                   </button>
                 ) : (
                   <div className="text-center p-6 bg-red-50 rounded-2xl border border-red-200">
                     <p className="text-red-600 font-semibold mb-3">
-                      Need {selectedPrayerData.cost - points} more coins for this prayer
+                      Need {selectedDeity.cost - points} more coins for this prayer
                     </p>
                     <Link
                       href="/user/points"

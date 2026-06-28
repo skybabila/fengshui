@@ -530,22 +530,123 @@ export default function WishWallPage() {
 
                 {/* Quick templates */}
                 <div className="mb-3">
-                  <p className="text-xs text-pink-700 mb-2 font-medium">Quick fill:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { icon: '💼', text: 'Bless my career for steady promotion and higher income.' },
-                      { icon: '👨‍👩‍👧', text: 'Keep my whole family safe and healthy all year long.' },
-                      { icon: '💰', text: 'Attract stable wealth and continuous good luck.' },
-                    ].map((tpl, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setNewWish(tpl.text)}
-                        disabled={submitting || points < WISH_COST}
-                        className="text-xs px-3 py-1 bg-white/70 border border-pink-200 text-pink-600 rounded-full hover:bg-white transition-colors disabled:opacity-50"
-                      >
-                        {tpl.icon} {tpl.text.length > 25 ? tpl.text.slice(0, 25) + '...' : tpl.text}
-                      </button>
-                    ))}
+                  <p className="text-xs text-pink-700 mb-2 font-medium">✨ Quick fill by category:</p>
+                  <div className="space-y-2">
+                    {/* Category: Wealth */}
+                    <div>
+                      <p className="text-xs text-amber-600 font-semibold mb-1 flex items-center gap-1">
+                        💰 Wealth
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { icon: '💰', text: 'Attract stable wealth and continuous good luck.' },
+                          { icon: '🏦', text: 'May my business flourish and profits double.' },
+                          { icon: '📈', text: 'Bless my investments to yield great returns.' },
+                          { icon: '💎', text: 'Attract unexpected fortune and financial windfalls.' },
+                        ].map((tpl, i) => (
+                          <button
+                            key={`w-${i}`}
+                            onClick={() => setNewWish(tpl.text)}
+                            disabled={submitting || points < WISH_COST}
+                            className="text-xs px-2 py-1 bg-amber-50/70 border border-amber-200 text-amber-700 rounded-full hover:bg-amber-100 transition-colors disabled:opacity-50"
+                          >
+                            {tpl.icon} {tpl.text.length > 22 ? tpl.text.slice(0, 22) + '...' : tpl.text}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Category: Love */}
+                    <div>
+                      <p className="text-xs text-rose-600 font-semibold mb-1 flex items-center gap-1">
+                        ❤️ Love
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { icon: '💑', text: 'Find my soulmate and build a happy family.' },
+                          { icon: '💕', text: 'Bless my relationship with harmony and sweetness.' },
+                          { icon: '💍', text: 'May my marriage be filled with love and devotion.' },
+                          { icon: '🌹', text: 'Attract true love and heartfelt companionship.' },
+                        ].map((tpl, i) => (
+                          <button
+                            key={`l-${i}`}
+                            onClick={() => setNewWish(tpl.text)}
+                            disabled={submitting || points < WISH_COST}
+                            className="text-xs px-2 py-1 bg-rose-50/70 border border-rose-200 text-rose-700 rounded-full hover:bg-rose-100 transition-colors disabled:opacity-50"
+                          >
+                            {tpl.icon} {tpl.text.length > 22 ? tpl.text.slice(0, 22) + '...' : tpl.text}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Category: Health */}
+                    <div>
+                      <p className="text-xs text-emerald-600 font-semibold mb-1 flex items-center gap-1">
+                        💪 Health
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { icon: '🏥', text: 'Grant me robust health and swift recovery from illness.' },
+                          { icon: '🧘', text: 'Bestow inner peace and freedom from anxiety.' },
+                          { icon: '🌿', text: 'Protect my body from diseases and injuries.' },
+                          { icon: '😴', text: 'Bless me with restful sleep and renewed energy.' },
+                        ].map((tpl, i) => (
+                          <button
+                            key={`h-${i}`}
+                            onClick={() => setNewWish(tpl.text)}
+                            disabled={submitting || points < WISH_COST}
+                            className="text-xs px-2 py-1 bg-emerald-50/70 border border-emerald-200 text-emerald-700 rounded-full hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                          >
+                            {tpl.icon} {tpl.text.length > 22 ? tpl.text.slice(0, 22) + '...' : tpl.text}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Category: Career */}
+                    <div>
+                      <p className="text-xs text-blue-600 font-semibold mb-1 flex items-center gap-1">
+                        📚 Career
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { icon: '💼', text: 'Bless my career for steady promotion and higher income.' },
+                          { icon: '📝', text: 'Grant me success in all upcoming examinations.' },
+                          { icon: '🏆', text: 'Attract noble people to help advance my事业.' },
+                          { icon: '🎯', text: 'Bless my projects to succeed beyond expectations.' },
+                        ].map((tpl, i) => (
+                          <button
+                            key={`c-${i}`}
+                            onClick={() => setNewWish(tpl.text)}
+                            disabled={submitting || points < WISH_COST}
+                            className="text-xs px-2 py-1 bg-blue-50/70 border border-blue-200 text-blue-700 rounded-full hover:bg-blue-100 transition-colors disabled:opacity-50"
+                          >
+                            {tpl.icon} {tpl.text.length > 22 ? tpl.text.slice(0, 22) + '...' : tpl.text}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Category: Family */}
+                    <div>
+                      <p className="text-xs text-purple-600 font-semibold mb-1 flex items-center gap-1">
+                        👨‍👩‍👧 Family
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { icon: '👨‍👩‍👧', text: 'Keep my whole family safe and healthy all year long.' },
+                          { icon: '🙏', text: 'Grant my parents longevity andfreedom from suffering.' },
+                          { icon: '👶', text: 'Bless my children with wisdom and good fortune.' },
+                          { icon: '🏠', text: 'Fill my home with joy, harmony and prosperity.' },
+                        ].map((tpl, i) => (
+                          <button
+                            key={`f-${i}`}
+                            onClick={() => setNewWish(tpl.text)}
+                            disabled={submitting || points < WISH_COST}
+                            className="text-xs px-2 py-1 bg-purple-50/70 border border-purple-200 text-purple-700 rounded-full hover:bg-purple-100 transition-colors disabled:opacity-50"
+                          >
+                            {tpl.icon} {tpl.text.length > 22 ? tpl.text.slice(0, 22) + '...' : tpl.text}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
