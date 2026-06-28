@@ -273,7 +273,7 @@ export default function UserDashboard() {
               </div>
               <div className="flex-1 text-center md:text-left">
                 <h3 className="text-2xl font-bold text-stone-800 mb-2">{dailyFortune.fortune_type}</h3>
-                <p className="text-stone-600 mb-3">Positive energy ahead. Stay focused, and good opportunities will come naturally.</p>
+                <p className="text-stone-600 mb-3">{dailyFortune.description || 'Positive energy ahead. Stay focused, and good opportunities will come naturally.'}</p>
                 <div className="flex items-center justify-center md:justify-start gap-4 text-sm text-stone-500">
                   <span className="flex items-center gap-1">
                     <Zap className="w-4 h-4 text-amber-500" />
