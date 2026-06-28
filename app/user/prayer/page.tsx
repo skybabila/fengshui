@@ -127,52 +127,67 @@ export default function PrayerPage() {
     }
 
     setIsPraying(true)
+    let pointsDeducted = false
 
     try {
-      // Deduct points
-      const { error: updateError } = await supabase
+      // Step 1: Deduct points
+      const { error: updateError, data: updateData } = await supabase
         .from('user_profiles')
         .update({ points: points - prayer.cost })
         .eq('id', user.id)
+        .select()
 
       if (updateError) {
         console.error('Points update error:', updateError)
         alert('Failed to deduct points: ' + updateError.message)
-        setIsPraying(false)
         return
       }
 
-      // Insert prayer record
-      const { error: insertError } = await supabase
-        .from('prayers')
-        .insert({
-          user_id: user.id,
-          prayer_type: prayer.name,
-          points_spent: prayer.cost,
-        })
+      pointsDeducted = true
 
-      if (insertError) {
-        console.error('Prayer insert error:', insertError)
-        alert('Failed to record prayer: ' + insertError.message)
-        // Still show success since points were deducted
+      // Step 2: Insert prayer record (with error handling but don't block)
+      try {
+        await supabase
+          .from('prayers')
+          .insert({
+            user_id: user.id,
+            prayer_type: prayer.name,
+            points_spent: prayer.cost,
+          })
+      } catch (prayerInsertErr) {
+        console.warn('Prayer record insert failed (non-critical):', prayerInsertErr)
       }
 
-      // Record transaction
-      await supabase
-        .from('point_transactions')
-        .insert({
-          user_id: user.id,
-          description: `${prayer.name} prayer`,
-          points: -prayer.cost
-        })
+      // Step 3: Record transaction (with error handling but don't block)
+      try {
+        await supabase
+          .from('point_transactions')
+          .insert({
+            user_id: user.id,
+            description: `${prayer.name} prayer`,
+            points: -prayer.cost
+          })
+      } catch (txErr) {
+        console.warn('Transaction record insert failed (non-critical):', txErr)
+      }
 
+      // Step 4: Show success result
       setPrayerResult('Your prayer has been sent to the temple. Stay positive, good fortune will arrive soon.')
       setShowResult(true)
 
-      const updatedProfile = await getUserProfile(user.id)
-      setProfile(updatedProfile)
+      // Step 5: Refresh profile data
+      try {
+        const updatedProfile = await getUserProfile(user.id)
+        if (updatedProfile) {
+          setProfile(updatedProfile)
+        }
+      } catch (profileErr) {
+        console.warn('Profile refresh failed:', profileErr)
+        // Fallback: manually update points
+        setProfile((prev: any) => ({ ...prev, points: points - prayer.cost }))
+      }
 
-      // Refresh prayers list
+      // Step 6: Refresh prayers list
       try {
         const { data: prayers } = await supabase
           .from('prayers')
@@ -181,15 +196,28 @@ export default function PrayerPage() {
           .order('created_at', { ascending: false })
           .limit(50)
         
-        setRecentPrayers(prayers || [])
+        if (prayers) {
+          setRecentPrayers(prayers)
+          setTotalPrayers(prayers.length)
+        } else {
+          setTotalPrayers(prev => prev + 1)
+        }
       } catch (e) {
-        console.error('Error refreshing prayers:', e)
+        console.warn('Error refreshing prayers list:', e)
+        setTotalPrayers(prev => prev + 1)
       }
       
-      setTotalPrayers(prev => prev + 1)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error performing prayer:', error)
-      alert('An error occurred. Please try again.')
+      if (!pointsDeducted) {
+        alert('An error occurred. Please try again.')
+      } else {
+        // Points were deducted but something else failed - still show success
+        setPrayerResult('Your prayer has been sent to the temple. Stay positive, good fortune will arrive soon.')
+        setShowResult(true)
+        setProfile((prev: any) => ({ ...prev, points: points - prayer.cost }))
+        setTotalPrayers(prev => prev + 1)
+      }
     } finally {
       setIsPraying(false)
     }
