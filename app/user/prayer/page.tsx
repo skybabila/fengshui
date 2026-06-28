@@ -537,10 +537,16 @@ export default function PrayerPage() {
                       alt={resultDeity.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none'
+                        const target = e.target as HTMLImageElement
+                        target.style.display = 'none'
+                        const fallback = target.parentElement?.querySelector('.deity-fallback') as HTMLElement
+                        if (fallback) fallback.style.display = 'flex'
                       }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-amber-900/20 to-transparent"></div>
+                    <div className="deity-fallback absolute inset-0 items-center justify-center text-5xl bg-gradient-to-br from-amber-100 to-orange-100">
+                      {resultDeity.emoji}
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-amber-900/20 to-transparent pointer-events-none"></div>
                   </div>
                   
                   {/* Floating blessing particles */}
@@ -758,7 +764,7 @@ export default function PrayerPage() {
                       )}
 
                       <div className="flex items-start gap-4">
-                        <div className={`w-16 h-16 ${deity.bgColor} rounded-xl flex items-center justify-center text-3xl transition-transform overflow-hidden border-2 ${deity.borderColor} ${
+                        <div className={`relative w-16 h-16 ${deity.bgColor} rounded-xl flex items-center justify-center text-3xl transition-transform overflow-hidden border-2 ${deity.borderColor} ${
                           selectedPrayer === deity.id ? 'scale-110 rotate-3' : 'group-hover:scale-105'
                         }`}>
                           <img 
@@ -768,12 +774,11 @@ export default function PrayerPage() {
                             onError={(e) => {
                               const target = e.target as HTMLImageElement
                               target.style.display = 'none'
-                              if (target.nextElementSibling) {
-                                (target.nextElementSibling as HTMLElement).style.display = 'flex'
-                              }
+                              const fallback = target.parentElement?.querySelector('.deity-fallback') as HTMLElement
+                              if (fallback) fallback.style.display = 'flex'
                             }}
                           />
-                          <div className="absolute inset-0 w-full h-full items-center justify-center text-3xl" style={{ display: 'none' }}>
+                          <div className="deity-fallback absolute inset-0 items-center justify-center text-3xl">
                             {deity.emoji}
                           </div>
                         </div>
@@ -825,7 +830,7 @@ export default function PrayerPage() {
                   
                   <div className="relative z-10">
                     <div className="flex items-center gap-4 mb-4">
-                      <div className={`w-20 h-20 rounded-2xl overflow-hidden border-4 ${selectedDeity.borderColor} shadow-lg`}>
+                      <div className={`relative w-20 h-20 rounded-2xl overflow-hidden border-4 ${selectedDeity.borderColor} shadow-lg`}>
                         <img 
                           src={selectedDeity.image} 
                           alt={selectedDeity.name}
@@ -833,12 +838,11 @@ export default function PrayerPage() {
                           onError={(e) => {
                             const target = e.target as HTMLImageElement
                             target.style.display = 'none'
-                            if (target.nextElementSibling) {
-                              (target.nextElementSibling as HTMLElement).style.display = 'flex'
-                            }
+                            const fallback = target.parentElement?.querySelector('.deity-fallback') as HTMLElement
+                            if (fallback) fallback.style.display = 'flex'
                           }}
                         />
-                        <div className="absolute w-20 h-20 items-center justify-center text-4xl" style={{ display: 'none' }}>
+                        <div className={`deity-fallback absolute inset-0 items-center justify-center text-4xl ${selectedDeity.bgColor}`}>
                           {selectedDeity.emoji}
                         </div>
                       </div>
@@ -1038,7 +1042,7 @@ export default function PrayerPage() {
                         style={{ animationDelay: `${index * 0.05}s` }}
                       >
                         <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-amber-200 bg-gradient-to-br from-amber-100 to-orange-100">
+                        <div className="relative w-12 h-12 rounded-lg overflow-hidden border-2 border-amber-200 bg-gradient-to-br from-amber-100 to-orange-100">
                           {matchedDeity ? (
                             <img 
                               src={matchedDeity.image} 
@@ -1047,13 +1051,12 @@ export default function PrayerPage() {
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement
                                 target.style.display = 'none'
-                                if (target.nextElementSibling) {
-                                  (target.nextElementSibling as HTMLElement).style.display = 'flex'
-                                }
+                                const fallback = target.parentElement?.querySelector('.deity-fallback') as HTMLElement
+                                if (fallback) fallback.style.display = 'flex'
                               }}
                             />
                           ) : null}
-                          <div className={`w-full h-full items-center justify-center text-2xl ${matchedDeity ? '' : 'flex'}`}>
+                          <div className={`deity-fallback absolute inset-0 items-center justify-center text-2xl ${matchedDeity ? '' : 'flex'}`}>
                             {displayEmoji}
                           </div>
                         </div>
