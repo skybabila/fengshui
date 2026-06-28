@@ -1,13 +1,70 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import SidebarLayout from '@/components/SidebarLayout'
-import { Heart, Coins, Plus, Sparkles, CheckCircle, Clock, Star, TrendingUp, Lightbulb, PartyPopper } from 'lucide-react'
+import { Heart, Coins, Plus, Sparkles, CheckCircle, Clock, Star, TrendingUp, Lightbulb, PartyPopper, X, Pin } from 'lucide-react'
 
 const WISH_COST = 10
+
+// 便签颜色方案
+const noteColors = [
+  { bg: 'bg-yellow-200', border: 'border-yellow-300', text: 'text-yellow-900', pin: 'bg-red-500' },
+  { bg: 'bg-pink-200', border: 'border-pink-300', text: 'text-pink-900', pin: 'bg-pink-500' },
+  { bg: 'bg-blue-200', border: 'border-blue-300', text: 'text-blue-900', pin: 'bg-blue-500' },
+  { bg: 'bg-green-200', border: 'border-green-300', text: 'text-green-900', pin: 'bg-green-500' },
+  { bg: 'bg-purple-200', border: 'border-purple-300', text: 'text-purple-900', pin: 'bg-purple-500' },
+  { bg: 'bg-orange-200', border: 'border-orange-300', text: 'text-orange-900', pin: 'bg-orange-500' },
+  { bg: 'bg-rose-200', border: 'border-rose-300', text: 'text-rose-900', pin: 'bg-rose-500' },
+  { bg: 'bg-teal-200', border: 'border-teal-300', text: 'text-teal-900', pin: 'bg-teal-500' },
+  { bg: 'bg-amber-200', border: 'border-amber-300', text: 'text-amber-900', pin: 'bg-amber-600' },
+  { bg: 'bg-cyan-200', border: 'border-cyan-300', text: 'text-cyan-900', pin: 'bg-cyan-500' },
+]
+
+// 已实现便签配色（金色系）
+const fulfilledColors = [
+  { bg: 'bg-gradient-to-br from-amber-100 to-yellow-200', border: 'border-amber-400', text: 'text-amber-900', pin: 'bg-amber-600' },
+  { bg: 'bg-gradient-to-br from-yellow-100 to-amber-200', border: 'border-yellow-500', text: 'text-yellow-900', pin: 'bg-yellow-600' },
+]
+
+// 便签尺寸
+const noteSizes = [
+  { w: 'w-44', h: 'h-40', text: 'text-sm' },
+  { w: 'w-48', h: 'h-44', text: 'text-sm' },
+  { w: 'w-52', h: 'h-48', text: 'text-base' },
+  { w: 'w-40', h: 'h-36', text: 'text-xs' },
+  { w: 'w-56', h: 'h-52', text: 'text-base' },
+]
+
+// 生成稳定的随机数（基于wish id的hash）
+function hashCode(str: string): number {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash
+  }
+  return Math.abs(hash)
+}
+
+function getDeterministicValues(wish: any) {
+  const hash = hashCode(wish.id)
+  const colorIndex = hash % (wish.is_fulfilled ? fulfilledColors.length : noteColors.length)
+  const sizeIndex = Math.floor(hash / 7) % noteSizes.length
+  const rotation = ((hash % 12) - 6) * 0.8 // -4.8deg ~ +4.8deg
+  const topOffset = (hash % 30) - 10 // -10px ~ +20px
+  const leftOffset = (hash % 20) - 10 // -10px ~ +10px
+  
+  return {
+    color: wish.is_fulfilled ? fulfilledColors[colorIndex] : noteColors[colorIndex],
+    size: noteSizes[sizeIndex],
+    rotation,
+    topOffset,
+    leftOffset,
+  }
+}
 
 export default function WishWallPage() {
   const [user, setUser] = useState<any>(null)
@@ -19,6 +76,7 @@ export default function WishWallPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'fulfilled'>('all')
   const [showSuccess, setShowSuccess] = useState(false)
   const [pageError, setPageError] = useState<string | null>(null)
+  const [showForm, setShowForm] = useState(false)
 
   const fetchWishes = useCallback(async (userId: string) => {
     try {
@@ -94,7 +152,6 @@ export default function WishWallPage() {
     setSubmitting(true)
 
     try {
-      // Deduct points
       const { error: updateError } = await supabase
         .from('user_profiles')
         .update({ points: points - WISH_COST })
@@ -106,7 +163,6 @@ export default function WishWallPage() {
         return
       }
 
-      // Insert wish
       const { error: insertError } = await supabase
         .from('wishes')
         .insert({
@@ -119,10 +175,8 @@ export default function WishWallPage() {
 
       if (insertError) {
         console.error('Wish insert error:', insertError)
-        // Still show success if points were deducted
       }
 
-      // Record transaction
       try {
         await supabase
           .from('point_transactions')
@@ -135,11 +189,10 @@ export default function WishWallPage() {
         console.warn('Transaction record failed (non-critical):', txErr)
       }
 
-      // Show success popup
       setShowSuccess(true)
       setNewWish('')
+      setShowForm(false)
 
-      // Refresh data
       try {
         const updatedProfile = await getUserProfile(user.id)
         if (updatedProfile) {
@@ -153,7 +206,6 @@ export default function WishWallPage() {
 
       await fetchWishes(user.id)
 
-      // Auto hide success after 3 seconds
       setTimeout(() => setShowSuccess(false), 3000)
 
     } catch (error: any) {
@@ -234,12 +286,12 @@ export default function WishWallPage() {
   return (
     <SidebarLayout>
       <div className="p-6 md:p-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
 
           {/* Success Popup */}
           {showSuccess && (
-            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 animate-fade-in">
-              <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-sm w-full animate-bounce-in">
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-sm w-full">
                 <div className="w-20 h-20 bg-gradient-to-br from-pink-400 to-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Sparkles className="w-10 h-10 text-white" />
                 </div>
@@ -260,61 +312,44 @@ export default function WishWallPage() {
           )}
 
           {/* Header Section */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-500 rounded-xl shadow-lg mb-4">
-              <Heart className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-stone-800 mb-2">My Wish Wall</h1>
-            <p className="text-stone-500 max-w-lg mx-auto">
-              Write down your heartfelt wishes, call in positive spiritual energy, and manifest wealth, health and good fortune.
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-stone-800 mb-2 flex items-center justify-center gap-3">
+              <span className="text-4xl">🎋</span>
+              My Wish Wall
+              <span className="text-4xl">🎋</span>
+            </h1>
+            <p className="text-stone-500 max-w-lg mx-auto text-sm">
+              Write down your heartfelt wishes, pin them on the wall, and let positive energy bring you good fortune.
             </p>
-            <div className="w-24 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mt-4"></div>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-3 gap-4 mb-8">
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-5 border border-amber-200 hover:shadow-lg hover:-translate-y-1 transition-all cursor-default">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-400 rounded-xl flex items-center justify-center shadow-md">
-                  <Coins className="w-5 h-5 text-white" />
-                </div>
-              </div>
-              <p className="text-xs text-amber-700 font-medium mb-1">My Merit Coins</p>
-              <p className="text-2xl font-bold text-amber-800">{points.toLocaleString()}</p>
-              <p className="text-xs text-amber-600/70 mt-1">Use coins to post new wishes</p>
+          {/* Stats Bar */}
+          <div className="flex items-center justify-center gap-6 mb-6 flex-wrap">
+            <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm border border-stone-200">
+              <Coins className="w-4 h-4 text-amber-500" />
+              <span className="text-sm text-stone-600">My Coins:</span>
+              <span className="font-bold text-amber-600">{points.toLocaleString()}</span>
             </div>
-
-            <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-2xl p-5 border border-pink-200 hover:shadow-lg hover:-translate-y-1 transition-all cursor-default">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-pink-400 to-rose-400 rounded-xl flex items-center justify-center shadow-md">
-                  <Clock className="w-5 h-5 text-white" />
-                </div>
-              </div>
-              <p className="text-xs text-pink-700 font-medium mb-1">Pending Wishes</p>
-              <p className="text-2xl font-bold text-pink-800">{pendingWishes.length}</p>
-              <p className="text-xs text-pink-600/70 mt-1">Wishes waiting for blessings</p>
+            <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm border border-stone-200">
+              <Clock className="w-4 h-4 text-pink-500" />
+              <span className="text-sm text-stone-600">Pending:</span>
+              <span className="font-bold text-pink-600">{pendingWishes.length}</span>
             </div>
-
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-5 border border-emerald-200 hover:shadow-lg hover:-translate-y-1 transition-all cursor-default">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-xl flex items-center justify-center shadow-md">
-                  <CheckCircle className="w-5 h-5 text-white" />
-                </div>
-              </div>
-              <p className="text-xs text-emerald-700 font-medium mb-1">Wishes Fulfilled</p>
-              <p className="text-2xl font-bold text-emerald-800">{fulfilledWishes.length}</p>
-              <p className="text-xs text-emerald-600/70 mt-1">Dreams that have come true</p>
+            <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm border border-stone-200">
+              <PartyPopper className="w-4 h-4 text-emerald-500" />
+              <span className="text-sm text-stone-600">Fulfilled:</span>
+              <span className="font-bold text-emerald-600">{fulfilledWishes.length}</span>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex items-center justify-center gap-2 mb-6 bg-white/50 backdrop-blur-sm rounded-2xl p-1.5 border border-stone-200">
+          <div className="flex items-center justify-center gap-2 mb-6">
             <button
               onClick={() => setActiveTab('all')}
-              className={`flex-1 py-2.5 px-4 rounded-xl font-medium text-sm transition-all ${
+              className={`px-5 py-2 rounded-full font-medium text-sm transition-all ${
                 activeTab === 'all'
                   ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-md'
-                  : 'text-stone-500 hover:text-stone-700 hover:bg-stone-100'
+                  : 'bg-white/80 text-stone-600 hover:bg-white border border-stone-200'
               }`}
             >
               <Sparkles className="w-4 h-4 inline mr-1.5" />
@@ -322,232 +357,240 @@ export default function WishWallPage() {
             </button>
             <button
               onClick={() => setActiveTab('pending')}
-              className={`flex-1 py-2.5 px-4 rounded-xl font-medium text-sm transition-all ${
+              className={`px-5 py-2 rounded-full font-medium text-sm transition-all ${
                 activeTab === 'pending'
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md'
-                  : 'text-stone-500 hover:text-stone-700 hover:bg-stone-100'
+                  ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md'
+                  : 'bg-white/80 text-stone-600 hover:bg-white border border-stone-200'
               }`}
             >
               <Clock className="w-4 h-4 inline mr-1.5" />
-              Pending Blessings
+              Pending
             </button>
             <button
               onClick={() => setActiveTab('fulfilled')}
-              className={`flex-1 py-2.5 px-4 rounded-xl font-medium text-sm transition-all ${
+              className={`px-5 py-2 rounded-full font-medium text-sm transition-all ${
                 activeTab === 'fulfilled'
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md'
-                  : 'text-stone-500 hover:text-stone-700 hover:bg-stone-100'
+                  ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md'
+                  : 'bg-white/80 text-stone-600 hover:bg-white border border-stone-200'
               }`}
             >
               <PartyPopper className="w-4 h-4 inline mr-1.5" />
-              Wishes That Came True
+              Fulfilled
             </button>
           </div>
 
-          {/* Wish Cards */}
-          <div className="space-y-4 mb-10">
-            {displayWishes.length > 0 ? (
-              displayWishes.map((wish: any, index: number) => (
-                <div
-                  key={wish.id}
-                  className={`relative rounded-2xl p-6 border-2 transition-all hover:shadow-lg ${
-                    wish.is_fulfilled
-                      ? 'bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-300'
-                      : 'bg-gradient-to-br from-amber-50/50 to-yellow-50/50 border-amber-200'
-                  }`}
-                >
-                  {/* Star decoration for pending */}
-                  {!wish.is_fulfilled && (
-                    <div className="absolute top-4 right-4 opacity-30">
-                      <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
-                    </div>
-                  )}
+          {/* Wish Wall - Sticky Notes Style */}
+          {displayWishes.length > 0 ? (
+            <div className="relative bg-gradient-to-br from-stone-700 via-stone-600 to-stone-700 rounded-3xl p-8 md:p-12 min-h-[500px] shadow-2xl mb-8 overflow-hidden">
+              {/* Wall texture overlay */}
+              <div className="absolute inset-0 opacity-10" style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+              }}></div>
+              
+              {/* String lights decoration */}
+              <div className="absolute top-3 left-0 right-0 flex justify-around opacity-40">
+                {[...Array(12)].map((_, i) => (
+                  <div key={i} className="w-2 h-2 rounded-full bg-yellow-300 shadow-lg shadow-yellow-400/50"></div>
+                ))}
+              </div>
 
-                  {/* Fulfilled stamp */}
-                  {wish.is_fulfilled && (
-                    <div className="absolute top-4 right-4">
-                      <div className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md flex items-center gap-1">
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        Wish Granted
+              {/* Sticky Notes Grid */}
+              <div className="relative flex flex-wrap gap-6 md:gap-8 justify-center items-start py-4">
+                {displayWishes.map((wish: any) => {
+                  const { color, size, rotation, topOffset, leftOffset } = getDeterministicValues(wish)
+                  
+                  return (
+                    <div
+                      key={wish.id}
+                      className={`relative ${size.w} ${size.h} ${color.bg} ${color.border} border-2 ${size.text} ${color.text} shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-default group`}
+                      style={{
+                        transform: `rotate(${rotation}deg) translateY(${topOffset}px) translateX(${leftOffset}px)`,
+                      }}
+                    >
+                      {/* Pin */}
+                      <div className={`absolute -top-2.5 left-1/2 -translate-x-1/2 w-4 h-4 ${color.pin} rounded-full shadow-md border-2 border-white/30 z-10`}>
+                        <div className="absolute inset-1 rounded-full bg-white/20"></div>
+                      </div>
+
+                      {/* Tape effect corner */}
+                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-white/30 rotate-45"></div>
+
+                      {/* Fulfilled stamp */}
+                      {wish.is_fulfilled && (
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-12 pointer-events-none">
+                          <div className="px-4 py-1.5 border-2 border-red-500 rounded-full">
+                            <span className="text-red-500 font-bold text-lg">FULFILLED!</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Wish content */}
+                      <div className="p-4 pt-5 h-full flex flex-col">
+                        <p className="flex-1 leading-relaxed overflow-hidden" style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: wish.is_fulfilled ? 3 : 5,
+                          WebkitBoxOrient: 'vertical',
+                        }}>
+                          {wish.content}
+                        </p>
+                        
+                        {/* Footer */}
+                        <div className="mt-auto pt-2 border-t border-black/10">
+                          <p className="text-xs opacity-70">
+                            {formatDate(wish.created_at)}
+                          </p>
+                          {wish.is_fulfilled && wish.fulfilled_at && (
+                            <p className="text-xs font-bold text-amber-700 mt-0.5">
+                              ✨ {formatDate(wish.fulfilled_at)}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Fulfill button - show on hover for pending */}
+                        {!wish.is_fulfilled && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleFulfillWish(wish.id)
+                            }}
+                            className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 shadow-md"
+                            title="Mark as fulfilled"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
-                  )}
-
-                  {/* Wish content */}
-                  <p className="text-stone-700 text-lg leading-relaxed pr-24">
-                    {wish.content}
-                  </p>
-
-                  {/* Footer */}
-                  <div className="flex items-center justify-between mt-5 pt-4 border-t border-stone-200/50">
-                    <div className="flex items-center gap-3 text-xs text-stone-500">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>{formatDate(wish.created_at)}</span>
-                      {wish.is_fulfilled && wish.fulfilled_at && (
-                        <>
-                          <span className="text-stone-300">•</span>
-                          <span className="text-emerald-600 font-medium flex items-center gap-1">
-                            <PartyPopper className="w-3.5 h-3.5" />
-                            Fulfilled: {formatDate(wish.fulfilled_at)}
-                          </span>
-                        </>
-                      )}
-                    </div>
-
-                    {!wish.is_fulfilled && (
-                      <button
-                        onClick={() => handleFulfillWish(wish.id)}
-                        className="text-xs px-3 py-1.5 bg-white border border-emerald-200 text-emerald-600 rounded-lg hover:bg-emerald-50 transition-colors font-medium flex items-center gap-1"
-                      >
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        Mark Fulfilled
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Bottom small text */}
-                  {!wish.is_fulfilled && (
-                    <p className="text-xs text-amber-500/70 italic mt-3 text-center">
-                      *Waiting for good fortune to arrive*
-                    </p>
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-16 bg-white/50 rounded-2xl border border-stone-200 border-dashed">
-                <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Heart className="w-8 h-8 text-pink-400" />
-                </div>
-                <p className="text-stone-500 mb-1">
-                  {activeTab === 'pending' 
-                    ? 'No pending wishes' 
-                    : activeTab === 'fulfilled' 
-                      ? 'No fulfilled wishes yet'
-                      : 'No wishes yet'}
-                </p>
-                <p className="text-stone-400 text-sm">Make your first wish below! 🌟</p>
+                  )
+                })}
               </div>
-            )}
-          </div>
 
-          {/* New Wish Form - Enhanced */}
-          <div className="mt-16">
-            <div className="relative">
-              {/* Glow effect background */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-pink-200 via-rose-200 to-pink-200 rounded-3xl blur-md opacity-60"></div>
+              {/* Decorative corner shadows */}
+              <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-black/20 to-transparent rounded-tr-none rounded-bl-3xl"></div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-black/20 to-transparent rounded-tl-none rounded-br-3xl"></div>
+            </div>
+          ) : (
+            <div className="text-center py-20 bg-gradient-to-br from-stone-700 to-stone-600 rounded-3xl mb-8 shadow-2xl">
+              <div className="text-6xl mb-4">📋</div>
+              <p className="text-stone-300 text-lg mb-1">
+                {activeTab === 'pending' 
+                  ? 'No pending wishes' 
+                  : activeTab === 'fulfilled' 
+                    ? 'No fulfilled wishes yet'
+                    : 'Your wish wall is empty'}
+              </p>
+              <p className="text-stone-400 text-sm">Pin your first wish on the wall below! ✨</p>
+            </div>
+          )}
+
+          {/* Add Wish Button (Floating style when form closed) */}
+          {!showForm ? (
+            <div className="text-center mb-8">
+              <button
+                onClick={() => setShowForm(true)}
+                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-500 text-white font-bold text-lg rounded-full shadow-xl shadow-pink-300 hover:shadow-2xl hover:shadow-pink-400 transition-all hover:-translate-y-1 relative overflow-hidden group"
+              >
+                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:translate-x-full transition-transform duration-700"></span>
+                <Plus className="w-6 h-6 relative z-10" />
+                <span className="relative z-10">Post a New Wish</span>
+                <span className="text-sm opacity-80 relative z-10">(10 coins)</span>
+              </button>
+            </div>
+          ) : (
+            /* New Wish Form - Sticky Note Style */
+            <div className="relative max-w-lg mx-auto mb-12">
+              {/* Glow effect */}
+              <div className="absolute -inset-2 bg-gradient-to-r from-pink-300 via-rose-300 to-pink-300 rounded-3xl blur-lg opacity-40"></div>
               
-              {/* Main card */}
-              <div className="relative bg-gradient-to-b from-amber-50/80 to-orange-50/50 backdrop-blur-sm rounded-3xl p-8 border border-pink-200/60 shadow-xl">
-                
-                {/* Decorative top icon */}
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2">
-                  <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-rose-500 rounded-2xl flex items-center justify-center shadow-lg">
-                    <Heart className="w-6 h-6 text-white fill-white" />
-                  </div>
+              <div className="relative bg-gradient-to-b from-pink-100 to-rose-100 rounded-3xl p-6 border-2 border-pink-200 shadow-xl">
+                {/* Pin */}
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-red-500 rounded-full shadow-lg border-2 border-white/30 z-10">
+                  <div className="absolute inset-1.5 rounded-full bg-white/20"></div>
                 </div>
 
-                {/* Header Section - Emotional */}
-                <div className="text-center mb-6 pt-2">
-                  <h2 className="text-xl font-bold text-stone-800 mb-2 flex items-center justify-center gap-2">
+                {/* Close button */}
+                <button
+                  onClick={() => setShowForm(false)}
+                  className="absolute top-3 right-3 p-1.5 text-pink-400 hover:text-pink-600 hover:bg-pink-200/50 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+
+                {/* Title */}
+                <div className="text-center mb-4 pt-2">
+                  <h2 className="text-lg font-bold text-pink-900 flex items-center justify-center gap-2">
                     <Sparkles className="w-5 h-5 text-pink-500" />
-                    Seal Your Wish & Attract Good Fortune
+                    Seal Your Wish
                     <Sparkles className="w-5 h-5 text-pink-500" />
                   </h2>
-                  <p className="text-stone-500 text-sm">
-                    Lock your wish into the spiritual wall
-                  </p>
-                  <p className="text-pink-500 text-sm font-medium mt-1">
-                    Only 10 Merit Coins to seal your blessing
+                  <p className="text-pink-600 text-sm mt-1">
+                    10 Merit Coins • Lock in your blessing
                   </p>
                 </div>
 
-                {/* Quick Wish Templates */}
-                <div className="mb-5">
-                  <p className="text-xs text-stone-500 mb-2 flex items-center gap-1">
-                    <Lightbulb className="w-3.5 h-3.5" />
-                    Quick templates — click to fill:
-                  </p>
+                {/* Quick templates */}
+                <div className="mb-3">
+                  <p className="text-xs text-pink-700 mb-2 font-medium">Quick fill:</p>
                   <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => setNewWish('Bless my career for steady promotion and higher income.')}
-                      disabled={submitting || points < WISH_COST}
-                      className="text-xs px-3 py-1.5 bg-white/70 border border-pink-200 text-pink-600 rounded-full hover:bg-pink-50 transition-colors disabled:opacity-50"
-                    >
-                      💼 Career promotion
-                    </button>
-                    <button
-                      onClick={() => setNewWish('Keep my whole family safe and healthy all year long.')}
-                      disabled={submitting || points < WISH_COST}
-                      className="text-xs px-3 py-1.5 bg-white/70 border border-pink-200 text-pink-600 rounded-full hover:bg-pink-50 transition-colors disabled:opacity-50"
-                    >
-                      👨‍👩‍👧 Family health
-                    </button>
-                    <button
-                      onClick={() => setNewWish('Attract stable wealth and continuous good luck.')}
-                      disabled={submitting || points < WISH_COST}
-                      className="text-xs px-3 py-1.5 bg-white/70 border border-pink-200 text-pink-600 rounded-full hover:bg-pink-50 transition-colors disabled:opacity-50"
-                    >
-                      💰 Wealth & luck
-                    </button>
+                    {[
+                      { icon: '💼', text: 'Bless my career for steady promotion and higher income.' },
+                      { icon: '👨‍👩‍👧', text: 'Keep my whole family safe and healthy all year long.' },
+                      { icon: '💰', text: 'Attract stable wealth and continuous good luck.' },
+                    ].map((tpl, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setNewWish(tpl.text)}
+                        disabled={submitting || points < WISH_COST}
+                        className="text-xs px-3 py-1 bg-white/70 border border-pink-200 text-pink-600 rounded-full hover:bg-white transition-colors disabled:opacity-50"
+                      >
+                        {tpl.icon} {tpl.text.length > 25 ? tpl.text.slice(0, 25) + '...' : tpl.text}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                {/* Social proof ticker */}
-                <div className="mb-4 px-3 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border border-emerald-100">
-                  <p className="text-xs text-emerald-700 text-center">
-                    ✨ A user&apos;s wealth wish was marked fulfilled yesterday.
+                {/* Textarea */}
+                <div className="mb-4">
+                  <textarea
+                    value={newWish}
+                    onChange={(e) => setNewWish(e.target.value.slice(0, 200))}
+                    rows={4}
+                    placeholder="Write your heartfelt wish here... wealth, health, love, career... anything your heart desires ✨"
+                    className="w-full px-4 py-3 border border-pink-200 rounded-2xl focus:ring-2 focus:ring-pink-300 focus:border-pink-300 resize-none bg-white/80 placeholder-pink-300 text-pink-900 leading-relaxed text-sm"
+                    disabled={submitting || points < WISH_COST}
+                  />
+                  <div className="text-right mt-1">
+                    <span className={`text-xs font-medium ${newWish.length >= 180 ? 'text-amber-600' : 'text-pink-400'}`}>
+                      {newWish.length}/200
+                    </span>
+                  </div>
+                </div>
+
+                {/* Spiritual tip */}
+                <div className="mb-4 px-3 py-2 bg-white/50 rounded-xl">
+                  <p className="text-xs text-pink-700">
+                    💡 <strong>Spiritual Tip:</strong> Wishes written with faith are far more likely to manifest.
                   </p>
                 </div>
 
-                {/* Input Area */}
-                <div className="mb-5">
-                  <div className="relative">
-                    <textarea
-                      value={newWish}
-                      onChange={(e) => setNewWish(e.target.value.slice(0, 200))}
-                      rows={5}
-                      placeholder="Write your heartfelt wish: wealth growth, career promotion, family health, or happy relationships. Sincere words attract the strongest positive energy."
-                      className="w-full px-5 py-4 border border-pink-200 rounded-2xl focus:ring-2 focus:ring-pink-300 focus:border-pink-300 resize-none bg-white/80 placeholder-pink-300/80 text-stone-700 leading-relaxed"
-                      disabled={submitting || points < WISH_COST}
-                    />
-                    {/* Character count - bottom right */}
-                    <div className="absolute bottom-3 right-4">
-                      <span className={`text-xs font-medium ${newWish.length >= 180 ? 'text-amber-500' : 'text-stone-300'}`}>
-                        {newWish.length}/200
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Spiritual Tip */}
-                <div className="mb-5 flex items-start gap-3 p-3 bg-gradient-to-r from-pink-50 to-rose-50 rounded-xl border border-pink-100">
-                  <div className="text-lg flex-shrink-0">💡</div>
-                  <div>
-                    <p className="text-xs font-semibold text-pink-700 mb-0.5">Spiritual Tip</p>
-                    <p className="text-xs text-pink-600">
-                      Wishes written with faith are far more likely to manifest. Stay positive while you write.
-                    </p>
-                  </div>
-                </div>
-
-                {/* New user bonus hint */}
+                {/* Sufficient coins hint */}
                 {points >= WISH_COST && (
                   <div className="mb-4 text-center">
                     <span className="text-xs text-emerald-600 font-medium bg-emerald-50 px-3 py-1 rounded-full">
-                      ✅ You have enough coins. Seize the chance to lock in your good luck today.
+                      ✅ Ready to seal your blessing!
                     </span>
                   </div>
                 )}
 
-                {/* Action Section */}
+                {/* Action */}
                 {points < WISH_COST ? (
                   <div className="text-center">
-                    <p className="text-amber-600 text-sm mb-3 font-medium">
-                      Need {WISH_COST - points} more coins to seal your blessing
+                    <p className="text-amber-700 text-sm mb-3 font-medium">
+                      Need {WISH_COST - points} more coins
                     </p>
                     <Link
                       href="/user/points"
-                      className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                      className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
                     >
                       <TrendingUp className="w-4 h-4" />
                       Earn Free Coins
@@ -557,28 +600,25 @@ export default function WishWallPage() {
                   <button
                     onClick={handleSubmitWish}
                     disabled={submitting || !newWish.trim()}
-                    className="w-full py-4 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-500 text-white font-bold text-lg rounded-2xl shadow-lg shadow-pink-200 hover:shadow-xl hover:shadow-pink-300 hover:brightness-105 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:brightness-100 relative overflow-hidden group"
+                    className="w-full py-3 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-500 text-white font-bold rounded-2xl shadow-lg shadow-pink-200 hover:shadow-xl hover:brightness-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
                   >
-                    {/* Shine effect on hover */}
                     <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:translate-x-full transition-transform duration-700"></span>
-                    
                     {submitting ? (
                       <span className="flex items-center justify-center gap-2 relative z-10">
                         <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                        Sealing Your Wish...
+                        Sealing...
                       </span>
                     ) : (
                       <span className="flex items-center justify-center gap-2 relative z-10">
                         <Star className="w-5 h-5 fill-white" />
-                        Send My Wish to the Blessing Wall
+                        Pin My Wish on the Wall
                       </span>
                     )}
                   </button>
                 )}
-
               </div>
             </div>
-          </div>
+          )}
 
         </div>
       </div>
