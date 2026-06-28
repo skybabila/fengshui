@@ -5,11 +5,10 @@ import Link from 'next/link'
 import { supabase, getUserProfile } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import SidebarLayout from '@/components/SidebarLayout'
-import { Heart, Coins, Plus, Sparkles, CheckCircle, Clock, Star, TrendingUp, Lightbulb, PartyPopper, X, Pin } from 'lucide-react'
+import { Heart, Coins, Plus, Sparkles, CheckCircle, Clock, Star, TrendingUp, Lightbulb, PartyPopper, X, Pin, Trash2, Palette, RotateCcw } from 'lucide-react'
 
 const WISH_COST = 10
 
-// 便签颜色方案
 const noteColors = [
   { bg: 'bg-yellow-200', border: 'border-yellow-300', text: 'text-yellow-900', pin: 'bg-red-500' },
   { bg: 'bg-pink-200', border: 'border-pink-300', text: 'text-pink-900', pin: 'bg-pink-500' },
@@ -21,15 +20,19 @@ const noteColors = [
   { bg: 'bg-teal-200', border: 'border-teal-300', text: 'text-teal-900', pin: 'bg-teal-500' },
   { bg: 'bg-amber-200', border: 'border-amber-300', text: 'text-amber-900', pin: 'bg-amber-600' },
   { bg: 'bg-cyan-200', border: 'border-cyan-300', text: 'text-cyan-900', pin: 'bg-cyan-500' },
+  { bg: 'bg-lime-200', border: 'border-lime-300', text: 'text-lime-900', pin: 'bg-lime-600' },
+  { bg: 'bg-fuchsia-200', border: 'border-fuchsia-300', text: 'text-fuchsia-900', pin: 'bg-fuchsia-500' },
+  { bg: 'bg-indigo-200', border: 'border-indigo-300', text: 'text-indigo-900', pin: 'bg-indigo-500' },
+  { bg: 'bg-red-200', border: 'border-red-300', text: 'text-red-900', pin: 'bg-red-600' },
+  { bg: 'bg-sky-200', border: 'border-sky-300', text: 'text-sky-900', pin: 'bg-sky-500' },
+  { bg: 'bg-emerald-200', border: 'border-emerald-300', text: 'text-emerald-900', pin: 'bg-emerald-500' },
 ]
 
-// 已实现便签配色（金色系）
 const fulfilledColors = [
   { bg: 'bg-gradient-to-br from-amber-100 to-yellow-200', border: 'border-amber-400', text: 'text-amber-900', pin: 'bg-amber-600' },
   { bg: 'bg-gradient-to-br from-yellow-100 to-amber-200', border: 'border-yellow-500', text: 'text-yellow-900', pin: 'bg-yellow-600' },
 ]
 
-// 便签尺寸
 const noteSizes = [
   { w: 'w-44', h: 'h-40', text: 'text-sm' },
   { w: 'w-48', h: 'h-44', text: 'text-sm' },
@@ -38,7 +41,14 @@ const noteSizes = [
   { w: 'w-56', h: 'h-52', text: 'text-base' },
 ]
 
-// 生成稳定的随机数（基于wish id的hash）
+const styleVariants = ['classic', 'polaroid', 'parchment', 'speech', 'star']
+
+const decorationOptions = ['none', 'cornerStar', 'heartStamp', 'flowerDoodle', 'sparkleSticker']
+
+const tapePositions = ['topRight', 'topLeft', 'bottomRight', 'bottomLeft', 'topCenter']
+
+const fontStyles = ['normal', 'serif', 'mono', 'italic', 'cute']
+
 function hashCode(str: string): number {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
@@ -49,23 +59,39 @@ function hashCode(str: string): number {
   return Math.abs(hash)
 }
 
-function getDeterministicValues(wish: any) {
+function getDeterministicValues(wish: any, customizations?: Record<string, any>) {
   const wishId = String(wish?.id || Math.random().toString())
   const isFulfilled = Boolean(wish?.is_fulfilled)
   const hash = hashCode(wishId)
   const colors = isFulfilled ? fulfilledColors : noteColors
-  const colorIndex = hash % colors.length
-  const sizeIndex = Math.floor(hash / 7) % noteSizes.length
-  const rotation = ((hash % 12) - 6) * 0.8
-  const topOffset = (hash % 30) - 10
-  const leftOffset = (hash % 20) - 10
-  
+  const custom = customizations?.[wishId]
+
+  let colorIndex = hash % colors.length
+  let sizeIndex = Math.floor(hash / 7) % noteSizes.length
+  let rotation = ((hash % 12) - 6) * 0.8
+  let topOffset = (hash % 30) - 10
+  let leftOffset = (hash % 20) - 10
+
+  if (custom?.colorIndex !== undefined && !isFulfilled) {
+    colorIndex = custom.colorIndex % noteColors.length
+  }
+
+  const styleVariant = custom?.styleVariant || styleVariants[hash % styleVariants.length]
+  const decoration = custom?.decoration || decorationOptions[hash % decorationOptions.length]
+  const tapePosition = custom?.tapePosition || tapePositions[hash % tapePositions.length]
+  const fontStyle = custom?.fontStyle || fontStyles[hash % fontStyles.length]
+
   return {
     color: colors[colorIndex],
     size: noteSizes[sizeIndex],
     rotation,
     topOffset,
     leftOffset,
+    styleVariant,
+    decoration,
+    tapePosition,
+    fontStyle,
+    colorIndex,
   }
 }
 
@@ -80,6 +106,41 @@ export default function WishWallPage() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [pageError, setPageError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [deletedWishes, setDeletedWishes] = useState<any[]>([])
+  const [showTrashModal, setShowTrashModal] = useState(false)
+  const [customizations, setCustomizations] = useState<Record<string, any>>({})
+  const [customizingWishId, setCustomizingWishId] = useState<string | null>(null)
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('wish_customizations')
+      if (saved) {
+        setCustomizations(JSON.parse(saved))
+      }
+    } catch (e) {
+      console.error('Failed to load customizations:', e)
+    }
+  }, [])
+
+  const saveCustomizations = useCallback((newCustomizations: Record<string, any>) => {
+    setCustomizations(newCustomizations)
+    try {
+      localStorage.setItem('wish_customizations', JSON.stringify(newCustomizations))
+    } catch (e) {
+      console.error('Failed to save customizations:', e)
+    }
+  }, [])
+
+  const updateWishCustomization = useCallback((wishId: string, updates: Partial<any>) => {
+    const newCustomizations = {
+      ...customizations,
+      [wishId]: {
+        ...customizations[wishId],
+        ...updates,
+      },
+    }
+    saveCustomizations(newCustomizations)
+  }, [customizations, saveCustomizations])
 
   const fetchWishes = useCallback(async (userId: string) => {
     try {
@@ -253,6 +314,1021 @@ export default function WishWallPage() {
     }
   }
 
+  const handleDeleteWish = (wishId: string) => {
+    if (!confirm('Move this wish to trash?')) return
+    const wishToDelete = wishes.find((w: any) => w.id === wishId)
+    if (wishToDelete) {
+      setDeletedWishes((prev) => [...prev, { ...wishToDelete, deleted_at: new Date().toISOString() }])
+      setWishes(wishes.filter((w: any) => w.id !== wishId))
+    }
+  }
+
+  const handleRestoreWish = (wishId: string) => {
+    const wishToRestore = deletedWishes.find((w: any) => w.id === wishId)
+    if (wishToRestore) {
+      setWishes((prev) => [wishToRestore, ...prev].sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      ))
+      setDeletedWishes(deletedWishes.filter((w: any) => w.id !== wishId))
+    }
+  }
+
+  const handleDeleteForever = (wishId: string) => {
+    if (!confirm('Permanently delete this wish? This cannot be undone.')) return
+    setDeletedWishes(deletedWishes.filter((w: any) => w.id !== wishId))
+    const newCustomizations = { ...customizations }
+    delete newCustomizations[wishId]
+    saveCustomizations(newCustomizations)
+  }
+
+  const handleEmptyTrash = () => {
+    if (!confirm('Permanently delete ALL wishes in trash? This cannot be undone.')) return
+    const deletedIds = deletedWishes.map((w: any) => w.id)
+    const newCustomizations = { ...customizations }
+    deletedIds.forEach((id: string) => delete newCustomizations[id])
+    saveCustomizations(newCustomizations)
+    setDeletedWishes([])
+  }
+
+  const getTapeClass = (position: string) => {
+    switch (position) {
+      case 'topLeft': return 'absolute -top-1 -left-1 w-6 h-6 bg-white/30 rotate-45'
+      case 'topRight': return 'absolute -top-1 -right-1 w-6 h-6 bg-white/30 -rotate-45'
+      case 'bottomLeft': return 'absolute -bottom-1 -left-1 w-6 h-6 bg-white/30 -rotate-45'
+      case 'bottomRight': return 'absolute -bottom-1 -right-1 w-6 h-6 bg-white/30 rotate-45'
+      case 'topCenter': return 'absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-5 bg-white/30'
+      default: return 'absolute -top-1 -right-1 w-6 h-6 bg-white/30 -rotate-45'
+    }
+  }
+
+  const getFontClass = (style: string) => {
+    switch (style) {
+      case 'serif': return 'font-serif'
+      case 'mono': return 'font-mono'
+      case 'italic': return 'italic'
+      case 'cute': return 'font-serif italic'
+      default: return ''
+    }
+  }
+
+  const renderDecoration = (decoration: string, color: any) => {
+    switch (decoration) {
+      case 'cornerStar':
+        return (
+          <div className="absolute top-2 right-2 text-yellow-500 text-lg">
+            <Star className="w-5 h-5 fill-yellow-400 text-yellow-500" />
+          </div>
+        )
+      case 'heartStamp':
+        return (
+          <div className="absolute top-2 right-2 text-rose-500 text-lg opacity-60">
+            <Heart className="w-5 h-5 fill-rose-400 text-rose-500" />
+          </div>
+        )
+      case 'flowerDoodle':
+        return (
+          <div className="absolute top-2 right-2 text-pink-500 text-lg">
+            <span className="text-xl">🌸</span>
+          </div>
+        )
+      case 'sparkleSticker':
+        return (
+          <div className="absolute top-2 right-2 text-amber-400">
+            <Sparkles className="w-5 h-5" />
+          </div>
+        )
+      default:
+        return null
+    }
+  }
+
+  const renderWishCard = (wish: any, showActions: boolean = true, isTrash: boolean = false) => {
+    const { color, size, rotation, topOffset, leftOffset, styleVariant, decoration, tapePosition, fontStyle } = getDeterministicValues(wish, customizations)
+
+    const baseClasses = `relative ${size.w} ${size.h} ${color.bg} ${color.border} border-2 ${size.text} ${color.text} shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-default group ${getFontClass(fontStyle)}`
+
+    if (styleVariant === 'polaroid') {
+      return (
+        <div
+          key={wish.id}
+          className={`relative ${size.w} ${size.h} bg-white border-2 border-stone-200 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-default group pb-10`}
+          style={{
+            transform: `rotate(${rotation}deg) translateY(${topOffset}px) translateX(${leftOffset}px)`,
+          }}
+        >
+          <div className={`${color.bg} m-2 h-3/4 rounded-sm flex items-center justify-center p-2`}>
+            <p className={`${color.text} ${size.text} ${getFontClass(fontStyle)} text-center leading-relaxed overflow-hidden`} style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 4,
+              WebkitBoxOrient: 'vertical',
+            }}>
+              {wish.content}
+            </p>
+          </div>
+          <div className="absolute bottom-2 left-0 right-0 text-center">
+            <p className="text-xs text-stone-500 font-mono">{formatDate(wish.created_at)}</p>
+          </div>
+          {renderDecoration(decoration, color)}
+          {showActions && !isTrash && !wish.is_fulfilled && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleFulfillWish(wish.id)
+              }}
+              className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 shadow-md z-20"
+              title="Mark as fulfilled"
+            >
+              <CheckCircle className="w-4 h-4" />
+            </button>
+          )}
+          {showActions && !isTrash && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCustomizingWishId(customizingWishId === wish.id ? null : wish.id)
+                }}
+                className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-violet-500 text-white rounded-lg hover:bg-violet-600 shadow-md z-20"
+                title="Customize"
+              >
+                <Palette className="w-4 h-4" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleDeleteWish(wish.id)
+                }}
+                className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow-md z-20"
+                title="Delete"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </>
+          )}
+          {customizingWishId === wish.id && !isTrash && (
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 translate-y-full z-30 bg-white rounded-xl shadow-2xl p-3 border border-stone-200 w-56">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-stone-700">Customize Wish</p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setCustomizingWishId(null)
+                  }}
+                  className="p-0.5 hover:bg-stone-100 rounded"
+                >
+                  <X className="w-3.5 h-3.5 text-stone-500" />
+                </button>
+              </div>
+              <div className="mb-2">
+                <p className="text-xs text-stone-500 mb-1">Color</p>
+                <div className="flex flex-wrap gap-1">
+                  {noteColors.map((c, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { colorIndex: i })
+                      }}
+                      className={`w-5 h-5 rounded-full ${c.bg} border-2 ${c.border} hover:scale-110 transition-transform`}
+                      title={`Color ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="mb-2">
+                <p className="text-xs text-stone-500 mb-1">Style</p>
+                <div className="flex flex-wrap gap-1">
+                  {styleVariants.map((sv) => (
+                    <button
+                      key={sv}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { styleVariant: sv })
+                      }}
+                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                        styleVariant === sv
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                      }`}
+                    >
+                      {sv.charAt(0).toUpperCase() + sv.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-2">
+                <p className="text-xs text-stone-500 mb-1">Tape</p>
+                <div className="flex flex-wrap gap-1">
+                  {tapePositions.map((tp) => (
+                    <button
+                      key={tp}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { tapePosition: tp })
+                      }}
+                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                        tapePosition === tp
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                      }`}
+                    >
+                      {tp.replace(/([A-Z])/g, ' $1').trim().charAt(0).toUpperCase() + tp.replace(/([A-Z])/g, ' $1').trim().slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-2">
+                <p className="text-xs text-stone-500 mb-1">Decoration</p>
+                <div className="flex flex-wrap gap-1">
+                  {decorationOptions.map((d) => (
+                    <button
+                      key={d}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { decoration: d })
+                      }}
+                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                        decoration === d
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                      }`}
+                    >
+                      {d === 'none' ? 'None' : d.replace(/([A-Z])/g, ' $1').trim().charAt(0).toUpperCase() + d.replace(/([A-Z])/g, ' $1').trim().slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-stone-500 mb-1">Font</p>
+                <div className="flex flex-wrap gap-1">
+                  {fontStyles.map((fs) => (
+                    <button
+                      key={fs}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { fontStyle: fs })
+                      }}
+                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                        fontStyle === fs
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                      }`}
+                    >
+                      {fs.charAt(0).toUpperCase() + fs.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    if (styleVariant === 'parchment') {
+      return (
+        <div
+          key={wish.id}
+          className={`relative ${size.w} ${size.h} bg-gradient-to-b from-amber-100 to-amber-50 border-2 border-amber-300 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-default group ${getFontClass(fontStyle)}`}
+          style={{
+            transform: `rotate(${rotation}deg) translateY(${topOffset}px) translateX(${leftOffset}px)`,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E")`,
+          }}
+        >
+          <div className={`absolute -top-1 -left-1 w-3 h-full bg-amber-200 rounded-l-lg`}></div>
+          <div className={`absolute -top-1 -right-1 w-3 h-full bg-amber-200 rounded-r-lg`}></div>
+          <div className={`${color.text} p-4 pt-5 h-full flex flex-col`}>
+            <p className="flex-1 leading-relaxed overflow-hidden" style={{
+              display: '-webkit-box',
+              WebkitLineClamp: wish.is_fulfilled ? 3 : 5,
+              WebkitBoxOrient: 'vertical',
+            }}>
+              {wish.content}
+            </p>
+            <div className="mt-auto pt-2 border-t border-amber-300/50">
+              <p className="text-xs opacity-70">
+                {formatDate(wish.created_at)}
+              </p>
+            </div>
+          </div>
+          {renderDecoration(decoration, color)}
+          {showActions && !isTrash && !wish.is_fulfilled && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleFulfillWish(wish.id)
+              }}
+              className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 shadow-md z-20"
+              title="Mark as fulfilled"
+            >
+              <CheckCircle className="w-4 h-4" />
+            </button>
+          )}
+          {showActions && !isTrash && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCustomizingWishId(customizingWishId === wish.id ? null : wish.id)
+                }}
+                className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-violet-500 text-white rounded-lg hover:bg-violet-600 shadow-md z-20"
+                title="Customize"
+              >
+                <Palette className="w-4 h-4" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleDeleteWish(wish.id)
+                }}
+                className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow-md z-20"
+                title="Delete"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </>
+          )}
+          {customizingWishId === wish.id && !isTrash && (
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 translate-y-full z-30 bg-white rounded-xl shadow-2xl p-3 border border-stone-200 w-56">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-stone-700">Customize Wish</p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setCustomizingWishId(null)
+                  }}
+                  className="p-0.5 hover:bg-stone-100 rounded"
+                >
+                  <X className="w-3.5 h-3.5 text-stone-500" />
+                </button>
+              </div>
+              <div className="mb-2">
+                <p className="text-xs text-stone-500 mb-1">Color</p>
+                <div className="flex flex-wrap gap-1">
+                  {noteColors.map((c, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { colorIndex: i })
+                      }}
+                      className={`w-5 h-5 rounded-full ${c.bg} border-2 ${c.border} hover:scale-110 transition-transform`}
+                      title={`Color ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="mb-2">
+                <p className="text-xs text-stone-500 mb-1">Style</p>
+                <div className="flex flex-wrap gap-1">
+                  {styleVariants.map((sv) => (
+                    <button
+                      key={sv}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { styleVariant: sv })
+                      }}
+                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                        styleVariant === sv
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                      }`}
+                    >
+                      {sv.charAt(0).toUpperCase() + sv.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-2">
+                <p className="text-xs text-stone-500 mb-1">Tape</p>
+                <div className="flex flex-wrap gap-1">
+                  {tapePositions.map((tp) => (
+                    <button
+                      key={tp}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { tapePosition: tp })
+                      }}
+                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                        tapePosition === tp
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                      }`}
+                    >
+                      {tp.replace(/([A-Z])/g, ' $1').trim().charAt(0).toUpperCase() + tp.replace(/([A-Z])/g, ' $1').trim().slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-2">
+                <p className="text-xs text-stone-500 mb-1">Decoration</p>
+                <div className="flex flex-wrap gap-1">
+                  {decorationOptions.map((d) => (
+                    <button
+                      key={d}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { decoration: d })
+                      }}
+                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                        decoration === d
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                      }`}
+                    >
+                      {d === 'none' ? 'None' : d.replace(/([A-Z])/g, ' $1').trim().charAt(0).toUpperCase() + d.replace(/([A-Z])/g, ' $1').trim().slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-stone-500 mb-1">Font</p>
+                <div className="flex flex-wrap gap-1">
+                  {fontStyles.map((fs) => (
+                    <button
+                      key={fs}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { fontStyle: fs })
+                      }}
+                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                        fontStyle === fs
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                      }`}
+                    >
+                      {fs.charAt(0).toUpperCase() + fs.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    if (styleVariant === 'speech') {
+      return (
+        <div
+          key={wish.id}
+          className={`relative ${size.w} ${size.h} ${color.bg} ${color.border} border-2 rounded-b-3xl ${size.text} ${color.text} shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-default group ${getFontClass(fontStyle)}`}
+          style={{
+            transform: `rotate(${rotation}deg) translateY(${topOffset}px) translateX(${leftOffset}px)`,
+          }}
+        >
+          <div className="absolute -bottom-3 left-8 w-6 h-6">
+            <div className={`absolute inset-0 ${color.bg} border-2 ${color.border} rotate-45 border-t-0 border-l-0`}></div>
+          </div>
+          <div className={`${color.text} p-4 pt-5 h-full flex flex-col`}>
+            <p className="flex-1 leading-relaxed overflow-hidden" style={{
+              display: '-webkit-box',
+              WebkitLineClamp: wish.is_fulfilled ? 3 : 5,
+              WebkitBoxOrient: 'vertical',
+            }}>
+              {wish.content}
+            </p>
+            <div className="mt-auto pt-2 border-t border-black/10">
+              <p className="text-xs opacity-70">
+                {formatDate(wish.created_at)}
+              </p>
+            </div>
+          </div>
+          {renderDecoration(decoration, color)}
+          {showActions && !isTrash && !wish.is_fulfilled && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleFulfillWish(wish.id)
+              }}
+              className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 shadow-md z-20"
+              title="Mark as fulfilled"
+            >
+              <CheckCircle className="w-4 h-4" />
+            </button>
+          )}
+          {showActions && !isTrash && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCustomizingWishId(customizingWishId === wish.id ? null : wish.id)
+                }}
+                className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-violet-500 text-white rounded-lg hover:bg-violet-600 shadow-md z-20"
+                title="Customize"
+              >
+                <Palette className="w-4 h-4" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleDeleteWish(wish.id)
+                }}
+                className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow-md z-20"
+                title="Delete"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </>
+          )}
+          {customizingWishId === wish.id && !isTrash && (
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 translate-y-full z-30 bg-white rounded-xl shadow-2xl p-3 border border-stone-200 w-56">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-stone-700">Customize Wish</p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setCustomizingWishId(null)
+                  }}
+                  className="p-0.5 hover:bg-stone-100 rounded"
+                >
+                  <X className="w-3.5 h-3.5 text-stone-500" />
+                </button>
+              </div>
+              <div className="mb-2">
+                <p className="text-xs text-stone-500 mb-1">Color</p>
+                <div className="flex flex-wrap gap-1">
+                  {noteColors.map((c, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { colorIndex: i })
+                      }}
+                      className={`w-5 h-5 rounded-full ${c.bg} border-2 ${c.border} hover:scale-110 transition-transform`}
+                      title={`Color ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="mb-2">
+                <p className="text-xs text-stone-500 mb-1">Style</p>
+                <div className="flex flex-wrap gap-1">
+                  {styleVariants.map((sv) => (
+                    <button
+                      key={sv}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { styleVariant: sv })
+                      }}
+                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                        styleVariant === sv
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                      }`}
+                    >
+                      {sv.charAt(0).toUpperCase() + sv.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-2">
+                <p className="text-xs text-stone-500 mb-1">Tape</p>
+                <div className="flex flex-wrap gap-1">
+                  {tapePositions.map((tp) => (
+                    <button
+                      key={tp}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { tapePosition: tp })
+                      }}
+                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                        tapePosition === tp
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                      }`}
+                    >
+                      {tp.replace(/([A-Z])/g, ' $1').trim().charAt(0).toUpperCase() + tp.replace(/([A-Z])/g, ' $1').trim().slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-2">
+                <p className="text-xs text-stone-500 mb-1">Decoration</p>
+                <div className="flex flex-wrap gap-1">
+                  {decorationOptions.map((d) => (
+                    <button
+                      key={d}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { decoration: d })
+                      }}
+                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                        decoration === d
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                      }`}
+                    >
+                      {d === 'none' ? 'None' : d.replace(/([A-Z])/g, ' $1').trim().charAt(0).toUpperCase() + d.replace(/([A-Z])/g, ' $1').trim().slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-stone-500 mb-1">Font</p>
+                <div className="flex flex-wrap gap-1">
+                  {fontStyles.map((fs) => (
+                    <button
+                      key={fs}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { fontStyle: fs })
+                      }}
+                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                        fontStyle === fs
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                      }`}
+                    >
+                      {fs.charAt(0).toUpperCase() + fs.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    if (styleVariant === 'star') {
+      return (
+        <div
+          key={wish.id}
+          className={`relative ${size.w} ${size.h} ${color.bg} ${color.border} border-2 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-default group ${getFontClass(fontStyle)}`}
+          style={{
+            transform: `rotate(${rotation}deg) translateY(${topOffset}px) translateX(${leftOffset}px)`,
+            clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
+          }}
+        >
+          <div className={`${color.text} p-6 pt-10 h-full flex flex-col items-center text-center`}>
+            <p className={`${color.text} leading-relaxed overflow-hidden text-xs`} style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 4,
+              WebkitBoxOrient: 'vertical',
+            }}>
+              {wish.content}
+            </p>
+          </div>
+          {showActions && !isTrash && !wish.is_fulfilled && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleFulfillWish(wish.id)
+              }}
+              className="absolute bottom-6 right-4 opacity-0 group-hover:opacity-100 transition-opacity p-1 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 shadow-md z-20"
+              title="Mark as fulfilled"
+            >
+              <CheckCircle className="w-3 h-3" />
+            </button>
+          )}
+          {showActions && !isTrash && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCustomizingWishId(customizingWishId === wish.id ? null : wish.id)
+                }}
+                className="absolute bottom-6 left-4 opacity-0 group-hover:opacity-100 transition-opacity p-1 bg-violet-500 text-white rounded-lg hover:bg-violet-600 shadow-md z-20"
+                title="Customize"
+              >
+                <Palette className="w-3 h-3" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleDeleteWish(wish.id)
+                }}
+                className="absolute top-6 left-4 opacity-0 group-hover:opacity-100 transition-opacity p-1 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow-md z-20"
+                title="Delete"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </>
+          )}
+          {customizingWishId === wish.id && !isTrash && (
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 translate-y-full z-30 bg-white rounded-xl shadow-2xl p-3 border border-stone-200 w-56">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-stone-700">Customize Wish</p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setCustomizingWishId(null)
+                  }}
+                  className="p-0.5 hover:bg-stone-100 rounded"
+                >
+                  <X className="w-3.5 h-3.5 text-stone-500" />
+                </button>
+              </div>
+              <div className="mb-2">
+                <p className="text-xs text-stone-500 mb-1">Color</p>
+                <div className="flex flex-wrap gap-1">
+                  {noteColors.map((c, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { colorIndex: i })
+                      }}
+                      className={`w-5 h-5 rounded-full ${c.bg} border-2 ${c.border} hover:scale-110 transition-transform`}
+                      title={`Color ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="mb-2">
+                <p className="text-xs text-stone-500 mb-1">Style</p>
+                <div className="flex flex-wrap gap-1">
+                  {styleVariants.map((sv) => (
+                    <button
+                      key={sv}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { styleVariant: sv })
+                      }}
+                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                        styleVariant === sv
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                      }`}
+                    >
+                      {sv.charAt(0).toUpperCase() + sv.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-2">
+                <p className="text-xs text-stone-500 mb-1">Tape</p>
+                <div className="flex flex-wrap gap-1">
+                  {tapePositions.map((tp) => (
+                    <button
+                      key={tp}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { tapePosition: tp })
+                      }}
+                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                        tapePosition === tp
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                      }`}
+                    >
+                      {tp.replace(/([A-Z])/g, ' $1').trim().charAt(0).toUpperCase() + tp.replace(/([A-Z])/g, ' $1').trim().slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-2">
+                <p className="text-xs text-stone-500 mb-1">Decoration</p>
+                <div className="flex flex-wrap gap-1">
+                  {decorationOptions.map((d) => (
+                    <button
+                      key={d}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { decoration: d })
+                      }}
+                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                        decoration === d
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                      }`}
+                    >
+                      {d === 'none' ? 'None' : d.replace(/([A-Z])/g, ' $1').trim().charAt(0).toUpperCase() + d.replace(/([A-Z])/g, ' $1').trim().slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-stone-500 mb-1">Font</p>
+                <div className="flex flex-wrap gap-1">
+                  {fontStyles.map((fs) => (
+                    <button
+                      key={fs}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        updateWishCustomization(wish.id, { fontStyle: fs })
+                      }}
+                      className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                        fontStyle === fs
+                          ? 'bg-violet-500 text-white border-violet-500'
+                          : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                      }`}
+                    >
+                      {fs.charAt(0).toUpperCase() + fs.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    return (
+      <div
+        key={wish.id}
+        className={`${baseClasses}`}
+        style={{
+          transform: `rotate(${rotation}deg) translateY(${topOffset}px) translateX(${leftOffset}px)`,
+        }}
+      >
+        <div className={`absolute -top-2.5 left-1/2 -translate-x-1/2 w-4 h-4 ${color.pin} rounded-full shadow-md border-2 border-white/30 z-10`}>
+          <div className="absolute inset-1 rounded-full bg-white/20"></div>
+        </div>
+
+        <div className={getTapeClass(tapePosition)}></div>
+
+        {wish?.is_fulfilled && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-12 pointer-events-none">
+            <div className="px-4 py-1.5 border-2 border-red-500 rounded-full">
+              <span className="text-red-500 font-bold text-lg">FULFILLED!</span>
+            </div>
+          </div>
+        )}
+
+        {renderDecoration(decoration, color)}
+
+        <div className="p-4 pt-5 h-full flex flex-col">
+          <p className="flex-1 leading-relaxed overflow-hidden" style={{
+            display: '-webkit-box',
+            WebkitLineClamp: wish.is_fulfilled ? 3 : 5,
+            WebkitBoxOrient: 'vertical',
+          }}>
+            {wish.content}
+          </p>
+          
+          <div className="mt-auto pt-2 border-t border-black/10">
+            <p className="text-xs opacity-70">
+              {formatDate(wish.created_at)}
+            </p>
+            {wish.is_fulfilled && wish.fulfilled_at && (
+              <p className="text-xs font-bold text-amber-700 mt-0.5">
+                ✨ {formatDate(wish.fulfilled_at)}
+              </p>
+            )}
+          </div>
+
+          {!wish.is_fulfilled && showActions && !isTrash && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleFulfillWish(wish.id)
+              }}
+              className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 shadow-md z-20"
+              title="Mark as fulfilled"
+            >
+              <CheckCircle className="w-4 h-4" />
+            </button>
+          )}
+
+          {showActions && !isTrash && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCustomizingWishId(customizingWishId === wish.id ? null : wish.id)
+                }}
+                className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-violet-500 text-white rounded-lg hover:bg-violet-600 shadow-md z-20"
+                title="Customize"
+              >
+                <Palette className="w-4 h-4" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleDeleteWish(wish.id)
+                }}
+                className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow-md z-20"
+                title="Delete"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </>
+          )}
+        </div>
+
+        {customizingWishId === wish.id && !isTrash && (
+          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 translate-y-full z-30 bg-white rounded-xl shadow-2xl p-3 border border-stone-200 w-56">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-bold text-stone-700">Customize Wish</p>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCustomizingWishId(null)
+                }}
+                className="p-0.5 hover:bg-stone-100 rounded"
+              >
+                <X className="w-3.5 h-3.5 text-stone-500" />
+              </button>
+            </div>
+            <div className="mb-2">
+              <p className="text-xs text-stone-500 mb-1">Color</p>
+              <div className="flex flex-wrap gap-1">
+                {noteColors.map((c, i) => (
+                  <button
+                    key={i}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      updateWishCustomization(wish.id, { colorIndex: i })
+                    }}
+                    className={`w-5 h-5 rounded-full ${c.bg} border-2 ${c.border} hover:scale-110 transition-transform`}
+                    title={`Color ${i + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="mb-2">
+              <p className="text-xs text-stone-500 mb-1">Style</p>
+              <div className="flex flex-wrap gap-1">
+                {styleVariants.map((sv) => (
+                  <button
+                    key={sv}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      updateWishCustomization(wish.id, { styleVariant: sv })
+                    }}
+                    className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                      styleVariant === sv
+                        ? 'bg-violet-500 text-white border-violet-500'
+                        : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                    }`}
+                  >
+                    {sv.charAt(0).toUpperCase() + sv.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mb-2">
+              <p className="text-xs text-stone-500 mb-1">Tape</p>
+              <div className="flex flex-wrap gap-1">
+                {tapePositions.map((tp) => (
+                  <button
+                    key={tp}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      updateWishCustomization(wish.id, { tapePosition: tp })
+                    }}
+                    className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                      tapePosition === tp
+                        ? 'bg-violet-500 text-white border-violet-500'
+                        : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                    }`}
+                  >
+                    {tp.replace(/([A-Z])/g, ' $1').trim().charAt(0).toUpperCase() + tp.replace(/([A-Z])/g, ' $1').trim().slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mb-2">
+              <p className="text-xs text-stone-500 mb-1">Decoration</p>
+              <div className="flex flex-wrap gap-1">
+                {decorationOptions.map((d) => (
+                  <button
+                    key={d}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      updateWishCustomization(wish.id, { decoration: d })
+                    }}
+                    className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                      decoration === d
+                        ? 'bg-violet-500 text-white border-violet-500'
+                        : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                    }`}
+                  >
+                    {d === 'none' ? 'None' : d.replace(/([A-Z])/g, ' $1').trim().charAt(0).toUpperCase() + d.replace(/([A-Z])/g, ' $1').trim().slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs text-stone-500 mb-1">Font</p>
+              <div className="flex flex-wrap gap-1">
+                {fontStyles.map((fs) => (
+                  <button
+                    key={fs}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      updateWishCustomization(wish.id, { fontStyle: fs })
+                    }}
+                    className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                      fontStyle === fs
+                        ? 'bg-violet-500 text-white border-violet-500'
+                        : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                    }`}
+                  >
+                    {fs.charAt(0).toUpperCase() + fs.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   if (loading) {
     return (
       <SidebarLayout>
@@ -292,10 +1368,9 @@ export default function WishWallPage() {
 
   return (
     <SidebarLayout>
-      <div className="p-6 md:p-8">
+      <div className="p-6 md:p-8 relative">
         <div className="max-w-6xl mx-auto">
 
-          {/* Success Popup */}
           {showSuccess && (
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
               <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-sm w-full">
@@ -318,7 +1393,75 @@ export default function WishWallPage() {
             </div>
           )}
 
-          {/* Header Section */}
+          {showTrashModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowTrashModal(false)}>
+              <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+                <div className="p-5 border-b border-stone-200 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Trash2 className="w-5 h-5 text-red-500" />
+                    <h3 className="text-lg font-bold text-stone-800">Trash</h3>
+                    <span className="text-sm text-stone-500">({deletedWishes.length})</span>
+                  </div>
+                  <button
+                    onClick={() => setShowTrashModal(false)}
+                    className="p-1.5 hover:bg-stone-100 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5 text-stone-500" />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4">
+                  {deletedWishes.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Trash2 className="w-12 h-12 text-stone-300 mx-auto mb-3" />
+                      <p className="text-stone-500">Trash is empty</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {deletedWishes.map((wish: any) => (
+                        <div key={wish.id} className="bg-stone-50 rounded-xl p-4 border border-stone-200">
+                          <p className="text-stone-700 text-sm mb-2 line-clamp-2">{wish.content}</p>
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs text-stone-400">
+                              Deleted {formatDate(wish.deleted_at)}
+                            </p>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={() => handleRestoreWish(wish.id)}
+                                className="flex items-center gap-1 px-2.5 py-1 bg-emerald-500 text-white text-xs rounded-lg hover:bg-emerald-600 transition-colors"
+                              >
+                                <RotateCcw className="w-3 h-3" />
+                                Restore
+                              </button>
+                              <button
+                                onClick={() => handleDeleteForever(wish.id)}
+                                className="flex items-center gap-1 px-2.5 py-1 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition-colors"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                Delete Forever
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {deletedWishes.length > 0 && (
+                  <div className="p-4 border-t border-stone-200">
+                    <button
+                      onClick={handleEmptyTrash}
+                      className="w-full py-2 bg-red-50 text-red-600 font-medium rounded-xl hover:bg-red-100 transition-colors border border-red-200"
+                    >
+                      Empty Trash
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="text-center mb-6">
             <h1 className="text-3xl font-bold text-stone-800 mb-2 flex items-center justify-center gap-3">
               <span className="text-4xl">🎋</span>
@@ -330,7 +1473,6 @@ export default function WishWallPage() {
             </p>
           </div>
 
-          {/* Stats Bar */}
           <div className="flex items-center justify-center gap-6 mb-6 flex-wrap">
             <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm border border-stone-200">
               <Coins className="w-4 h-4 text-amber-500" />
@@ -349,7 +1491,6 @@ export default function WishWallPage() {
             </div>
           </div>
 
-          {/* Tabs */}
           <div className="flex items-center justify-center gap-2 mb-6">
             <button
               onClick={() => setActiveTab('all')}
@@ -386,93 +1527,22 @@ export default function WishWallPage() {
             </button>
           </div>
 
-          {/* Wish Wall - Sticky Notes Style */}
           {displayWishes.length > 0 ? (
             <div className="relative bg-gradient-to-br from-stone-700 via-stone-600 to-stone-700 rounded-3xl p-8 md:p-12 min-h-[500px] shadow-2xl mb-8 overflow-hidden">
-              {/* Wall texture overlay */}
               <div className="absolute inset-0 opacity-10" style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
               }}></div>
               
-              {/* String lights decoration */}
               <div className="absolute top-3 left-0 right-0 flex justify-around opacity-40">
                 {[...Array(12)].map((_, i) => (
                   <div key={i} className="w-2 h-2 rounded-full bg-yellow-300 shadow-lg shadow-yellow-400/50"></div>
                 ))}
               </div>
 
-              {/* Sticky Notes Grid */}
               <div className="relative flex flex-wrap gap-6 md:gap-8 justify-center items-start py-4">
-                {displayWishes.map((wish: any) => {
-                  const { color, size, rotation, topOffset, leftOffset } = getDeterministicValues(wish)
-                  
-                  return (
-                    <div
-                      key={wish.id}
-                      className={`relative ${size.w} ${size.h} ${color.bg} ${color.border} border-2 ${size.text} ${color.text} shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-default group`}
-                      style={{
-                        transform: `rotate(${rotation}deg) translateY(${topOffset}px) translateX(${leftOffset}px)`,
-                      }}
-                    >
-                      {/* Pin */}
-                      <div className={`absolute -top-2.5 left-1/2 -translate-x-1/2 w-4 h-4 ${color.pin} rounded-full shadow-md border-2 border-white/30 z-10`}>
-                        <div className="absolute inset-1 rounded-full bg-white/20"></div>
-                      </div>
-
-                      {/* Tape effect corner */}
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-white/30 rotate-45"></div>
-
-                      {/* Fulfilled stamp */}
-                      {wish?.is_fulfilled && (
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-12 pointer-events-none">
-                          <div className="px-4 py-1.5 border-2 border-red-500 rounded-full">
-                            <span className="text-red-500 font-bold text-lg">FULFILLED!</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Wish content */}
-                      <div className="p-4 pt-5 h-full flex flex-col">
-                        <p className="flex-1 leading-relaxed overflow-hidden" style={{
-                          display: '-webkit-box',
-                          WebkitLineClamp: wish.is_fulfilled ? 3 : 5,
-                          WebkitBoxOrient: 'vertical',
-                        }}>
-                          {wish.content}
-                        </p>
-                        
-                        {/* Footer */}
-                        <div className="mt-auto pt-2 border-t border-black/10">
-                          <p className="text-xs opacity-70">
-                            {formatDate(wish.created_at)}
-                          </p>
-                          {wish.is_fulfilled && wish.fulfilled_at && (
-                            <p className="text-xs font-bold text-amber-700 mt-0.5">
-                              ✨ {formatDate(wish.fulfilled_at)}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Fulfill button - show on hover for pending */}
-                        {!wish.is_fulfilled && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleFulfillWish(wish.id)
-                            }}
-                            className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 shadow-md"
-                            title="Mark as fulfilled"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
+                {displayWishes.map((wish: any) => renderWishCard(wish))}
               </div>
 
-              {/* Decorative corner shadows */}
               <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-black/20 to-transparent rounded-tr-none rounded-bl-3xl"></div>
               <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-black/20 to-transparent rounded-tl-none rounded-br-3xl"></div>
             </div>
@@ -490,7 +1560,6 @@ export default function WishWallPage() {
             </div>
           )}
 
-          {/* Add Wish Button (Floating style when form closed) */}
           {!showForm ? (
             <div className="text-center mb-8">
               <button
@@ -504,18 +1573,14 @@ export default function WishWallPage() {
               </button>
             </div>
           ) : (
-            /* New Wish Form - Sticky Note Style */
             <div className="relative max-w-lg mx-auto mb-12">
-              {/* Glow effect */}
               <div className="absolute -inset-2 bg-gradient-to-r from-pink-300 via-rose-300 to-pink-300 rounded-3xl blur-lg opacity-40"></div>
               
               <div className="relative bg-gradient-to-b from-pink-100 to-rose-100 rounded-3xl p-6 border-2 border-pink-200 shadow-xl">
-                {/* Pin */}
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-red-500 rounded-full shadow-lg border-2 border-white/30 z-10">
                   <div className="absolute inset-1.5 rounded-full bg-white/20"></div>
                 </div>
 
-                {/* Close button */}
                 <button
                   onClick={() => setShowForm(false)}
                   className="absolute top-3 right-3 p-1.5 text-pink-400 hover:text-pink-600 hover:bg-pink-200/50 rounded-lg transition-colors"
@@ -523,7 +1588,6 @@ export default function WishWallPage() {
                   <X className="w-5 h-5" />
                 </button>
 
-                {/* Title */}
                 <div className="text-center mb-4 pt-2">
                   <h2 className="text-lg font-bold text-pink-900 flex items-center justify-center gap-2">
                     <Sparkles className="w-5 h-5 text-pink-500" />
@@ -535,11 +1599,9 @@ export default function WishWallPage() {
                   </p>
                 </div>
 
-                {/* Quick templates */}
                 <div className="mb-3">
                   <p className="text-xs text-pink-700 mb-2 font-medium">✨ Quick fill by category:</p>
                   <div className="space-y-2">
-                    {/* Category: Wealth */}
                     <div>
                       <p className="text-xs text-amber-600 font-semibold mb-1 flex items-center gap-1">
                         💰 Wealth
@@ -562,7 +1624,6 @@ export default function WishWallPage() {
                         ))}
                       </div>
                     </div>
-                    {/* Category: Love */}
                     <div>
                       <p className="text-xs text-rose-600 font-semibold mb-1 flex items-center gap-1">
                         ❤️ Love
@@ -585,7 +1646,6 @@ export default function WishWallPage() {
                         ))}
                       </div>
                     </div>
-                    {/* Category: Health */}
                     <div>
                       <p className="text-xs text-emerald-600 font-semibold mb-1 flex items-center gap-1">
                         💪 Health
@@ -608,7 +1668,6 @@ export default function WishWallPage() {
                         ))}
                       </div>
                     </div>
-                    {/* Category: Career */}
                     <div>
                       <p className="text-xs text-blue-600 font-semibold mb-1 flex items-center gap-1">
                         📚 Career
@@ -631,7 +1690,6 @@ export default function WishWallPage() {
                         ))}
                       </div>
                     </div>
-                    {/* Category: Family */}
                     <div>
                       <p className="text-xs text-purple-600 font-semibold mb-1 flex items-center gap-1">
                         👨‍👩‍👧 Family
@@ -657,7 +1715,6 @@ export default function WishWallPage() {
                   </div>
                 </div>
 
-                {/* Textarea */}
                 <div className="mb-4">
                   <textarea
                     value={newWish}
@@ -674,14 +1731,12 @@ export default function WishWallPage() {
                   </div>
                 </div>
 
-                {/* Spiritual tip */}
                 <div className="mb-4 px-3 py-2 bg-white/50 rounded-xl">
                   <p className="text-xs text-pink-700">
                     💡 <strong>Spiritual Tip:</strong> Wishes written with faith are far more likely to manifest.
                   </p>
                 </div>
 
-                {/* Sufficient coins hint */}
                 {points >= WISH_COST && (
                   <div className="mb-4 text-center">
                     <span className="text-xs text-emerald-600 font-medium bg-emerald-50 px-3 py-1 rounded-full">
@@ -690,7 +1745,6 @@ export default function WishWallPage() {
                   </div>
                 )}
 
-                {/* Action */}
                 {points < WISH_COST ? (
                   <div className="text-center">
                     <p className="text-amber-700 text-sm mb-3 font-medium">
@@ -729,6 +1783,19 @@ export default function WishWallPage() {
           )}
 
         </div>
+
+        <button
+          onClick={() => setShowTrashModal(true)}
+          className="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-full shadow-xl hover:shadow-2xl hover:scale-110 transition-all flex items-center justify-center z-40 group"
+          title="Trash"
+        >
+          <Trash2 className="w-6 h-6" />
+          {deletedWishes.length > 0 && (
+            <span className="absolute -top-1 -right-1 w-6 h-6 bg-white text-red-500 text-xs font-bold rounded-full flex items-center justify-center shadow-md border-2 border-red-500">
+              {deletedWishes.length > 9 ? '9+' : deletedWishes.length}
+            </span>
+          )}
+        </button>
       </div>
     </SidebarLayout>
   )
