@@ -245,7 +245,9 @@ export default function WishWallPage() {
                 </div>
                 <h3 className="text-xl font-bold text-stone-800 mb-3">Wish Sealed ✨</h3>
                 <p className="text-stone-600 leading-relaxed">
-                  Your wish has been successfully recorded on the wish wall. Keep a positive mind, and your good luck will come soon.
+                  Your wish has been sealed and recorded on the wish wall.<br />
+                  Good energy is flowing toward your goal.<br />
+                  Come back often to track your blessing progress.
                 </p>
                 <button
                   onClick={() => setShowSuccess(false)}
@@ -428,76 +430,153 @@ export default function WishWallPage() {
             )}
           </div>
 
-          {/* New Wish Form */}
-          <div className="bg-white rounded-2xl shadow-xl p-6 border border-pink-100">
-            <div className="text-center mb-5">
-              <h2 className="text-lg font-bold text-stone-800 flex items-center justify-center gap-2">
-                <Sparkles className="w-5 h-5 text-pink-500" />
-                Make a New Wish
-              </h2>
-              <p className="text-stone-500 text-sm mt-1">
-                Lock in your goal and attract good fortune. Each wish costs 10 Merit Coins.
-              </p>
-            </div>
+          {/* New Wish Form - Enhanced */}
+          <div className="mt-16">
+            <div className="relative">
+              {/* Glow effect background */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-pink-200 via-rose-200 to-pink-200 rounded-3xl blur-md opacity-60"></div>
+              
+              {/* Main card */}
+              <div className="relative bg-gradient-to-b from-amber-50/80 to-orange-50/50 backdrop-blur-sm rounded-3xl p-8 border border-pink-200/60 shadow-xl">
+                
+                {/* Decorative top icon */}
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+                  <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-rose-500 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Heart className="w-6 h-6 text-white fill-white" />
+                  </div>
+                </div>
 
-            <div className="mb-4">
-              <textarea
-                value={newWish}
-                onChange={(e) => setNewWish(e.target.value.slice(0, 200))}
-                rows={4}
-                placeholder="Write your wish for wealth, career promotion, family wellness or happy relationships… (max 200 characters)"
-                className="w-full px-5 py-4 border-2 border-pink-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-pink-400 resize-none bg-pink-50/30 placeholder-pink-300"
-                disabled={submitting || points < WISH_COST}
-              />
-              <div className="flex justify-between text-xs mt-2">
-                <span className="text-stone-400">Cost: 10 Merit Coins per wish</span>
-                <span className={`font-medium ${newWish.length >= 180 ? 'text-amber-600' : 'text-stone-400'}`}>
-                  {newWish.length}/200
-                </span>
-              </div>
-            </div>
+                {/* Header Section - Emotional */}
+                <div className="text-center mb-6 pt-2">
+                  <h2 className="text-xl font-bold text-stone-800 mb-2 flex items-center justify-center gap-2">
+                    <Sparkles className="w-5 h-5 text-pink-500" />
+                    Seal Your Wish & Attract Good Fortune
+                    <Sparkles className="w-5 h-5 text-pink-500" />
+                  </h2>
+                  <p className="text-stone-500 text-sm">
+                    Lock your wish into the spiritual wall
+                  </p>
+                  <p className="text-pink-500 text-sm font-medium mt-1">
+                    Only 10 Merit Coins to seal your blessing
+                  </p>
+                </div>
 
-            {points < WISH_COST ? (
-              <div className="text-center">
-                <p className="text-red-500 text-sm mb-3">
-                  Not enough coins. Need {WISH_COST - points} more to make a wish.
-                </p>
-                <Link
-                  href="/user/points"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
-                >
-                  <TrendingUp className="w-4 h-4" />
-                  Earn More Coins
-                </Link>
-              </div>
-            ) : (
-              <button
-                onClick={handleSubmitWish}
-                disabled={submitting || !newWish.trim()}
-                className="w-full py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold text-lg rounded-xl shadow-lg shadow-pink-200 hover:shadow-xl hover:shadow-pink-300 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-              >
-                {submitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    Casting Your Wish...
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    <Star className="w-5 h-5 fill-white" />
-                    Cast My Wish (10 Coins)
-                  </span>
+                {/* Quick Wish Templates */}
+                <div className="mb-5">
+                  <p className="text-xs text-stone-500 mb-2 flex items-center gap-1">
+                    <Lightbulb className="w-3.5 h-3.5" />
+                    Quick templates — click to fill:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setNewWish('Bless my career for steady promotion and higher income.')}
+                      disabled={submitting || points < WISH_COST}
+                      className="text-xs px-3 py-1.5 bg-white/70 border border-pink-200 text-pink-600 rounded-full hover:bg-pink-50 transition-colors disabled:opacity-50"
+                    >
+                      💼 Career promotion
+                    </button>
+                    <button
+                      onClick={() => setNewWish('Keep my whole family safe and healthy all year long.')}
+                      disabled={submitting || points < WISH_COST}
+                      className="text-xs px-3 py-1.5 bg-white/70 border border-pink-200 text-pink-600 rounded-full hover:bg-pink-50 transition-colors disabled:opacity-50"
+                    >
+                      👨‍👩‍👧 Family health
+                    </button>
+                    <button
+                      onClick={() => setNewWish('Attract stable wealth and continuous good luck.')}
+                      disabled={submitting || points < WISH_COST}
+                      className="text-xs px-3 py-1.5 bg-white/70 border border-pink-200 text-pink-600 rounded-full hover:bg-pink-50 transition-colors disabled:opacity-50"
+                    >
+                      💰 Wealth & luck
+                    </button>
+                  </div>
+                </div>
+
+                {/* Social proof ticker */}
+                <div className="mb-4 px-3 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border border-emerald-100">
+                  <p className="text-xs text-emerald-700 text-center">
+                    ✨ A user&apos;s wealth wish was marked fulfilled yesterday.
+                  </p>
+                </div>
+
+                {/* Input Area */}
+                <div className="mb-5">
+                  <div className="relative">
+                    <textarea
+                      value={newWish}
+                      onChange={(e) => setNewWish(e.target.value.slice(0, 200))}
+                      rows={5}
+                      placeholder="Write your heartfelt wish: wealth growth, career promotion, family health, or happy relationships. Sincere words attract the strongest positive energy."
+                      className="w-full px-5 py-4 border border-pink-200 rounded-2xl focus:ring-2 focus:ring-pink-300 focus:border-pink-300 resize-none bg-white/80 placeholder-pink-300/80 text-stone-700 leading-relaxed"
+                      disabled={submitting || points < WISH_COST}
+                    />
+                    {/* Character count - bottom right */}
+                    <div className="absolute bottom-3 right-4">
+                      <span className={`text-xs font-medium ${newWish.length >= 180 ? 'text-amber-500' : 'text-stone-300'}`}>
+                        {newWish.length}/200
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Spiritual Tip */}
+                <div className="mb-5 flex items-start gap-3 p-3 bg-gradient-to-r from-pink-50 to-rose-50 rounded-xl border border-pink-100">
+                  <div className="text-lg flex-shrink-0">💡</div>
+                  <div>
+                    <p className="text-xs font-semibold text-pink-700 mb-0.5">Spiritual Tip</p>
+                    <p className="text-xs text-pink-600">
+                      Wishes written with faith are far more likely to manifest. Stay positive while you write.
+                    </p>
+                  </div>
+                </div>
+
+                {/* New user bonus hint */}
+                {points >= WISH_COST && (
+                  <div className="mb-4 text-center">
+                    <span className="text-xs text-emerald-600 font-medium bg-emerald-50 px-3 py-1 rounded-full">
+                      ✅ You have enough coins. Seize the chance to lock in your good luck today.
+                    </span>
+                  </div>
                 )}
-              </button>
-            )}
 
-            {/* Tip */}
-            <div className="mt-5 flex items-start gap-3 p-4 bg-gradient-to-r from-amber-50 to-pink-50 rounded-xl">
-              <div className="w-8 h-8 bg-amber-200/60 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Lightbulb className="w-4 h-4 text-amber-700" />
+                {/* Action Section */}
+                {points < WISH_COST ? (
+                  <div className="text-center">
+                    <p className="text-amber-600 text-sm mb-3 font-medium">
+                      Need {WISH_COST - points} more coins to seal your blessing
+                    </p>
+                    <Link
+                      href="/user/points"
+                      className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                    >
+                      <TrendingUp className="w-4 h-4" />
+                      Earn Free Coins
+                    </Link>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleSubmitWish}
+                    disabled={submitting || !newWish.trim()}
+                    className="w-full py-4 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-500 text-white font-bold text-lg rounded-2xl shadow-lg shadow-pink-200 hover:shadow-xl hover:shadow-pink-300 hover:brightness-105 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:brightness-100 relative overflow-hidden group"
+                  >
+                    {/* Shine effect on hover */}
+                    <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:translate-x-full transition-transform duration-700"></span>
+                    
+                    {submitting ? (
+                      <span className="flex items-center justify-center gap-2 relative z-10">
+                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                        Sealing Your Wish...
+                      </span>
+                    ) : (
+                      <span className="flex items-center justify-center gap-2 relative z-10">
+                        <Star className="w-5 h-5 fill-white" />
+                        Send My Wish to the Blessing Wall
+                      </span>
+                    )}
+                  </button>
+                )}
+
               </div>
-              <p className="text-sm text-amber-800">
-                <strong>Tip:</strong> The more sincere your wish, the faster positive energy will come to you. Come back daily to check your wish progress.
-              </p>
             </div>
           </div>
 
