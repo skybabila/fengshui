@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="amber" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFBF00"/>
+      <stop offset="100%" style="stop-color:#FF8C00"/>
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="#FFFACD" opacity="0.5"/>
+  <!-- Temple/door frame -->
+  <rect x="40" y="60" width="120" height="130" fill="#8B4513" rx="5"/>
+  <rect x="45" y="65" width="110" height="120" fill="#DEB887"/>
+  <!-- Roof -->
+  <path d="M30 60 L100 20 L170 60 Z" fill="url(#amber)"/>
+  <path d="M35 60 L100 25 L165 60" stroke="#8B4513" stroke-width="3" fill="none"/>
+  <!-- Door pattern -->
+  <rect x="60" y="90" width="35" height="70" fill="#8B4513" rx="3"/>
+  <rect x="105" y="90" width="35" height="70" fill="#8B4513" rx="3"/>
+  <!-- Door knobs -->
+  <circle cx="90" cy="125" r="4" fill="url(#amber)"/>
+  <circle cx="110" cy="125" r="4" fill="url(#amber)"/>
+  <!-- Guardian face left -->
+  <circle cx="77" cy="100" r="12" fill="#FFE4C4"/>
+  <circle cx="73" cy="97" r="2" fill="#333"/>
+  <circle cx="81" cy="97" r="2" fill="#333"/>
+  <path d="M73 103 Q77 106 81 103" stroke="#333" stroke-width="1" fill="none"/>
+  <!-- Guardian face right -->
+  <circle cx="123" cy="100" r="12" fill="#FFE4C4"/>
+  <circle cx="119" cy="97" r="2" fill="#333"/>
+  <circle cx="127" cy="97" r="2" fill="#333"/>
+  <path d="M119 103 Q123 106 127 103" stroke="#333" stroke-width="1" fill="none"/>
+  <!-- Upper plaque -->
+  <rect x="70" y="70" width="60" height="20" fill="url(#amber)" rx="2"/>
+  <text x="100" y="85" font-size="12" fill="#8B4513" text-anchor="middle" font-weight="bold">平安</text>
+</svg>

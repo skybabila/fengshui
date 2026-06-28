@@ -443,7 +443,7 @@ export default function WishWallPage() {
         </div>
 
         {customizingWishId === wish.id && !isTrash && (
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 translate-y-full z-30 bg-white rounded-xl shadow-2xl p-3 border border-stone-200 w-56">
+          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 translate-y-full z-50 bg-white rounded-xl shadow-2xl p-3 border border-stone-200 w-56">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-bold text-stone-700">Customize Wish</p>
               <button

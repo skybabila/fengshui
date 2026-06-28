@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700"/>
+      <stop offset="50%" style="stop-color:#FFA500"/>
+      <stop offset="100%" style="stop-color:#FF8C00"/>
+    </linearGradient>
+    <linearGradient id="robe" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B0000"/>
+      <stop offset="100%" style="stop-color:#5C0000"/>
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="url(#gold)" opacity="0.3"/>
+  <!-- Robe -->
+  <path d="M50 180 Q100 140 150 180 L140 100 Q100 90 60 100 Z" fill="url(#robe)"/>
+  <!-- Head -->
+  <circle cx="100" cy="75" r="35" fill="#FFE4C4"/>
+  <!-- Hat -->
+  <path d="M60 65 L100 20 L140 65 Q100 55 60 65" fill="url(#gold)"/>
+  <rect x="65" y="60" width="70" height="10" fill="url(#gold)"/>
+  <!-- Beard -->
+  <path d="M80 90 Q100 130 120 90" fill="#CCCCCC" opacity="0.8"/>
+  <!-- Eyes -->
+  <ellipse cx="88" cy="72" rx="5" ry="4" fill="#333"/>
+  <ellipse cx="112" cy="72" rx="5" ry="4" fill="#333"/>
+  <!-- Eyebrows -->
+  <path d="M80 62 Q88 58 96 62" stroke="#333" stroke-width="2" fill="none"/>
+  <path d="M104 62 Q112 58 120 62" stroke="#333" stroke-width="2" fill="none"/>
+  <!-- Gold ingot left -->
+  <rect x="45" y="110" width="25" height="15" rx="3" fill="url(#gold)"/>
+  <text x="57" y="121" font-size="10" fill="#8B4513" text-anchor="middle">福</text>
+  <!-- Gold ingot right -->
+  <rect x="130" y="110" width="25" height="15" rx="3" fill="url(#gold)"/>
+  <text x="142" y="121" font-size="10" fill="#8B4513" text-anchor="middle">禄</text>
+  <!-- Ruyi scepter -->
+  <path d="M155 95 Q170 80 165 65" stroke="url(#gold)" stroke-width="6" fill="none"/>
+  <circle cx="165" cy="62" r="8" fill="url(#gold)"/>
+</svg>

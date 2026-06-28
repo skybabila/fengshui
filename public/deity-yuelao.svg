@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="pink" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF69B4"/>
+      <stop offset="100%" style="stop-color:#FF1493"/>
+    </linearGradient>
+  </defs>
+  <!-- Night sky background -->
+  <circle cx="100" cy="100" r="95" fill="#191970" opacity="0.3"/>
+  <!-- Moon -->
+  <circle cx="100" cy="50" r="30" fill="#FFFACD"/>
+  <circle cx="110" cy="45" r="25" fill="#191970" opacity="0.3"/>
+  <!-- Robe -->
+  <path d="M55 180 Q100 140 145 180 L140 100 Q100 90 60 100 Z" fill="url(#pink)"/>
+  <!-- Head -->
+  <circle cx="100" cy="80" r="35" fill="#FFE4C4"/>
+  <!-- Wise old face -->
+  <ellipse cx="88" cy="78" rx="5" ry="4" fill="#333"/>
+  <ellipse cx="112" cy="78" rx="5" ry="4" fill="#333"/>
+  <!-- Kind eyebrows -->
+  <path d="M78 68 Q88 63 98 68" stroke="#333" stroke-width="2" fill="none"/>
+  <path d="M102 68 Q112 63 122 68" stroke="#333" stroke-width="2" fill="none"/>
+  <!-- Gentle smile -->
+  <path d="M85 92 Q100 100 115 92" stroke="#333" stroke-width="2" fill="none"/>
+  <!-- Beard -->
+  <path d="M75 90 Q100 130 125 90" fill="#FFFFFF" opacity="0.9"/>
+  <!-- Red thread spool -->
+  <ellipse cx="155" cy="120" rx="15" ry="12" fill="#DC143C"/>
+  <ellipse cx="155" cy="120" rx="8" ry="6" fill="#8B0000"/>
+  <!-- Red threads going out -->
+  <path d="M155 108 Q140 90 120 95" stroke="#DC143C" stroke-width="2" fill="none"/>
+  <path d="M165 115 Q180 100 170 80" stroke="#DC143C" stroke-width="2" fill="none"/>
+  <path d="M155 132 Q140 150 125 145" stroke="#DC143C" stroke-width="2" fill="none"/>
+  <!-- Hat -->
+  <path d="M60 55 L100 25 L140 55 Q100 48 60 55" fill="#9370DB"/>
+  <rect x="65" y="52" width="70" height="8" fill="#9370DB"/>
+  <!-- Stars decoration -->
+  <polygon points="50,40 52,46 58,46 53,50 55,56 50,52 45,56 47,50 42,46 48,46" fill="#FFD700"/>
+  <polygon points="150,35 151,39 155,39 152,42 153,46 150,44 147,46 148,42 145,39 149,39" fill="#FFD700"/>
+</svg>
