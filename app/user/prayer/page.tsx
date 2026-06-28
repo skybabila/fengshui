@@ -20,6 +20,7 @@ const deities = [
     prayerEffect: 'Attract new business opportunities and stable long-term prosperity.',
     domains: ['Business profit', 'Salary raise', 'Investment luck', 'Personal wealth'],
     prayerText: 'I sincerely offer this worship to God of Wealth. May I receive continuous income, new business deals and stable financial luck. May all my money-related wishes come true.',
+    image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Chinese%20God%20of%20Wealth%20Caishen%20wearing%20golden%20robes%20holding%20ingots%20traditional%20Chinese%20mythology%20art%20style%20warm%20golden%20light&image_size=square_hd',
     color: 'from-yellow-500 to-amber-600',
     bgColor: 'bg-yellow-50',
     borderColor: 'border-yellow-300',
@@ -38,6 +39,7 @@ const deities = [
     prayerEffect: 'Avoid office disputes and gain steady advancement at work.',
     domains: ['Job promotion', 'Workplace stability', 'Leadership', 'Career breakthrough'],
     prayerText: 'I sincerely offer this worship to Guan Yu. May my career flourish with steady promotion, may noble people guide my path, and may I succeed in all my professional endeavors.',
+    image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Guan%20Yu%20Chinese%20God%20of%20War%20and%20Career%20wearing%20green%20warrior%20robes%20holding%20guandao%20halberd%20majestic%20divine%20aura%20traditional%20art&image_size=square_hd',
     color: 'from-red-500 to-orange-600',
     bgColor: 'bg-red-50',
     borderColor: 'border-red-300',
@@ -55,6 +57,7 @@ const deities = [
     prayerEffect: 'Keep your whole family away from sickness and misfortune.',
     domains: ['Family health', 'Home safety', 'Ward off bad energy', 'Household peace'],
     prayerText: 'I sincerely offer this worship to the Household Guardian. May my family be protected from all harm and illness, may our home be filled with peace and positive energy, and may misfortune never enter our door.',
+    image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Chinese%20Household%20Guardian%20Deity%20door%20god%20protective%20warm%20golden%20light%20traditional%20Chinese%20folk%20religion%20art%20style&image_size=square_hd',
     color: 'from-amber-400 to-yellow-600',
     bgColor: 'bg-amber-50',
     borderColor: 'border-amber-300',
@@ -72,6 +75,7 @@ const deities = [
     prayerEffect: 'Relieve stress and bring long-term physical and mental peace.',
     domains: ['Physical wellness', 'Recovery from sickness', 'Peace of mind', 'Long life for elders'],
     prayerText: 'I sincerely offer this worship to the God of Longevity. May my body be strong and free from illness, may my mind be calm and peaceful, and may my parents and elders enjoy long, healthy lives.',
+    image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Shouxing%20Chinese%20God%20of%20Longevity%20white%20beard%20holding%20peach%20of%20immortality%20walking%20stick%20benevolent%20smile%20warm%20celestial%20glow%20traditional%20art&image_size=square_hd',
     color: 'from-emerald-400 to-teal-600',
     bgColor: 'bg-emerald-50',
     borderColor: 'border-emerald-300',
@@ -90,6 +94,7 @@ const deities = [
     prayerEffect: 'Tie red fate threads and bring you harmonious marriage luck.',
     domains: ['Find a partner', 'Stable relationship', 'Happy marriage', 'Romantic luck'],
     prayerText: 'I sincerely offer this worship to Yue Lao. May my destined partner find their way to me, may our relationship be filled with love and harmony, and may we build a happy life together.',
+    image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Yue%20Lao%20Chinese%20Matchmaker%20God%20under%20moonlight%20holding%20red%20silk%20thread%20elderly%20wise%20benevolent%20romantic%20celestial%20atmosphere%20traditional%20art&image_size=square_hd',
     color: 'from-pink-400 to-rose-500',
     bgColor: 'bg-pink-50',
     borderColor: 'border-pink-300',
@@ -108,6 +113,7 @@ const deities = [
     prayerEffect: 'Sharpen your mind and succeed in interviews and important choices.',
     domains: ['Exam success', 'Study efficiency', 'Clear mind', 'Decision wisdom'],
     prayerText: 'I sincerely offer this worship to Wen Chang. May my mind be clear and sharp, may I succeed in all my exams and interviews, and may wisdom guide every important decision in my life.',
+    image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Wen%20Chang%20Chinese%20God%20of%20Wisdom%20and%20Literature%20scholar%20robes%20holding%20scroll%20wisdom%20light%20blue%20celestial%20aura%20traditional%20Chinese%20mythology%20art&image_size=square_hd',
     color: 'from-blue-400 to-indigo-600',
     bgColor: 'bg-blue-50',
     borderColor: 'border-blue-300',
@@ -144,6 +150,7 @@ export default function PrayerPage() {
   const [totalPrayers, setTotalPrayers] = useState(0)
   const [loading, setLoading] = useState(true)
   const [pageError, setPageError] = useState<string | null>(null)
+  const [resultDeity, setResultDeity] = useState<any>(null)
 
   useEffect(() => {
     async function fetchData() {
@@ -232,6 +239,7 @@ export default function PrayerPage() {
         console.warn('Transaction failed (non-critical):', e)
       }
 
+      setResultDeity(deity)
       setShowResult(true)
 
       try {
@@ -307,14 +315,60 @@ export default function PrayerPage() {
         <div className="max-w-5xl mx-auto">
 
           {/* Success Result */}
-          {showResult && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          {showResult && resultDeity && (
+            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
               <div className="bg-white rounded-3xl shadow-2xl p-8 text-center max-w-md w-full relative overflow-hidden">
                 {/* Decorative top border */}
                 <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400"></div>
                 
-                <div className="w-24 h-24 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <div className="text-6xl">{selectedDeity?.emoji}</div>
+                {/* Deity image with divine glow animation */}
+                <div className="relative mx-auto mb-6">
+                  {/* Outer glow rings */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-36 h-36 rounded-full bg-gradient-to-br from-amber-200/50 to-orange-200/50 animate-ping" style={{ animationDuration: '2s' }}></div>
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-amber-300/40 to-yellow-300/40 animate-pulse"></div>
+                  </div>
+                  
+                  {/* Rotating sparkles */}
+                  <div className="absolute inset-0 flex items-center justify-center animate-spin" style={{ animationDuration: '8s' }}>
+                    <div className="w-40 h-40 relative">
+                      <span className="absolute top-0 left-1/2 -translate-x-1/2 text-yellow-400 text-xl">✨</span>
+                      <span className="absolute bottom-0 left-1/2 -translate-x-1/2 text-amber-400 text-xl">✨</span>
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 text-orange-400 text-xl">✨</span>
+                      <span className="absolute right-0 top-1/2 -translate-y-1/2 text-yellow-400 text-xl">✨</span>
+                    </div>
+                  </div>
+                  
+                  {/* Deity image */}
+                  <div className="relative w-28 h-28 mx-auto rounded-full overflow-hidden border-4 border-amber-300 shadow-2xl">
+                    <img 
+                      src={resultDeity.image} 
+                      alt={resultDeity.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none'
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-amber-900/20 to-transparent"></div>
+                  </div>
+                  
+                  {/* Floating blessing particles */}
+                  <div className="absolute -top-2 left-1/2 -translate-x-1/2">
+                    <div className="relative">
+                      <span className="absolute text-2xl animate-bounce" style={{ animationDelay: '0s', left: '-20px' }}>🌟</span>
+                      <span className="absolute text-xl animate-bounce" style={{ animationDelay: '0.3s', left: '10px' }}>💫</span>
+                      <span className="absolute text-2xl animate-bounce" style={{ animationDelay: '0.6s', left: '40px' }}>✨</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Deity receives prayer animation text */}
+                <div className="mb-4">
+                  <p className="text-amber-600 text-sm font-medium animate-pulse mb-1">
+                    🙏 {resultDeity.deity} has received your worship 🙏
+                  </p>
                 </div>
                 
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 rounded-full text-sm font-semibold mb-4">
@@ -323,11 +377,11 @@ export default function PrayerPage() {
                 </div>
                 
                 <h2 className="text-2xl font-bold text-stone-800 mb-3">
-                  {selectedDeity?.name}
+                  {resultDeity.name}
                 </h2>
                 
                 <p className="text-stone-600 leading-relaxed mb-6">
-                  Your devout worship has been received by {selectedDeity?.deity}. Stay positive, and your wish will soon be blessed.
+                  Your devout worship has been received by {resultDeity.deity}. Stay positive, and your wish will soon be blessed.
                 </p>
                 
                 <div className="flex items-center justify-center gap-2 text-amber-600 font-semibold mb-6">
@@ -339,6 +393,7 @@ export default function PrayerPage() {
                   onClick={() => {
                     setShowResult(false)
                     setSelectedPrayer(null)
+                    setResultDeity(null)
                   }}
                   className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
                 >
@@ -429,10 +484,24 @@ export default function PrayerPage() {
                       )}
 
                       <div className="flex items-start gap-4">
-                        <div className={`w-16 h-16 ${deity.bgColor} rounded-xl flex items-center justify-center text-3xl transition-transform ${
+                        <div className={`w-16 h-16 ${deity.bgColor} rounded-xl flex items-center justify-center text-3xl transition-transform overflow-hidden border-2 ${deity.borderColor} ${
                           selectedPrayer === deity.id ? 'scale-110 rotate-3' : 'group-hover:scale-105'
                         }`}>
-                          {deity.emoji}
+                          <img 
+                            src={deity.image} 
+                            alt={deity.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement
+                              target.style.display = 'none'
+                              if (target.nextElementSibling) {
+                                (target.nextElementSibling as HTMLElement).style.display = 'flex'
+                              }
+                            }}
+                          />
+                          <div className="absolute inset-0 w-full h-full items-center justify-center text-3xl" style={{ display: 'none' }}>
+                            {deity.emoji}
+                          </div>
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
@@ -482,7 +551,23 @@ export default function PrayerPage() {
                   
                   <div className="relative z-10">
                     <div className="flex items-center gap-4 mb-4">
-                      <div className="text-5xl">{selectedDeity.emoji}</div>
+                      <div className={`w-20 h-20 rounded-2xl overflow-hidden border-4 ${selectedDeity.borderColor} shadow-lg`}>
+                        <img 
+                          src={selectedDeity.image} 
+                          alt={selectedDeity.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.style.display = 'none'
+                            if (target.nextElementSibling) {
+                              (target.nextElementSibling as HTMLElement).style.display = 'flex'
+                            }
+                          }}
+                        />
+                        <div className="absolute w-20 h-20 items-center justify-center text-4xl" style={{ display: 'none' }}>
+                          {selectedDeity.emoji}
+                        </div>
+                      </div>
                       <div>
                         <h3 className="text-xl font-bold text-stone-800">Your Worship Ritual to {selectedDeity.name}</h3>
                         <p className={`text-sm ${selectedDeity.colorName} font-medium`}>Goal: {selectedDeity.blessing}</p>
@@ -589,9 +674,25 @@ export default function PrayerPage() {
                         style={{ animationDelay: `${index * 0.05}s` }}
                       >
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg flex items-center justify-center text-2xl">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-amber-200 bg-gradient-to-br from-amber-100 to-orange-100">
+                          {matchedDeity ? (
+                            <img 
+                              src={matchedDeity.image} 
+                              alt={prayer.prayer_type}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement
+                                target.style.display = 'none'
+                                if (target.nextElementSibling) {
+                                  (target.nextElementSibling as HTMLElement).style.display = 'flex'
+                                }
+                              }}
+                            />
+                          ) : null}
+                          <div className={`w-full h-full items-center justify-center text-2xl ${matchedDeity ? '' : 'flex'}`}>
                             {displayEmoji}
                           </div>
+                        </div>
                           <div>
                             <p className="font-semibold text-stone-800">{displayName}</p>
                             <p className="text-xs text-stone-500 flex items-center gap-1">
