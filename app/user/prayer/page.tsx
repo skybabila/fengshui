@@ -7,103 +7,112 @@ import { formatDate } from '@/lib/utils'
 import SidebarLayout from '@/components/SidebarLayout'
 import { Flame, Coins, Star, Heart, Sparkles, Clock, CheckCircle2, TrendingUp, Scroll, Cloud, Sunrise, Mountain, Sun } from 'lucide-react'
 
-// Chinese Deities for Prayer System
+// Chinese Deities for Worship System - 6 most popular for overseas audience
 const deities = [
   { 
     id: 'caishen', 
     name: 'God of Wealth', 
-    deity: '赵公明',
+    deity: 'Caishen',
     emoji: '🧧', 
-    cost: 20, 
-    blessing: 'Wealth & Prosperity',
-    description: 'Zhao Gongming, the Supreme God of Wealth, commander of the celestial armies. He bestows financial blessings, business prosperity, and guards your assets against loss.',
-    domains: ['Business growth', 'Investment returns', 'Financial security', 'Lottery luck'],
+    cost: 30, 
+    blessing: 'Wealth, business income, salary growth and financial luck',
+    description: 'The most revered god of prosperity. Worship him to attract steady income, new business opportunities and stable financial growth.',
+    prayerEffect: 'Attract new business opportunities and stable long-term prosperity.',
+    domains: ['Business profit', 'Salary raise', 'Investment luck', 'Personal wealth'],
+    prayerText: 'I sincerely offer this worship to God of Wealth. May I receive continuous income, new business deals and stable financial luck. May all my money-related wishes come true.',
     color: 'from-yellow-500 to-amber-600',
     bgColor: 'bg-yellow-50',
     borderColor: 'border-yellow-300',
     iconBg: 'bg-gradient-to-br from-yellow-400 to-amber-500',
     colorName: 'text-yellow-700',
-    mantra: 'May wealth flow into my life continuously',
   },
   { 
-    id: 'guanyin', 
-    name: 'Goddess of Mercy', 
-    deity: '观音菩萨',
-    emoji: '🪷', 
-    cost: 15, 
-    blessing: 'Love & Compassion',
-    description: 'Guanyin, the Bodhisattva of Compassion, hears the cries of all beings. She blesses families with harmony, heals emotional wounds, and guides souls toward peace.',
-    domains: ['Family harmony', 'Emotional healing', 'Relationship bliss', 'Inner peace'],
-    color: 'from-pink-400 to-rose-500',
-    bgColor: 'bg-pink-50',
-    borderColor: 'border-pink-300',
-    iconBg: 'bg-gradient-to-br from-pink-400 to-rose-500',
-    colorName: 'text-pink-700',
-    mantra: 'May compassion fill every corner of my heart',
-  },
-  { 
-    id: 'yaoshi', 
-    name: 'Medicine Buddha', 
-    deity: '药师佛',
-    emoji: '⚕️', 
-    cost: 15, 
-    blessing: 'Health & Healing',
-    description: 'The Buddha of Healing Light, master of the eastern pure land. He eradicates diseases, strengthens immunity, and grants freedom from illness and suffering.',
-    domains: ['Disease prevention', 'Speedy recovery', 'Vitality boost', 'Longevity'],
-    color: 'from-emerald-400 to-teal-600',
-    bgColor: 'bg-emerald-50',
-    borderColor: 'border-emerald-300',
-    iconBg: 'bg-gradient-to-br from-emerald-400 to-teal-500',
-    colorName: 'text-emerald-700',
-    mantra: 'May the light of healing shine upon my body',
-  },
-  { 
-    id: 'wenchang', 
-    name: 'God of Literature', 
-    deity: '文昌帝君',
-    emoji: '📖', 
-    cost: 15, 
-    blessing: 'Wisdom & Exams',
-    description: 'Wenchang Dijun, the Lord of the Scarlet Bird, guardian of scholars. He sharpens intellect, ensures exam success, and opens doors to academic achievement.',
-    domains: ['Exam success', 'Memory enhancement', 'Creative insight', 'Academic promotion'],
-    color: 'from-blue-400 to-indigo-600',
-    bgColor: 'bg-blue-50',
-    borderColor: 'border-blue-300',
-    iconBg: 'bg-gradient-to-br from-blue-400 to-indigo-500',
-    colorName: 'text-blue-700',
-    mantra: 'May wisdom illuminate my mind like the stars',
-  },
-  { 
-    id: 'guandi', 
-    name: 'God of War', 
-    deity: '关帝',
+    id: 'guanyu', 
+    name: 'Guan Yu', 
+    subtitle: 'Career God',
+    deity: 'Guan Yu',
     emoji: '⚔️', 
-    cost: 20, 
-    blessing: 'Career & Protection',
-    description: 'Guan Yu, the Saintly Emperor Guan, symbol of loyalty and righteousness. He protects businesses, attracts noble helpers, and ensures career victories.',
-    domains: ['Career advancement', 'Noble connections', 'Business protection', 'Victory in competition'],
+    cost: 25, 
+    blessing: 'Job promotion, workplace protection and career breakthrough',
+    description: 'Patron saint of professionals and entrepreneurs. He protects you from office conflict and brings advancement at work.',
+    prayerEffect: 'Avoid office disputes and gain steady advancement at work.',
+    domains: ['Job promotion', 'Workplace stability', 'Leadership', 'Career breakthrough'],
+    prayerText: 'I sincerely offer this worship to Guan Yu. May my career flourish with steady promotion, may noble people guide my path, and may I succeed in all my professional endeavors.',
     color: 'from-red-500 to-orange-600',
     bgColor: 'bg-red-50',
     borderColor: 'border-red-300',
     iconBg: 'bg-gradient-to-br from-red-500 to-orange-500',
     colorName: 'text-red-700',
-    mantra: 'May honor and victory accompany my path',
   },
   { 
-    id: 'mazu', 
-    name: 'Sea Goddess', 
-    deity: '妈祖',
-    emoji: '🌊', 
+    id: 'household', 
+    name: 'Household Guardian', 
+    deity: 'Jade Emperor Household Guardian',
+    emoji: '🏠', 
+    cost: 10, 
+    blessing: 'Family peace, home safety and protection from bad energy',
+    description: 'House guardian deity who dispels negative Qi. Keep illness and misfortune away from your family.',
+    prayerEffect: 'Keep your whole family away from sickness and misfortune.',
+    domains: ['Family health', 'Home safety', 'Ward off bad energy', 'Household peace'],
+    prayerText: 'I sincerely offer this worship to the Household Guardian. May my family be protected from all harm and illness, may our home be filled with peace and positive energy, and may misfortune never enter our door.',
+    color: 'from-amber-400 to-yellow-600',
+    bgColor: 'bg-amber-50',
+    borderColor: 'border-amber-300',
+    iconBg: 'bg-gradient-to-br from-amber-400 to-yellow-500',
+    colorName: 'text-amber-700',
+  },
+  { 
+    id: 'longevity', 
+    name: 'God of Longevity', 
+    deity: 'Shouxing',
+    emoji: '🍑', 
     cost: 15, 
-    blessing: 'Safety & Journey',
-    description: 'Mazu, the Heavenly Mother of the South Sea, protector of sailors and travelers. She calms storms, ensures safe journeys, and guards against accidents.',
-    domains: ['Travel safety', 'Disaster avoidance', 'Smooth journeys', 'Protection from accidents'],
-    color: 'from-cyan-400 to-blue-600',
-    bgColor: 'bg-cyan-50',
-    borderColor: 'border-cyan-300',
-    iconBg: 'bg-gradient-to-br from-cyan-400 to-blue-500',
-    colorName: 'text-cyan-700',
-    mantra: 'May the waters be calm and my path always safe',
+    blessing: 'Physical health, vitality and wellness for family elders',
+    description: 'Bless your body with vitality, ease anxiety and bring good health to you and your parents.',
+    prayerEffect: 'Relieve stress and bring long-term physical and mental peace.',
+    domains: ['Physical wellness', 'Recovery from sickness', 'Peace of mind', 'Long life for elders'],
+    prayerText: 'I sincerely offer this worship to the God of Longevity. May my body be strong and free from illness, may my mind be calm and peaceful, and may my parents and elders enjoy long, healthy lives.',
+    color: 'from-emerald-400 to-teal-600',
+    bgColor: 'bg-emerald-50',
+    borderColor: 'border-emerald-300',
+    iconBg: 'bg-gradient-to-br from-emerald-400 to-teal-500',
+    colorName: 'text-emerald-700',
+  },
+  { 
+    id: 'yuelao', 
+    name: 'Yue Lao', 
+    subtitle: 'Matchmaker God',
+    deity: 'Yue Lao',
+    emoji: '🌹', 
+    cost: 20, 
+    blessing: 'Meet your soulmate, build stable and happy relationships',
+    description: 'The ancient matchmaker who ties red fate threads. Pray for your destined partner and harmonious love life.',
+    prayerEffect: 'Tie red fate threads and bring you harmonious marriage luck.',
+    domains: ['Find a partner', 'Stable relationship', 'Happy marriage', 'Romantic luck'],
+    prayerText: 'I sincerely offer this worship to Yue Lao. May my destined partner find their way to me, may our relationship be filled with love and harmony, and may we build a happy life together.',
+    color: 'from-pink-400 to-rose-500',
+    bgColor: 'bg-pink-50',
+    borderColor: 'border-pink-300',
+    iconBg: 'bg-gradient-to-br from-pink-400 to-rose-500',
+    colorName: 'text-pink-700',
+  },
+  { 
+    id: 'wenchang', 
+    name: 'Wen Chang', 
+    subtitle: 'God of Wisdom',
+    deity: 'Wen Chang',
+    emoji: '📖', 
+    cost: 15, 
+    blessing: 'Exam success, clear thinking and wise decisions',
+    description: 'Patron of scholars and thinkers. Gain sharp judgment, pass interviews and make wise life choices.',
+    prayerEffect: 'Sharpen your mind and succeed in interviews and important choices.',
+    domains: ['Exam success', 'Study efficiency', 'Clear mind', 'Decision wisdom'],
+    prayerText: 'I sincerely offer this worship to Wen Chang. May my mind be clear and sharp, may I succeed in all my exams and interviews, and may wisdom guide every important decision in my life.',
+    color: 'from-blue-400 to-indigo-600',
+    bgColor: 'bg-blue-50',
+    borderColor: 'border-blue-300',
+    iconBg: 'bg-gradient-to-br from-blue-400 to-indigo-500',
+    colorName: 'text-blue-700',
   },
 ]
 
@@ -216,14 +225,13 @@ export default function PrayerPage() {
       try {
         await supabase.from('point_transactions').insert({
           user_id: user.id,
-          description: `Prayed to ${deity.name} (${deity.deity})`,
+          description: `Worship to ${deity.name}`,
           points: -deity.cost
         })
       } catch (e) {
         console.warn('Transaction failed (non-critical):', e)
       }
 
-      setPrayerResult(`Your prayer has been sent to ${deity.deity}. Stay positive, ${deity.name} will intercede for you.`)
       setShowResult(true)
 
       try {
@@ -311,7 +319,7 @@ export default function PrayerPage() {
                 
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 rounded-full text-sm font-semibold mb-4">
                   <CheckCircle2 className="w-5 h-5" />
-                  Prayer Successfully Offered
+                  Worship Successfully Offered
                 </div>
                 
                 <h2 className="text-2xl font-bold text-stone-800 mb-3">
@@ -319,7 +327,7 @@ export default function PrayerPage() {
                 </h2>
                 
                 <p className="text-stone-600 leading-relaxed mb-6">
-                  {prayerResult}
+                  Your devout worship has been received by {selectedDeity?.deity}. Stay positive, and your wish will soon be blessed.
                 </p>
                 
                 <div className="flex items-center justify-center gap-2 text-amber-600 font-semibold mb-6">
@@ -362,11 +370,11 @@ export default function PrayerPage() {
                 </div>
                 
                 <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 tracking-wide">
-                  Temple of Blessings
+                  Temple of Chinese Deities
                 </h1>
                 
                 <p className="text-amber-100/80 text-sm md:text-base">
-                  Offer sincere prayers and receive divine protection
+                  Offer devout worship to the right god, and receive targeted divine blessings for your wishes.
                 </p>
               </div>
             </div>
@@ -377,27 +385,28 @@ export default function PrayerPage() {
               {/* Stats Bar - Temple Pillars Style */}
               <div className="grid grid-cols-3 gap-4 mb-8">
                 {[
-                  { icon: Coins, label: 'My Coins', value: points.toLocaleString(), color: 'amber', bg: 'from-amber-100 to-orange-100' },
-                  { icon: Flame, label: 'Prayers', value: totalPrayers, color: 'orange', bg: 'from-orange-100 to-red-100' },
-                  { icon: Heart, label: 'Blessings', value: '∞', color: 'pink', bg: 'from-pink-100 to-rose-100' },
+                  { icon: Coins, label: 'My Merit Coins', sublabel: 'Balance available for worship rituals', value: points.toLocaleString(), color: 'amber', bg: 'from-amber-100 to-orange-100' },
+                  { icon: Flame, label: 'Total Worships', sublabel: 'Times you have prayed in the temple', value: totalPrayers, color: 'orange', bg: 'from-orange-100 to-red-100' },
+                  { icon: Star, label: 'Blessings Granted', sublabel: 'Record of fulfilled prayers', value: '∞', color: 'pink', bg: 'from-pink-100 to-rose-100' },
                 ].map((stat, i) => (
                   <div key={i} className={`bg-gradient-to-br ${stat.bg} rounded-2xl p-4 text-center border border-${stat.color}-200 shadow-lg`}>
                     <stat.icon className={`w-6 h-6 mx-auto mb-2 text-${stat.color}-500`} />
                     <p className={`text-2xl font-bold text-${stat.color}-700`}>{stat.value}</p>
-                    <p className="text-xs text-stone-500 mt-1">{stat.label}</p>
+                    <p className="text-xs text-stone-600 mt-1 font-medium">{stat.label}</p>
+                    <p className="text-xs text-stone-400 mt-0.5">{stat.sublabel}</p>
                   </div>
                 ))}
               </div>
 
-              {/* Prayer Selection - Offering Tables */}
+              {/* Deity Selection */}
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
                     <Sun className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-stone-800">Choose Your Offering</h2>
-                    <p className="text-sm text-stone-500">Select a prayer that resonates with your heart</p>
+                    <h2 className="text-xl font-bold text-stone-800">Choose Your Deity for Your Wish</h2>
+                    <p className="text-sm text-stone-500">Pick the god who rules over what you want to manifest.</p>
                   </div>
                 </div>
 
@@ -426,8 +435,15 @@ export default function PrayerPage() {
                           {deity.emoji}
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-bold text-stone-800 text-lg mb-1">{deity.name}</h3>
-                          <p className={`text-xs ${deity.colorName} font-semibold mb-2`}>✨ {deity.deity}</p>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-stone-800 text-lg">{deity.name}</h3>
+                            {deity.subtitle && (
+                              <span className={`text-xs ${deity.colorName} font-medium bg-white/60 px-2 py-0.5 rounded-full`}>
+                                {deity.subtitle}
+                              </span>
+                            )}
+                          </div>
+                          <p className={`text-xs ${deity.colorName} font-semibold mb-2`}>✨ {deity.blessing}</p>
                           <p className="text-sm text-stone-500 mb-3 line-clamp-2">{deity.description}</p>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1 text-amber-600 font-bold">
@@ -468,22 +484,31 @@ export default function PrayerPage() {
                     <div className="flex items-center gap-4 mb-4">
                       <div className="text-5xl">{selectedDeity.emoji}</div>
                       <div>
-                        <h3 className="text-xl font-bold text-stone-800">{selectedDeity.name}</h3>
-                        <p className={`text-sm ${selectedDeity.colorName}`}>✨ {selectedDeity.deity}</p>
+                        <h3 className="text-xl font-bold text-stone-800">Your Worship Ritual to {selectedDeity.name}</h3>
+                        <p className={`text-sm ${selectedDeity.colorName} font-medium`}>Goal: {selectedDeity.blessing}</p>
                       </div>
                     </div>
                     
-                    <p className="text-stone-600 mb-4 leading-relaxed">{selectedDeity.description}</p>
+                    {/* Prayer Text */}
+                    <div className="bg-white/60 rounded-xl p-4 mb-4 border border-white/80">
+                      <p className="text-xs text-stone-500 mb-2 font-medium flex items-center gap-1">
+                        <Scroll className="w-3 h-3" />
+                        Your Prayer
+                      </p>
+                      <p className="text-stone-700 leading-relaxed italic">
+                        &ldquo;{selectedDeity.prayerText}&rdquo;
+                      </p>
+                    </div>
 
-                    {/* Mantra */}
-                    <div className="flex items-center gap-2 text-sm text-stone-500 mb-4 bg-white/50 rounded-xl p-3">
-                      <Scroll className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                      <p className="italic">{selectedDeity.mantra}</p>
+                    {/* Prayer Effect */}
+                    <div className="flex items-center gap-2 text-sm text-stone-600 mb-4 bg-white/40 rounded-xl p-3">
+                      <Sparkles className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                      <p><strong>Prayer Effect:</strong> {selectedDeity.prayerEffect}</p>
                     </div>
                     
                     <div className="flex items-center gap-2 text-sm text-stone-500">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                      <span>Pray with sincere heart for best results</span>
+                      <span>Offer your sincere prayer for best results</span>
                     </div>
                   </div>
                 </div>
@@ -501,19 +526,19 @@ export default function PrayerPage() {
                     {isPraying ? (
                       <span className="flex items-center justify-center gap-2 relative z-10">
                         <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                        Offering Your Prayer...
+                        Offering Your Worship...
                       </span>
                     ) : (
                       <span className="flex items-center justify-center gap-3 relative z-10">
                         <Flame className="w-6 h-6" />
-                        Pray to {selectedDeity.deity}
+                        Offer Worship Now
                       </span>
                     )}
                   </button>
                 ) : (
                   <div className="text-center p-6 bg-red-50 rounded-2xl border border-red-200">
                     <p className="text-red-600 font-semibold mb-3">
-                      Need {selectedDeity.cost - points} more coins for this prayer
+                      Need {selectedDeity.cost - points} more coins for this worship
                     </p>
                     <Link
                       href="/user/points"
@@ -526,7 +551,7 @@ export default function PrayerPage() {
                 )
               ) : (
                 <div className="text-center p-6 bg-stone-100 rounded-2xl">
-                  <p className="text-stone-500">Select a prayer above to begin your offering</p>
+                  <p className="text-stone-500">Select a deity above to begin your worship</p>
                 </div>
               )}
             </div>
@@ -540,47 +565,55 @@ export default function PrayerPage() {
                   <Scroll className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-stone-800">Your Prayer Scroll</h2>
-                  <p className="text-sm text-stone-500">Records of your spiritual offerings</p>
+                  <h2 className="text-xl font-bold text-stone-800">Your Worship History</h2>
+                  <p className="text-sm text-stone-500">Every devout prayer is archived in the temple.</p>
                 </div>
               </div>
 
               <div className="bg-gradient-to-b from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-6 shadow-lg">
                 <div className="space-y-3">
-                  {recentPrayers.map((prayer: any, index: number) => (
-                    <div 
-                      key={prayer.id} 
-                      className="flex items-center justify-between p-4 bg-white rounded-xl border border-stone-200 hover:border-amber-300 hover:shadow-md transition-all"
-                      style={{ animationDelay: `${index * 0.05}s` }}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg flex items-center justify-center text-2xl">
-                          {prayer.prayer_type === 'Burning Incense' && '🪔'}
-                          {prayer.prayer_type === 'Devotion Prayer' && '🙏'}
-                          {prayer.prayer_type === 'Light Offering' && '🕯️'}
-                          {prayer.prayer_type === 'Wish Prayer' && '⭐'}
+                  {recentPrayers.map((prayer: any, index: number) => {
+                    const matchedDeity = deities.find(d => 
+                      d.name === prayer.prayer_type || 
+                      d.deity === prayer.prayer_type ||
+                      prayer.prayer_type?.includes(d.name) ||
+                      prayer.prayer_type?.includes(d.deity)
+                    )
+                    const displayEmoji = matchedDeity?.emoji || '🙏'
+                    const displayName = prayer.prayer_type
+                    
+                    return (
+                      <div 
+                        key={prayer.id} 
+                        className="flex items-center justify-between p-4 bg-white rounded-xl border border-stone-200 hover:border-amber-300 hover:shadow-md transition-all"
+                        style={{ animationDelay: `${index * 0.05}s` }}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg flex items-center justify-center text-2xl">
+                            {displayEmoji}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-stone-800">{displayName}</p>
+                            <p className="text-xs text-stone-500 flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {formatDate(prayer.created_at)}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-semibold text-stone-800">{prayer.prayer_type}</p>
-                          <p className="text-xs text-stone-500 flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {formatDate(prayer.created_at)}
+                        <div className="text-right">
+                          <p className="font-bold text-amber-600">-{prayer.points_spent} coins</p>
+                          <p className="text-xs text-emerald-600 flex items-center justify-end gap-1">
+                            <CheckCircle2 className="w-3 h-3" />
+                            Blessing Recorded
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-amber-600">-{prayer.points_spent}</p>
-                        <p className="text-xs text-emerald-600 flex items-center justify-end gap-1">
-                          <CheckCircle2 className="w-3 h-3" />
-                          Offered
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
                 
                 <p className="text-xs text-stone-400 mt-4 text-center italic">
-                  * All prayers are recorded in the temple archive and answered with divine timing *
+                  * All worships are sealed in the temple archive and granted with divine sincerity. *
                 </p>
               </div>
             </div>
@@ -592,9 +625,9 @@ export default function PrayerPage() {
               <div className="w-20 h-20 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Flame className="w-10 h-10 text-orange-400" />
               </div>
-              <h3 className="text-lg font-semibold text-stone-700 mb-2">Your Prayer Scroll is Empty</h3>
+              <h3 className="text-lg font-semibold text-stone-700 mb-2">Your Worship Scroll is Empty</h3>
               <p className="text-stone-500 text-sm max-w-md mx-auto">
-                Begin your spiritual journey by offering your first prayer above. The temple awaits your sincere devotion.
+                Begin your spiritual journey by offering your first worship above. The temple awaits your sincere devotion.
               </p>
             </div>
           )}
