@@ -64,8 +64,8 @@ function getDeterministicValues(wish: any, customizations?: Record<string, any>)
   let topOffset = (hash % 30) - 10
   let leftOffset = (hash % 20) - 10
 
-  if (custom?.colorIndex !== undefined && !isFulfilled) {
-    colorIndex = custom.colorIndex % noteColors.length
+  if (custom?.colorIndex !== undefined) {
+    colorIndex = custom.colorIndex % colors.length
   }
 
   return {
@@ -378,7 +378,7 @@ export default function WishWallPage() {
             )}
           </div>
 
-          {!wish.is_fulfilled && showActions && !isTrash && (
+          {showActions && !isTrash && (
             <button
               onClick={(e) => {
                 e.stopPropagation()
@@ -443,7 +443,7 @@ export default function WishWallPage() {
         </div>
 
         {customizingWishId === wish.id && !isTrash && (
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 translate-y-full z-50 bg-white rounded-xl shadow-2xl p-3 border border-stone-200 w-56">
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60] bg-white rounded-xl shadow-2xl p-3 border border-stone-200 w-56">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-bold text-stone-700">Customize Wish</p>
               <button
