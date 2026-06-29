@@ -203,11 +203,11 @@ export default function TempleWorshipPage() {
   }, [])
 
   const isDeityWorshipped = (deity: any) => {
-    return todayWorshipped.includes(deity.id) || todayWorshipped.includes(deity.name)
+    // No limit on worship次数 - always return false
+    return false
   }
 
   const handleOpenWishModal = (deity: any) => {
-    if (isDeityWorshipped(deity)) return
     setSelectedDeity(deity)
     const randomIndex = Math.floor(Math.random() * deity.wishes.length)
     setCurrentWishIndex(randomIndex)
@@ -223,11 +223,7 @@ export default function TempleWorshipPage() {
   const handleWorship = async () => {
     if (!user || !selectedDeity || submitting) return
 
-    const currentPoints = profile?.points || 0
-    if (currentPoints < selectedDeity.cost) {
-      return
-    }
-
+    // No cost for worship - completely free
     const currentWish = selectedDeity.wishes[currentWishIndex] || selectedDeity.wishes[0]
 
     setSubmitting(true)
@@ -244,7 +240,7 @@ export default function TempleWorshipPage() {
             deity_id: selectedDeity.id,
             deity_name: selectedDeity.name,
             wish_text: currentWish,
-            points_spent: selectedDeity.cost,
+            points_spent: 0,
             blessing_text: selectedDeity.blessing,
             prayer_type: selectedDeity.name,
           })
@@ -261,7 +257,7 @@ export default function TempleWorshipPage() {
             .insert({
               user_id: user.id,
               prayer_type: selectedDeity.name,
-              points_spent: selectedDeity.cost,
+              points_spent: 0,
             })
           if (fallbackError) {
             alert('Failed to submit worship: ' + fallbackError.message)
@@ -277,30 +273,7 @@ export default function TempleWorshipPage() {
         }
       }
 
-      const { error: updateError } = await supabase
-        .from('user_profiles')
-        .update({ points: currentPoints - selectedDeity.cost })
-        .eq('id', user.id)
-
-      if (updateError) {
-        alert('Failed to deduct coins: ' + updateError.message)
-        setSubmitting(false)
-        setIncenseFading(false)
-        return
-      }
-
-      try {
-        await supabase.from('point_transactions').insert({
-          user_id: user.id,
-          description: `Worship ${selectedDeity.name}`,
-          points: -selectedDeity.cost,
-        })
-      } catch (e) {
-        console.warn('Transaction record failed:', e)
-      }
-
-      const updatedProfile = await getUserProfile(user.id)
-      if (updatedProfile) setProfile(updatedProfile)
+      // No points deduction - worship is free
 
       const { data: refreshedPrayers } = await supabase
         .from('prayers')
@@ -352,7 +325,8 @@ export default function TempleWorshipPage() {
   }
 
   const points = profile?.points || 0
-  const hasEnoughCoins = selectedDeity && points >= selectedDeity.cost
+  // Always allow worship - completely free
+  const hasEnoughCoins = true
   const currentWishText = selectedDeity?.wishes?.[currentWishIndex] || ''
 
   const handleNextWish = () => {
@@ -412,24 +386,10 @@ export default function TempleWorshipPage() {
                   </div>
                 </div>
 
-                <div className="mb-6 p-3 bg-stone-50 rounded-xl flex items-center justify-between">
-                  <span className="text-sm text-stone-500">Cost will be deducted automatically:</span>
-                  <div className="flex items-center gap-1 font-bold text-amber-600">
-                    <Coins className="w-4 h-4" />
-                    {selectedDeity.cost} Coins
-                  </div>
+                <div className="mb-6 p-3 bg-emerald-50 rounded-xl flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-emerald-500 mr-2" />
+                  <span className="text-sm text-emerald-600 font-medium">Free Worship - No Cost</span>
                 </div>
-
-                {!hasEnoughCoins && (
-                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-                    <p className="text-sm text-amber-700 text-center">
-                      Insufficient Coins,{' '}
-                      <Link href="/user/points" className="font-bold underline">
-                        Go to Top-up
-                      </Link>
-                    </p>
-                  </div>
-                )}
 
                 <div className="flex gap-3">
                   <button
@@ -550,13 +510,12 @@ export default function TempleWorshipPage() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1">
-                        <Coins className="w-4 h-4 text-amber-500" />
-                        <span className="font-bold text-amber-600">{deity.cost}</span>
-                        <span className="text-stone-500 text-sm">Coins</span>
+                        <Sparkles className="w-4 h-4 text-emerald-500" />
+                        <span className="font-bold text-emerald-600">Free</span>
                       </div>
                       <button
                         onClick={() => handleOpenWishModal(deity)}
-                        disabled={isWorshipped}
+                        disabled={false}
                         className={`px-4 py-2 rounded-xl font-medium text-sm transition-all flex items-center gap-2 ${
                           isWorshipped
                             ? 'bg-stone-200 text-stone-500 cursor-not-allowed'
@@ -610,20 +569,19 @@ export default function TempleWorshipPage() {
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
-                        <Coins className="w-5 h-5 text-amber-500" />
-                        <span className="font-bold text-xl text-amber-600">{deities[4].cost}</span>
-                        <span className="text-stone-500">Coins</span>
+                        <Sparkles className="w-5 h-5 text-emerald-500" />
+                        <span className="font-bold text-xl text-emerald-600">Free</span>
                       </div>
                       <button
                         onClick={() => handleOpenWishModal(deities[4])}
-                        disabled={isDeityWorshipped(deities[4])}
+                        disabled={false}
                         className={`px-6 py-3 rounded-2xl font-semibold transition-all flex items-center gap-2 ${
-                          isDeityWorshipped(deities[4])
+                          false
                             ? 'bg-stone-200 text-stone-500 cursor-not-allowed'
                             : `bg-gradient-to-r ${deities[4].gradient} text-white shadow-lg hover:shadow-xl hover:scale-105`
                         }`}
                       >
-                        {isDeityWorshipped(deities[4]) ? (
+                        {false ? (
                           <>
                             <CheckCircle2 className="w-5 h-5" />
                             Worship Completed Today
@@ -721,29 +679,6 @@ export default function TempleWorshipPage() {
               All worship content belongs to traditional folk cultural experience, for entertainment only. It does not constitute fate prediction.
             </p>
           </div>
-        </div>
-      </div>
-
-      {/* Coin Quick Bar */}
-      <div className="fixed bottom-0 left-0 right-0 ml-64 bg-white/95 backdrop-blur-lg border-t border-stone-200 px-6 py-4 z-40">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow">
-              <Coins className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-xs text-stone-400">Current Balance</p>
-              <p className="text-xl font-bold text-stone-800">{points.toLocaleString()} <span className="text-sm font-normal text-stone-500">Coins</span></p>
-            </div>
-          </div>
-
-          <Link
-            href="/user/points"
-            className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2"
-          >
-            <TrendingUp className="w-4 h-4" />
-            Earn More Coins
-          </Link>
         </div>
       </div>
     </SidebarLayout>

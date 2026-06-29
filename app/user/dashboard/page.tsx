@@ -227,21 +227,6 @@ export default function UserDashboard() {
             </div>
           </div>
 
-          {/* Stats Bar */}
-          <div className="flex items-center justify-center gap-6 mb-8 flex-wrap">
-            <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm border border-stone-200">
-              <Coins className="w-4 h-4 text-amber-500" />
-              <span className="text-sm text-stone-600">Balance:</span>
-              <span className="font-bold text-amber-600">{points.toLocaleString()} Coins</span>
-              <Link
-                href="/user/points"
-                className="ml-2 px-3 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full hover:bg-amber-200 transition-colors"
-              >
-                + Buy More Coins
-              </Link>
-            </div>
-          </div>
-
           {/* Module 2: Three Energy Reading Service Cards */}
           <div className="mb-8">
             <h2 className="text-xl font-bold text-stone-800 mb-4">Energy Reading Services</h2>
