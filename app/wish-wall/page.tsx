@@ -34,11 +34,11 @@ const fulfilledColors = [
 ]
 
 const noteSizes = [
-  { w: 'w-44', h: 'h-40', text: 'text-sm' },
-  { w: 'w-48', h: 'h-44', text: 'text-sm' },
-  { w: 'w-52', h: 'h-48', text: 'text-base' },
-  { w: 'w-40', h: 'h-36', text: 'text-xs' },
-  { w: 'w-56', h: 'h-52', text: 'text-base' },
+  { w: 'w-44', minH: 'min-h-40', text: 'text-sm' },
+  { w: 'w-48', minH: 'min-h-44', text: 'text-sm' },
+  { w: 'w-52', minH: 'min-h-48', text: 'text-base' },
+  { w: 'w-40', minH: 'min-h-36', text: 'text-xs' },
+  { w: 'w-56', minH: 'min-h-52', text: 'text-base' },
 ]
 
 function hashCode(str: string): number {
@@ -337,7 +337,7 @@ export default function WishWallPage() {
   const renderWishCard = (wish: any, showActions: boolean = true, isTrash: boolean = false) => {
     const { color, size, rotation, topOffset, leftOffset } = getDeterministicValues(wish, customizations)
 
-    const baseClasses = `relative ${size.w} ${size.h} ${color.bg} ${color.border} border-2 ${size.text} ${color.text} shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-default group`
+    const baseClasses = `relative ${size.w} ${size.minH} ${color.bg} ${color.border} border-2 ${size.text} ${color.text} shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-default group`
 
     return (
       <div
@@ -359,16 +359,12 @@ export default function WishWallPage() {
           </div>
         )}
 
-        <div className="p-4 pt-5 h-full flex flex-col">
-          <p className="flex-1 leading-relaxed overflow-hidden" style={{
-            display: '-webkit-box',
-            WebkitLineClamp: wish.is_fulfilled ? 3 : 5,
-            WebkitBoxOrient: 'vertical',
-          }}>
+        <div className="p-4 pt-5 min-h-full flex flex-col">
+          <p className="flex-1 leading-relaxed break-words whitespace-pre-wrap">
             {wish.content}
           </p>
           
-          <div className="mt-auto pt-2 border-t border-black/10">
+          <div className="mt-4 pt-2 border-t border-black/10">
             <p className="text-xs opacity-70">
               {formatDate(wish.created_at)}
             </p>
