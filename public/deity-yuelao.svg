@@ -1,40 +1,71 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
   <defs>
-    <linearGradient id="pink" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="yuelao-pink" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#FF69B4"/>
       <stop offset="100%" style="stop-color:#FF1493"/>
     </linearGradient>
+    <linearGradient id="yuelao-purple" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#9370DB"/>
+      <stop offset="100%" style="stop-color:#4B0082"/>
+    </linearGradient>
+    <radialGradient id="yuelao-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FF69B4;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#FF69B4;stop-opacity:0"/>
+    </radialGradient>
   </defs>
-  <!-- Night sky background -->
-  <circle cx="100" cy="100" r="95" fill="#191970" opacity="0.3"/>
-  <!-- Moon -->
-  <circle cx="100" cy="50" r="30" fill="#FFFACD"/>
-  <circle cx="110" cy="45" r="25" fill="#191970" opacity="0.3"/>
-  <!-- Robe -->
-  <path d="M55 180 Q100 140 145 180 L140 100 Q100 90 60 100 Z" fill="url(#pink)"/>
+  <!-- Glow effect -->
+  <circle cx="100" cy="100" r="90" fill="url(#yuelao-glow)"/>
+  <!-- Background decoration - stars -->
+  <circle cx="100" cy="100" r="85" fill="none" stroke="#FF69B4" stroke-width="2" opacity="0.5"/>
+  <!-- Stars -->
+  <polygon points="40,35 42,41 48,41 43,45 45,51 40,47 35,51 37,45 32,41 38,41" fill="#FFD700" opacity="0.8"/>
+  <polygon points="160,45 161,49 165,49 162,52 163,56 160,54 157,56 158,52 155,49 159,49" fill="#FFD700" opacity="0.8"/>
+  <polygon points="55,170 56,174 60,174 57,177 58,181 55,179 52,181 53,177 50,174 54,174" fill="#FFD700" opacity="0.8"/>
+  <polygon points="145,165 146,169 150,169 147,172 148,176 145,174 142,176 143,172 140,169 144,169" fill="#FFD700" opacity="0.8"/>
+  <!-- Love symbol -->
+  <text x="100" y="42" font-size="20" fill="#FF69B4" text-anchor="middle" font-family="serif" font-weight="bold">缘</text>
+  <!-- Robe body -->
+  <path d="M45 185 Q100 140 155 185 L150 100 Q100 90 50 100 Z" fill="url(#yuelao-purple)"/>
+  <!-- Decorative trim -->
+  <path d="M60 115 Q100 110 140 115" stroke="#FFD700" stroke-width="2" fill="none"/>
+  <path d="M55 135 Q100 130 145 135" stroke="#FFD700" stroke-width="2" fill="none"/>
+  <!-- Belt -->
+  <rect x="55" y="108" width="90" height="8" rx="2" fill="#FF69B4"/>
   <!-- Head -->
-  <circle cx="100" cy="80" r="35" fill="#FFE4C4"/>
-  <!-- Wise old face -->
-  <ellipse cx="88" cy="78" rx="5" ry="4" fill="#333"/>
-  <ellipse cx="112" cy="78" rx="5" ry="4" fill="#333"/>
+  <circle cx="100" cy="78" r="32" fill="#FFE4C4"/>
+  <!-- Wise gentle face -->
+  <ellipse cx="88" cy="76" rx="5" ry="4" fill="#333"/>
+  <ellipse cx="112" cy="76" rx="5" ry="4" fill="#333"/>
   <!-- Kind eyebrows -->
-  <path d="M78 68 Q88 63 98 68" stroke="#333" stroke-width="2" fill="none"/>
-  <path d="M102 68 Q112 63 122 68" stroke="#333" stroke-width="2" fill="none"/>
+  <path d="M78 66 Q88 61 96 66" stroke="#333" stroke-width="2" fill="none"/>
+  <path d="M104 66 Q112 61 122 66" stroke="#333" stroke-width="2" fill="none"/>
+  <!-- Wrinkles -->
+  <path d="M82 82 Q88 84 94 82" stroke="#ccc" stroke-width="1" fill="none"/>
+  <path d="M106 82 Q112 84 118 82" stroke="#ccc" stroke-width="1" fill="none"/>
+  <!-- White beard -->
+  <path d="M75 88 Q100 130 125 88" fill="#FFFFFF"/>
   <!-- Gentle smile -->
-  <path d="M85 92 Q100 100 115 92" stroke="#333" stroke-width="2" fill="none"/>
-  <!-- Beard -->
-  <path d="M75 90 Q100 130 125 90" fill="#FFFFFF" opacity="0.9"/>
-  <!-- Red thread spool -->
-  <ellipse cx="155" cy="120" rx="15" ry="12" fill="#DC143C"/>
-  <ellipse cx="155" cy="120" rx="8" ry="6" fill="#8B0000"/>
-  <!-- Red threads going out -->
-  <path d="M155 108 Q140 90 120 95" stroke="#DC143C" stroke-width="2" fill="none"/>
-  <path d="M165 115 Q180 100 170 80" stroke="#DC143C" stroke-width="2" fill="none"/>
-  <path d="M155 132 Q140 150 125 145" stroke="#DC143C" stroke-width="2" fill="none"/>
+  <path d="M92 90 Q100 98 108 90" stroke="#333" stroke-width="2" fill="none"/>
   <!-- Hat -->
-  <path d="M60 55 L100 25 L140 55 Q100 48 60 55" fill="#9370DB"/>
-  <rect x="65" y="52" width="70" height="8" fill="#9370DB"/>
-  <!-- Stars decoration -->
-  <polygon points="50,40 52,46 58,46 53,50 55,56 50,52 45,56 47,50 42,46 48,46" fill="#FFD700"/>
-  <polygon points="150,35 151,39 155,39 152,42 153,46 150,44 147,46 148,42 145,39 149,39" fill="#FFD700"/>
+  <path d="M55 62 L100 32 L145 62 Q100 55 55 62" fill="url(#yuelao-pink)"/>
+  <rect x="60" y="59" width="80" height="6" fill="url(#yuelao-pink)"/>
+  <!-- Moon decoration -->
+  <circle cx="100" cy="38" r="10" fill="#FFFACD"/>
+  <circle cx="104" cy="36" r="7" fill="url(#yuelao-purple)" opacity="0.3"/>
+  <!-- Red thread spool -->
+  <ellipse cx="35" cy="130" rx="16" ry="14" fill="#DC143C"/>
+  <ellipse cx="35" cy="130" rx="8" ry="7" fill="#8B0000"/>
+  <!-- Red threads connecting hearts -->
+  <path d="M35 116 Q55 95 75 100" stroke="#DC143C" stroke-width="2" fill="none"/>
+  <path d="M35 144 Q50 160 70 155" stroke="#DC143C" stroke-width="2" fill="none"/>
+  <!-- Heart decorations -->
+  <path d="M75 98 Q80 93 85 98 Q90 103 75 115 Q60 103 65 98 Q70 93 75 98" fill="#FF69B4" opacity="0.8"/>
+  <path d="M70 155 Q75 150 80 155 Q85 160 70 170 Q55 160 60 155 Q65 150 70 155" fill="#FF69B4" opacity="0.8"/>
+  <!-- Book of fate -->
+  <rect x="140" y="125" width="35" height="45" rx="3" fill="#8B4513"/>
+  <rect x="143" y="128" width="29" height="39" rx="2" fill="#DEB887"/>
+  <text x="157" y="150" font-size="10" fill="#8B4513" text-anchor="middle">姻</text>
+  <text x="157" y="162" font-size="8" fill="#8B4513" text-anchor="middle">缘</text>
+  <!-- Thread going to book -->
+  <path d="M35 130 Q90 110 140 135" stroke="#DC143C" stroke-width="2" fill="none" opacity="0.6"/>
 </svg>

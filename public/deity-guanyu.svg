@@ -1,31 +1,59 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
   <defs>
-    <linearGradient id="green" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="guanyu-green" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#228B22"/>
       <stop offset="100%" style="stop-color:#006400"/>
     </linearGradient>
+    <linearGradient id="guanyu-red" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#DC143C"/>
+      <stop offset="100%" style="stop-color:#8B0000"/>
+    </linearGradient>
+    <radialGradient id="guanyu-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#228B22;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#228B22;stop-opacity:0"/>
+    </radialGradient>
   </defs>
-  <!-- Background circle -->
-  <circle cx="100" cy="100" r="95" fill="#90EE90" opacity="0.3"/>
-  <!-- Robe -->
-  <path d="M50 180 Q100 130 150 180 L145 95 Q100 85 55 95 Z" fill="url(#green)"/>
+  <!-- Glow effect -->
+  <circle cx="100" cy="100" r="90" fill="url(#guanyu-glow)"/>
+  <!-- Background decoration -->
+  <circle cx="100" cy="100" r="85" fill="none" stroke="#228B22" stroke-width="2" opacity="0.5"/>
+  <!-- Warrior symbol -->
+  <text x="100" y="42" font-size="22" fill="#228B22" text-anchor="middle" font-family="serif" font-weight="bold">武</text>
+  <!-- Robe body -->
+  <path d="M45 185 Q100 130 155 185 L148 90 Q100 80 52 90 Z" fill="url(#guanyu-red)"/>
   <!-- Armor chest -->
-  <path d="M70 95 L100 85 L130 95 L125 130 L100 140 L75 130 Z" fill="#8B4513"/>
+  <path d="M70 90 L100 80 L130 90 L125 135 L100 145 L75 135 Z" fill="#8B4513"/>
+  <path d="M75 95 L100 87 L125 95" stroke="#DAA520" stroke-width="2" fill="none"/>
+  <path d="M78 105 L100 98 L122 105" stroke="#DAA520" stroke-width="2" fill="none"/>
+  <!-- Belt with dagger -->
+  <rect x="55" y="130" width="90" height="10" rx="2" fill="#8B4513"/>
+  <rect x="95" y="128" width="10" height="14" rx="2" fill="#DAA520"/>
   <!-- Head -->
-  <circle cx="100" cy="70" r="32" fill="#FFE4C4"/>
+  <circle cx="100" cy="65" r="30" fill="#FFE4C4"/>
   <!-- Beard -->
-  <path d="M75 85 Q100 140 125 85" fill="#333"/>
-  <!-- Eyes -->
-  <ellipse cx="88" cy="68" rx="5" ry="4" fill="#333"/>
-  <ellipse cx="112" cy="68" rx="5" ry="4" fill="#333"/>
+  <path d="M72 80 Q100 135 128 80" fill="#1a1a1a"/>
+  <!-- Eyes - fierce -->
+  <ellipse cx="88" cy="62" rx="5" ry="4" fill="#333"/>
+  <ellipse cx="112" cy="62" rx="5" ry="4" fill="#333"/>
   <!-- Angry eyebrows -->
-  <path d="M78 58 L98 65" stroke="#333" stroke-width="3" fill="none"/>
-  <path d="M122 58 L102 65" stroke="#333" stroke-width="3" fill="none"/>
-  <!-- Green hat -->
-  <path d="M55 55 L100 30 L145 55 L140 65 L60 65 Z" fill="url(#green)"/>
-  <!-- Guan dao -->
-  <rect x="150" y="50" width="8" height="130" fill="#8B4513" rx="2"/>
-  <path d="M140 45 L166 45 L158 60 L154 55 L150 50 Z" fill="url(#green)"/>
+  <path d="M75 52 Q88 58 96 55" stroke="#333" stroke-width="3" fill="none"/>
+  <path d="M125 52 Q112 58 104 55" stroke="#333" stroke-width="3" fill="none"/>
+  <!-- Nose -->
+  <ellipse cx="100" cy="70" rx="4" ry="3" fill="#DEB887"/>
+  <!-- Mouth - stern -->
+  <path d="M92 78 L108 78" stroke="#333" stroke-width="2"/>
+  <!-- Green warrior hat -->
+  <path d="M50 50 L100 22 L150 50 L145 60 L55 60 Z" fill="url(#guanyu-green)"/>
+  <path d="M55 55 L145 55" stroke="#DAA520" stroke-width="2"/>
+  <!-- Hat wings -->
+  <rect x="45" y="48" width="15" height="8" rx="2" fill="url(#guanyu-green)"/>
+  <rect x="140" y="48" width="15" height="8" rx="2" fill="url(#guanyu-green)"/>
+  <!-- Guan dao weapon -->
+  <rect x="155" y="40" width="6" height="145" rx="2" fill="#8B4513"/>
+  <!-- Dao blade -->
+  <path d="M145 35 L175 35 L168 55 L158 50 L152 40 Z" fill="url(#guanyu-green)"/>
+  <path d="M148 38 L172 38 L166 50 L158 46 L152 40 Z" fill="#2E8B57"/>
   <!-- Red ribbon on handle -->
-  <rect x="148" y="80" width="12" height="60" fill="#DC143C" opacity="0.6"/>
+  <path d="M155 70 Q165 65 163 80 Q168 95 155 90" stroke="#DC143C" stroke-width="4" fill="none" opacity="0.8"/>
+  <path d="M161 120 Q170 115 168 130 Q173 145 160 140" stroke="#DC143C" stroke-width="4" fill="none" opacity="0.8"/>
 </svg>

@@ -55,7 +55,8 @@ function getDeterministicValues(wish: any, customizations?: Record<string, any>)
   const wishId = String(wish?.id || Math.random().toString())
   const isFulfilled = Boolean(wish?.is_fulfilled)
   const hash = hashCode(wishId)
-  const colors = isFulfilled ? fulfilledColors : noteColors
+  // Use noteColors for all wishes (both pending and fulfilled) for consistent color customization
+  const colors = noteColors
   const custom = customizations?.[wishId]
 
   let colorIndex = hash % colors.length
@@ -378,7 +379,7 @@ export default function WishWallPage() {
             )}
           </div>
 
-          {showActions && !isTrash && (
+          {!wish.is_fulfilled && showActions && !isTrash && (
             <button
               onClick={(e) => {
                 e.stopPropagation()

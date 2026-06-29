@@ -1,35 +1,63 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
   <defs>
-    <linearGradient id="amber" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#FFBF00"/>
+    <linearGradient id="household-amber" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFA500"/>
       <stop offset="100%" style="stop-color:#FF8C00"/>
     </linearGradient>
+    <linearGradient id="household-red" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#DC143C"/>
+      <stop offset="100%" style="stop-color:#8B0000"/>
+    </linearGradient>
+    <radialGradient id="household-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFA500;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#FFA500;stop-opacity:0"/>
+    </radialGradient>
   </defs>
-  <!-- Background circle -->
-  <circle cx="100" cy="100" r="95" fill="#FFFACD" opacity="0.5"/>
-  <!-- Temple/door frame -->
-  <rect x="40" y="60" width="120" height="130" fill="#8B4513" rx="5"/>
-  <rect x="45" y="65" width="110" height="120" fill="#DEB887"/>
-  <!-- Roof -->
-  <path d="M30 60 L100 20 L170 60 Z" fill="url(#amber)"/>
-  <path d="M35 60 L100 25 L165 60" stroke="#8B4513" stroke-width="3" fill="none"/>
-  <!-- Door pattern -->
-  <rect x="60" y="90" width="35" height="70" fill="#8B4513" rx="3"/>
-  <rect x="105" y="90" width="35" height="70" fill="#8B4513" rx="3"/>
-  <!-- Door knobs -->
-  <circle cx="90" cy="125" r="4" fill="url(#amber)"/>
-  <circle cx="110" cy="125" r="4" fill="url(#amber)"/>
-  <!-- Guardian face left -->
-  <circle cx="77" cy="100" r="12" fill="#FFE4C4"/>
-  <circle cx="73" cy="97" r="2" fill="#333"/>
-  <circle cx="81" cy="97" r="2" fill="#333"/>
-  <path d="M73 103 Q77 106 81 103" stroke="#333" stroke-width="1" fill="none"/>
-  <!-- Guardian face right -->
-  <circle cx="123" cy="100" r="12" fill="#FFE4C4"/>
-  <circle cx="119" cy="97" r="2" fill="#333"/>
-  <circle cx="127" cy="97" r="2" fill="#333"/>
-  <path d="M119 103 Q123 106 127 103" stroke="#333" stroke-width="1" fill="none"/>
-  <!-- Upper plaque -->
-  <rect x="70" y="70" width="60" height="20" fill="url(#amber)" rx="2"/>
-  <text x="100" y="85" font-size="12" fill="#8B4513" text-anchor="middle" font-weight="bold">平安</text>
+  <!-- Glow effect -->
+  <circle cx="100" cy="100" r="90" fill="url(#household-glow)"/>
+  <!-- Background decoration -->
+  <circle cx="100" cy="100" r="85" fill="none" stroke="#FFA500" stroke-width="2" opacity="0.5"/>
+  <!-- Home symbol -->
+  <text x="100" y="42" font-size="22" fill="#FFA500" text-anchor="middle" font-family="serif" font-weight="bold">安</text>
+  <!-- Robe body -->
+  <path d="M45 185 Q100 135 155 185 L150 95 Q100 85 50 95 Z" fill="url(#household-red)"/>
+  <!-- Decorative trim -->
+  <path d="M60 110 Q100 105 140 110" stroke="#FFD700" stroke-width="2" fill="none"/>
+  <path d="M55 130 Q100 125 145 130" stroke="#FFD700" stroke-width="2" fill="none"/>
+  <!-- Belt -->
+  <rect x="55" y="105" width="90" height="8" rx="2" fill="#FFD700"/>
+  <!-- Head -->
+  <circle cx="100" cy="72" r="32" fill="#FFE4C4"/>
+  <!-- Happy face -->
+  <ellipse cx="88" cy="70" rx="5" ry="4" fill="#333"/>
+  <ellipse cx="112" cy="70" rx="5" ry="4" fill="#333"/>
+  <!-- Happy eyebrows -->
+  <path d="M80 62 Q88 58 96 62" stroke="#333" stroke-width="2" fill="none"/>
+  <path d="M104 62 Q112 58 120 62" stroke="#333" stroke-width="2" fill="none"/>
+  <!-- Rosy cheeks -->
+  <circle cx="78" cy="78" r="6" fill="#FFB6C1" opacity="0.5"/>
+  <circle cx="122" cy="78" r="6" fill="#FFB6C1" opacity="0.5"/>
+  <!-- Mustache -->
+  <path d="M85 82 Q100 86 115 82" stroke="#333" stroke-width="2" fill="none"/>
+  <!-- Smile -->
+  <path d="M92 86 Q100 92 108 86" stroke="#333" stroke-width="2" fill="none"/>
+  <!-- Hat -->
+  <path d="M55 60 L100 25 L145 60 Q100 52 55 60" fill="url(#household-amber)"/>
+  <rect x="60" y="57" width="80" height="6" fill="url(#household-amber)"/>
+  <!-- Hat decoration -->
+  <circle cx="100" cy="28" r="6" fill="#FF6347"/>
+  <!-- Door/Welcome symbol -->
+  <rect x="140" y="120" width="30" height="50" rx="3" fill="#8B4513"/>
+  <rect x="145" y="125" width="20" height="40" rx="2" fill="#DEB887"/>
+  <circle cx="160" cy="145" r="3" fill="#FFD700"/>
+  <!-- Auspicious symbol -->
+  <text x="152" y="142" font-size="12" fill="#8B4513" text-anchor="middle">门</text>
+  <!-- Lantern left -->
+  <ellipse cx="45" cy="130" rx="12" ry="16" fill="#DC143C"/>
+  <ellipse cx="45" cy="130" rx="6" ry="10" fill="#FF6347"/>
+  <rect x="42" y="112" width="6" height="8" fill="#FFD700"/>
+  <path d="M42 112 L40 108 L50 108 L48 112" fill="#FFD700"/>
+  <!-- Tassel -->
+  <path d="M45 146 L45 160" stroke="#FFD700" stroke-width="2"/>
+  <path d="M43 160 L45 165 L47 160" stroke="#FFD700" stroke-width="2" fill="none"/>
 </svg>
