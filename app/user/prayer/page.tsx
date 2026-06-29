@@ -105,14 +105,33 @@ export default function TempleWorshipPage() {
         setProfile(userProfile)
 
         const today = new Date().toISOString().split('T')[0]
-        const { data: todayPrayers } = await supabase
-          .from('prayers')
-          .select('deity_id')
-          .eq('user_id', authUser.id)
-          .gte('created_at', today + 'T00:00:00')
-          .lte('created_at', today + 'T23:59:59')
+        let worshipped: string[] = []
+        
+        try {
+          const { data: todayPrayers } = await supabase
+            .from('prayers')
+            .select('deity_id, prayer_type')
+            .eq('user_id', authUser.id)
+            .gte('created_at', today + 'T00:00:00')
+            .lte('created_at', today + 'T23:59:59')
 
-        const worshipped = (todayPrayers || []).map((p: any) => p.deity_id)
+          worshipped = (todayPrayers || []).map((p: any) => p.deity_id || p.prayer_type)
+        } catch (e) {
+          // Fallback: use prayer_type if deity_id not available
+          try {
+            const { data: todayPrayers } = await supabase
+              .from('prayers')
+              .select('prayer_type')
+              .eq('user_id', authUser.id)
+              .gte('created_at', today + 'T00:00:00')
+              .lte('created_at', today + 'T23:59:59')
+
+            worshipped = (todayPrayers || []).map((p: any) => p.prayer_type)
+          } catch (e2) {
+            console.error('Error fetching today prayers:', e2)
+          }
+        }
+        
         setTodayWorshipped(worshipped)
 
         const { data: userPrayers } = await supabase
@@ -133,8 +152,12 @@ export default function TempleWorshipPage() {
     fetchData()
   }, [])
 
+  const isDeityWorshipped = (deity: any) => {
+    return todayWorshipped.includes(deity.id) || todayWorshipped.includes(deity.name)
+  }
+
   const handleOpenWishModal = (deity: any) => {
-    if (todayWorshipped.includes(deity.id)) return
+    if (isDeityWorshipped(deity)) return
     setSelectedDeity(deity)
     setWishText('')
     setShowWishModal(true)
@@ -159,22 +182,47 @@ export default function TempleWorshipPage() {
     setIncenseFading(true)
 
     try {
-      const { error: insertError } = await supabase
-        .from('prayers')
-        .insert({
-          user_id: user.id,
-          deity_id: selectedDeity.id,
-          deity_name: selectedDeity.name,
-          wish_text: wishText.trim(),
-          points_spent: selectedDeity.cost,
-          blessing_text: selectedDeity.blessing,
-        })
+      let insertError: any = null
+      
+      try {
+        const { error } = await supabase
+          .from('prayers')
+          .insert({
+            user_id: user.id,
+            deity_id: selectedDeity.id,
+            deity_name: selectedDeity.name,
+            wish_text: wishText.trim(),
+            points_spent: selectedDeity.cost,
+            blessing_text: selectedDeity.blessing,
+            prayer_type: selectedDeity.name,
+          })
+        insertError = error
+      } catch (e: any) {
+        insertError = e
+      }
 
       if (insertError) {
-        alert('Failed to submit worship: ' + insertError.message)
-        setSubmitting(false)
-        setIncenseFading(false)
-        return
+        // Fallback: try with only old schema columns
+        try {
+          const { error: fallbackError } = await supabase
+            .from('prayers')
+            .insert({
+              user_id: user.id,
+              prayer_type: selectedDeity.name,
+              points_spent: selectedDeity.cost,
+            })
+          if (fallbackError) {
+            alert('Failed to submit worship: ' + fallbackError.message)
+            setSubmitting(false)
+            setIncenseFading(false)
+            return
+          }
+        } catch (fallbackE: any) {
+          alert('Failed to submit worship: ' + fallbackE.message)
+          setSubmitting(false)
+          setIncenseFading(false)
+          return
+        }
       }
 
       const { error: updateError } = await supabase
@@ -210,7 +258,7 @@ export default function TempleWorshipPage() {
         .limit(20)
 
       setPrayers(refreshedPrayers || [])
-      setTodayWorshipped(prev => [...prev, selectedDeity.id])
+      setTodayWorshipped(prev => [...prev, selectedDeity.id, selectedDeity.name])
 
       setBlessingDeity(selectedDeity)
       setBlessingText(selectedDeity.blessing)
@@ -423,7 +471,7 @@ export default function TempleWorshipPage() {
           <div className="mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {deities.slice(0, 4).map((deity) => {
-                const isWorshipped = todayWorshipped.includes(deity.id)
+                const isWorshipped = isDeityWorshipped(deity)
                 return (
                   <div
                     key={deity.id}
@@ -477,7 +525,7 @@ export default function TempleWorshipPage() {
               <div className="md:col-span-2 mx-auto max-w-lg">
                 <div
                   className={`${deities[4].bgColor} ${deities[4].borderColor} border-2 rounded-3xl p-6 transition-all hover:shadow-lg hover:-translate-y-1 relative overflow-hidden ${
-                    todayWorshipped.includes(deities[4].id) ? 'opacity-75' : ''
+                    isDeityWorshipped(deities[4]) ? 'opacity-75' : ''
                   }`}
                 >
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-200/30 to-transparent rounded-full -translate-y-1/2 translate-x-1/2"></div>
@@ -508,14 +556,14 @@ export default function TempleWorshipPage() {
                       </div>
                       <button
                         onClick={() => handleOpenWishModal(deities[4])}
-                        disabled={todayWorshipped.includes(deities[4].id)}
+                        disabled={isDeityWorshipped(deities[4])}
                         className={`px-6 py-3 rounded-2xl font-semibold transition-all flex items-center gap-2 ${
-                          todayWorshipped.includes(deities[4].id)
+                          isDeityWorshipped(deities[4])
                             ? 'bg-stone-200 text-stone-500 cursor-not-allowed'
                             : `bg-gradient-to-r ${deities[4].gradient} text-white shadow-lg hover:shadow-xl hover:scale-105`
                         }`}
                       >
-                        {todayWorshipped.includes(deities[4].id) ? (
+                        {isDeityWorshipped(deities[4]) ? (
                           <>
                             <CheckCircle2 className="w-5 h-5" />
                             Worship Completed Today
