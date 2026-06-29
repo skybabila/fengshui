@@ -59,62 +59,30 @@ export default function FortunePage() {
   const checkTodayCheckIn = async (userId: string) => {
     const today = getTodayString()
 
-    const { data: transactions, error } = await supabase
-      .from('point_transactions')
-      .select('*')
-      .eq('user_id', userId)
-      .gte('created_at', `${today}T00:00:00Z`)
-      .lte('created_at', `${today}T23:59:59Z`)
-
-    if (error) {
-      console.error('Error checking check-in status:', error)
-      return
-    }
-
-    const hasCheckIn = transactions?.some((t: any) => t.description.includes('Daily check-in'))
-    setCheckedIn(!!hasCheckIn)
-
-    if (hasCheckIn) {
-      const streakCount = await calculateStreak(userId)
-      setStreak(streakCount)
-    } else {
-      const streakCount = await calculateStreak(userId)
-      setStreak(streakCount)
-    }
-  }
-
-  const calculateStreak = async (userId: string): Promise<number> => {
-    let currentStreak = 0
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-
-    for (let i = 0; i < 30; i++) {
-      const checkDate = new Date(today)
-      checkDate.setDate(today.getDate() - i)
-      const dateStr = checkDate.toISOString().split('T')[0]
-
+    try {
       const { data: transactions, error } = await supabase
         .from('point_transactions')
-        .select('*')
+        .select('created_at')
         .eq('user_id', userId)
-        .gte('created_at', `${dateStr}T00:00:00Z`)
-        .lte('created_at', `${dateStr}T23:59:59Z`)
+        .gte('created_at', `${today}T00:00:00Z`)
+        .lte('created_at', `${today}T23:59:59Z`)
+        .limit(5)
 
       if (error) {
-        console.error('Error calculating streak:', error)
-        break
+        console.error('Error checking check-in status:', error)
+        return
       }
 
-      const hasCheckIn = transactions?.some((t: any) => t.description.includes('Daily check-in'))
+      const hasCheckIn = (transactions || []).some((t: any) => 
+        t.description && t.description.includes('Daily check-in')
+      )
+      setCheckedIn(!!hasCheckIn)
 
-      if (hasCheckIn) {
-        currentStreak++
-      } else if (i > 0) {
-        break
-      }
+      // Simple streak: just show 0 or 1 for now
+      setStreak(hasCheckIn ? 1 : 0)
+    } catch (e) {
+      console.error('Check-in check failed:', e)
     }
-
-    return currentStreak
   }
 
   const fetchFortuneHistory = async (userId: string) => {
@@ -140,27 +108,12 @@ export default function FortunePage() {
     setMessage(null)
 
     try {
-      const currentStreak = await calculateStreak(user.id)
-      const newStreak = currentStreak + 1
-
-      let bonus = 0
-      let bonusDesc = ''
-      if (newStreak >= 7 && currentStreak < 7) {
-        bonus = 15
-        bonusDesc = ' (7-day streak bonus!)'
-      } else if (newStreak >= 3 && currentStreak < 3) {
-        bonus = 5
-        bonusDesc = ' (3-day streak bonus!)'
-      }
-
-      const basePoints = 2
-      const totalPoints = basePoints + bonus
-
+      const basePoints = 5
       const currentPoints = profile?.points || 0
 
       const { error: updateError } = await supabase
         .from('user_profiles')
-        .update({ points: currentPoints + totalPoints })
+        .update({ points: currentPoints + basePoints })
         .eq('id', user.id)
 
       if (updateError) throw updateError
@@ -169,8 +122,8 @@ export default function FortunePage() {
         .from('point_transactions')
         .insert({
           user_id: user.id,
-          description: `Daily check-in reward${bonusDesc}`,
-          points: totalPoints
+          description: 'Daily check-in reward',
+          points: basePoints
         })
 
       if (txError) throw txError
@@ -178,11 +131,11 @@ export default function FortunePage() {
       const updatedProfile = await getUserProfile(user.id)
       setProfile(updatedProfile)
       setCheckedIn(true)
-      setStreak(newStreak)
+      setStreak(1)
 
       setMessage({
         type: 'success',
-        text: `Check-in successful! +${totalPoints} coins${bonusDesc}`
+        text: `Check-in successful! +${basePoints} coins`
       })
 
       setTimeout(() => setMessage(null), 5000)

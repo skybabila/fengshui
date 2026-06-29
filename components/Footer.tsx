@@ -31,7 +31,7 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">For Members</h3>
             <ul className="space-y-2">
               <li><Link href="/user/dashboard" className="text-sm text-stone-400 hover:text-white transition-colors">Member Dashboard</Link></li>
-              <li><Link href="/user/prayer" className="text-sm text-stone-400 hover:text-white transition-colors">Temple Prayer</Link></li>
+              <li><Link href="/user/prayer" className="text-sm text-stone-400 hover:text-white transition-colors">Temple Worship</Link></li>
               <li><Link href="/user/points" className="text-sm text-stone-400 hover:text-white transition-colors">Merit Points</Link></li>
               <li><Link href="/user/settings" className="text-sm text-stone-400 hover:text-white transition-colors">Account Settings</Link></li>
             </ul>

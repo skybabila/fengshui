@@ -75,8 +75,8 @@ export default function Navbar() {
             <Link href="/articles" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">Articles</Link>
             {isLoggedIn && (
               <>
-                <Link href="/fortune" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">Fortune</Link>
-                <Link href="/user/prayer" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">Prayer</Link>
+                <Link href="/fortune" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">Energy</Link>
+                <Link href="/user/prayer" className="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors">Temple</Link>
               </>
             )}
 
@@ -157,8 +157,8 @@ export default function Navbar() {
             <Link href="/articles" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">Articles</Link>
             {isLoggedIn && (
               <>
-                <Link href="/fortune" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">Fortune</Link>
-                <Link href="/user/prayer" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">Prayer</Link>
+                <Link href="/fortune" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">Energy Forecast</Link>
+                <Link href="/user/prayer" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 rounded-lg text-base font-medium text-stone-700 hover:bg-emerald-50">Temple Worship</Link>
               </>
             )}
 
