@@ -28,6 +28,7 @@ const adminMenu: MenuItem[] = [
 const userMenu: MenuItem[] = [
   { id: 'user-dashboard', label: 'Dashboard', href: '/user/dashboard', icon: LayoutDashboard, section: 'user' },
   { id: 'user-fortune', label: 'Energy Forecast', href: '/fortune', icon: Sparkles, section: 'fortune' },
+  { id: 'user-draw', label: 'Fortune Drawing', href: '/fortune/draw', icon: Star, section: 'fortune' },
   { id: 'user-prayer', label: 'Temple Worship', href: '/user/prayer', icon: Star, section: 'user' },
   { id: 'user-wishes', label: 'Wish Wall', href: '/wish-wall', icon: Heart, section: 'user' },
   { id: 'user-points', label: 'Coin History', href: '/user/points', icon: Coins, section: 'user' },
