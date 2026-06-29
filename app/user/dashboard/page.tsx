@@ -7,16 +7,21 @@ import { formatDate } from '@/lib/utils'
 import SidebarLayout from '@/components/SidebarLayout'
 import {
   Coins, Calendar, Star, TrendingUp, Award, Activity, Settings, Heart,
-  Sparkles, Zap, Gift, Shield, ChevronRight, Clock, Crown, Flame
+  Sparkles, Zap, Gift, Shield, ChevronRight, Clock, Crown, Flame, Sun,
+  CheckCircle, FileText, AlertCircle
 } from 'lucide-react'
+
+const COINS_COST_DAILY = 5
+const COINS_COST_WEEKLY = 20
+const COINS_COST_MONTHLY = 50
 
 export default function UserDashboard() {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [dailyFortune, setDailyFortune] = useState<any>(null)
-  const [recentPrayers, setRecentPrayers] = useState<any[]>([])
-  const [wishCount, setWishCount] = useState(0)
+  const [checkedIn, setCheckedIn] = useState(false)
+  const [checkingIn, setCheckingIn] = useState(false)
+  const [readingHistory, setReadingHistory] = useState<any[]>([])
 
   useEffect(() => {
     async function fetchData() {
@@ -31,33 +36,34 @@ export default function UserDashboard() {
         const userProfile = await getUserProfile(authUser.id)
         setProfile(userProfile)
 
-        const { data: fortune } = await supabase
+        // Check if already checked in today
+        const today = new Date().toISOString().split('T')[0]
+        const { data: checkInData } = await supabase
+          .from('point_transactions')
+          .select('*')
+          .eq('user_id', authUser.id)
+          .eq('description', 'Daily check-in bonus')
+          .gte('created_at', today + 'T00:00:00')
+          .lte('created_at', today + 'T23:59:59')
+          .limit(1)
+
+        setCheckedIn(!!(checkInData && checkInData.length > 0))
+
+        // Fetch reading history
+        const { data: dailyData } = await supabase
           .from('daily_fortunes')
           .select('*')
           .eq('user_id', authUser.id)
-          .eq('fortune_period', 'daily')
           .order('created_at', { ascending: false })
-          .limit(1)
-        
-        if (fortune && fortune.length > 0) {
-          setDailyFortune(fortune[0])
-        }
+          .limit(10)
 
-        const { data: prayers } = await supabase
-          .from('prayers')
-          .select('*')
-          .eq('user_id', authUser.id)
-          .order('created_at', { ascending: false })
-          .limit(5)
-        
-        setRecentPrayers(prayers || [])
+        const historyItems = (dailyData || []).map((item: any) => ({
+          ...item,
+          type: 'Daily Energy Reading',
+          period: 'daily'
+        }))
 
-        const { count } = await supabase
-          .from('wishes')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', authUser.id)
-        
-        setWishCount(count || 0)
+        setReadingHistory(historyItems)
       } catch (error) {
         console.error('Error fetching data:', error)
       } finally {
@@ -67,6 +73,46 @@ export default function UserDashboard() {
 
     fetchData()
   }, [])
+
+  const handleDailyCheckIn = async () => {
+    if (!user || checkedIn || checkingIn) return
+
+    setCheckingIn(true)
+    try {
+      const currentPoints = profile?.points || 0
+      const bonusPoints = 5 // Default bonus
+
+      // Update user points
+      const { error: updateError } = await supabase
+        .from('user_profiles')
+        .update({ points: currentPoints + bonusPoints })
+        .eq('id', user.id)
+
+      if (updateError) {
+        alert('Failed to claim bonus: ' + updateError.message)
+        setCheckingIn(false)
+        return
+      }
+
+      // Record transaction
+      await supabase
+        .from('point_transactions')
+        .insert({
+          user_id: user.id,
+          description: 'Daily check-in bonus',
+          points: bonusPoints
+        })
+
+      setCheckedIn(true)
+      setProfile({ ...profile, points: currentPoints + bonusPoints })
+      alert(`Congratulations! You received ${bonusPoints} free coins!`)
+    } catch (error) {
+      console.error('Error during check-in:', error)
+      alert('Failed to claim bonus. Please try again.')
+    } finally {
+      setCheckingIn(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -84,95 +130,34 @@ export default function UserDashboard() {
   }
 
   const points = profile?.points || 0
-  const userName = profile?.nickname || profile?.name || user?.email?.split('@')[0]
-
-  const getFortuneEmoji = (type: string) => {
-    switch (type) {
-      case 'Great Fortune': return '🌟'
-      case 'Good Fortune': return '✨'
-      case 'Moderate Fortune': return '🌤️'
-      case 'Small Fortune': return '⛅'
-      case 'Average': return '☁️'
-      default: return '🌟'
-    }
-  }
-
-  const getFortuneBgClass = (type: string) => {
-    switch (type) {
-      case 'Great Fortune': return 'from-green-500 to-emerald-600'
-      case 'Good Fortune': return 'from-emerald-500 to-teal-600'
-      case 'Moderate Fortune': return 'from-amber-500 to-orange-500'
-      case 'Small Fortune': return 'from-orange-500 to-red-500'
-      case 'Average': return 'from-gray-500 to-slate-500'
-      default: return 'from-green-500 to-emerald-600'
-    }
-  }
-
-  const getFortuneLightBg = (type: string) => {
-    switch (type) {
-      case 'Great Fortune': return 'bg-green-50 border-green-100'
-      case 'Good Fortune': return 'bg-emerald-50 border-emerald-100'
-      case 'Moderate Fortune': return 'bg-amber-50 border-amber-100'
-      case 'Small Fortune': return 'bg-orange-50 border-orange-100'
-      case 'Average': return 'bg-gray-50 border-gray-100'
-      default: return 'bg-green-50 border-green-100'
-    }
-  }
 
   const features = [
     {
-      icon: Sparkles,
-      title: 'Daily Fortune',
-      desc: 'Today\'s Lucky Horoscope',
+      icon: Sun,
+      title: 'Daily Energy Reading',
+      desc: "Get today's mood tips, travel suggestions, and wellness guidance to keep your energy balanced.",
       href: '/fortune/daily',
-      cost: '5 Coins',
+      cost: COINS_COST_DAILY,
       gradient: 'from-amber-500 to-orange-500',
       bgGradient: 'from-amber-50 to-orange-50',
     },
     {
-      icon: Star,
-      title: 'Weekly Fortune',
-      desc: '7-Day Wealth & Love Forecast',
+      icon: Calendar,
+      title: '7-Day Weekly Energy Trend',
+      desc: 'Preview your career, finance, and relationship energy for the whole week, plus your most favorable days.',
       href: '/fortune/weekly',
-      cost: '20 Coins',
+      cost: COINS_COST_WEEKLY,
       gradient: 'from-purple-500 to-indigo-500',
       bgGradient: 'from-purple-50 to-indigo-50',
     },
     {
       icon: Crown,
-      title: 'Monthly Fortune',
-      desc: 'Full Monthly Destiny Reading',
+      title: 'Full Monthly Energy Wellness Report',
+      desc: 'In-depth analysis covering work, wealth, romance and health, with carefully picked favorable dates for your plans.',
       href: '/fortune/monthly',
-      cost: '50 Coins',
+      cost: COINS_COST_MONTHLY,
       gradient: 'from-cyan-500 to-blue-500',
       bgGradient: 'from-cyan-50 to-blue-50',
-    },
-    {
-      icon: Heart,
-      title: 'Wish Wall',
-      desc: 'Post Your Wishes for Blessings',
-      href: '/wish-wall',
-      cost: '10 Coins',
-      gradient: 'from-pink-500 to-rose-500',
-      bgGradient: 'from-pink-50 to-rose-50',
-    },
-    {
-      icon: Flame,
-      title: 'Prayer Center',
-      desc: 'Offer Prayers for Peace & Prosperity',
-      href: '/user/prayer',
-      cost: 'Varies',
-      gradient: 'from-red-500 to-orange-500',
-      bgGradient: 'from-red-50 to-orange-50',
-    },
-    {
-      icon: Gift,
-      title: 'Earn Free Coins',
-      desc: 'Complete Tasks to Get More Readings',
-      href: '/user/points',
-      cost: 'Free',
-      gradient: 'from-emerald-500 to-teal-500',
-      bgGradient: 'from-emerald-50 to-teal-50',
     },
   ]
 
@@ -180,223 +165,184 @@ export default function UserDashboard() {
     <SidebarLayout>
       <div className="p-6 md:p-8">
         <div className="max-w-4xl mx-auto">
-        {/* Welcome Banner */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-3xl p-6 md:p-8 mb-8 shadow-2xl">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
-          <div className="relative z-10">
-            <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Welcome Back!</h1>
-            <p className="text-emerald-100 mb-6 max-w-lg">
-              Today&apos;s fortune is waiting for you. Check your lucky direction and avoid bad luck ahead.
+
+          {/* Page Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold text-stone-800 mb-2">
+              Your Personal Energy Center
+            </h1>
+            <p className="text-stone-500 max-w-lg mx-auto text-sm">
+              Check in every day to earn free coins and unlock your personalized life energy forecast
             </p>
-            <div className="flex flex-wrap gap-4">
-              <Link
-                href="/fortune/daily"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-emerald-700 font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
-              >
-                <Sparkles className="w-5 h-5" />
-                Get Daily Fortune
-                <ChevronRight className="w-4 h-4" />
-              </Link>
+          </div>
+
+          {/* Module 1: Daily Check-In Reward */}
+          <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-3xl p-6 md:p-8 mb-8 shadow-2xl">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-3">
+                <Gift className="w-6 h-6 text-white" />
+                <h2 className="text-xl font-bold text-white">Daily Check-In Reward</h2>
+              </div>
+              <p className="text-emerald-100 mb-4 max-w-lg">
+                Claim free coins every 24 hours. Earn extra bonuses for consecutive daily logins.
+              </p>
+              <ul className="text-emerald-100 text-sm mb-6 space-y-1">
+                <li>3 consecutive check-ins: Extra +5 Coins</li>
+                <li>7 consecutive check-ins: Extra +15 Coins</li>
+              </ul>
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                {checkedIn ? (
+                  <button
+                    disabled
+                    className="px-6 py-3 bg-white/30 backdrop-blur text-white font-semibold rounded-xl cursor-not-allowed opacity-60"
+                  >
+                    <CheckCircle className="w-5 h-5 inline mr-2" />
+                    Checked In Today — Come Back Tomorrow
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleDailyCheckIn}
+                    disabled={checkingIn}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-white text-emerald-700 font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                  >
+                    {checkingIn ? (
+                      <>
+                        <span className="w-5 h-5 border-2 border-emerald-300/30 border-t-emerald-600 rounded-full animate-spin"></span>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Gift className="w-5 h-5" />
+                        Claim My Free Coins
+                      </>
+                    )}
+                  </button>
+                )}
+                <p className="text-emerald-200 text-xs">
+                  Rewards reset if you miss a day. Keep your streak going to get more bonus coins.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Bar */}
+          <div className="flex items-center justify-center gap-6 mb-8 flex-wrap">
+            <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm border border-stone-200">
+              <Coins className="w-4 h-4 text-amber-500" />
+              <span className="text-sm text-stone-600">Balance:</span>
+              <span className="font-bold text-amber-600">{points.toLocaleString()} Coins</span>
               <Link
                 href="/user/points"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white/20 backdrop-blur text-white font-semibold rounded-xl hover:bg-white/30 transition-all border border-white/30"
+                className="ml-2 px-3 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full hover:bg-amber-200 transition-colors"
               >
-                <Gift className="w-5 h-5" />
-                Earn Free Merit Coins
+                + Buy More Coins
               </Link>
             </div>
           </div>
-        </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-2xl p-5 shadow-lg border border-stone-100 hover:shadow-xl transition-shadow">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
-                <Coins className="w-6 h-6 text-amber-600" />
-              </div>
+          {/* Module 2: Three Energy Reading Service Cards */}
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-stone-800 mb-4">Energy Reading Services</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {features.map((feature, index) => {
+                const Icon = feature.icon
+                return (
+                  <div
+                    key={index}
+                    className="bg-white rounded-2xl p-5 shadow-lg border border-stone-100 hover:shadow-xl transition-all"
+                  >
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4`}>
+                      <Icon className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="font-bold text-stone-800 mb-2">{feature.title}</h3>
+                    <p className="text-sm text-stone-500 mb-4 leading-relaxed">{feature.desc}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">
+                        {feature.cost} Coins
+                      </span>
+                      <Link
+                        href={feature.href}
+                        className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                      >
+                        {index === 0 ? "Unlock Today's Reading" : index === 1 ? "View Weekly Forecast" : "Generate My Report"}
+                        <ChevronRight className="w-4 h-4" />
+                      </Link>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-            <p className="text-stone-500 text-sm">My Coins</p>
-            <p className="text-2xl font-bold text-stone-800">{points.toLocaleString()}</p>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-lg border border-stone-100 hover:shadow-xl transition-shadow">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-xl flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-emerald-600" />
+          {/* Module 3: How The System Works */}
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-stone-800 mb-4">How It Works</h2>
+            <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl p-6 border border-violet-100">
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <div className="w-8 h-8 rounded-full bg-violet-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">1</div>
+                  <div>
+                    <p className="text-stone-700 font-medium">Complete your daily check-in to receive free coins without any cost.</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="w-8 h-8 rounded-full bg-violet-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">2</div>
+                  <div>
+                    <p className="text-stone-700 font-medium">Spend your coins to unlock personalized energy analysis reports.</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="w-8 h-8 rounded-full bg-violet-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">3</div>
+                  <div>
+                    <p className="text-stone-700 font-medium">Daily readings have a one-time daily limit to keep each result focused and meaningful.</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <p className="text-stone-500 text-sm">Today&apos;s Fortune</p>
-            <p className="text-2xl font-bold text-stone-800">
-              {dailyFortune ? 'Completed' : 'New'}
+          </div>
+
+          {/* Module 4: My Reading History */}
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-stone-800 mb-4">My Past Energy Reports</h2>
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-stone-100">
+              {readingHistory.length > 0 ? (
+                <div className="space-y-3">
+                  {readingHistory.slice(0, 5).map((item: any, index: number) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-stone-50 rounded-xl hover:bg-stone-100 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-5 h-5 text-emerald-500" />
+                        <div>
+                          <p className="font-medium text-stone-800">{formatDate(item.created_at)} — {item.type}</p>
+                        </div>
+                      </div>
+                      <Link
+                        href={item.period === 'daily' ? '/fortune/daily' : item.period === 'weekly' ? '/fortune/weekly' : '/fortune/monthly'}
+                        className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                      >
+                        View Full Report
+                        <ChevronRight className="w-4 h-4" />
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <AlertCircle className="w-12 h-12 text-stone-300 mx-auto mb-3" />
+                  <p className="text-stone-500">No reading history yet. Unlock your first energy reading above!</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Policy Text */}
+          <div className="text-center py-6 border-t border-stone-200">
+            <p className="text-xs text-stone-400 max-w-2xl mx-auto">
+              All energy analysis content is created for wellness reference and entertainment only. It is not life prediction, medical guidance or investment advice.
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-lg border border-stone-100 hover:shadow-xl transition-shadow">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-red-100 to-orange-100 rounded-xl flex items-center justify-center">
-                <Activity className="w-6 h-6 text-red-500" />
-              </div>
-            </div>
-            <p className="text-stone-500 text-sm">Prayers Made</p>
-            <p className="text-2xl font-bold text-stone-800">{recentPrayers.length}</p>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 shadow-lg border border-stone-100 hover:shadow-xl transition-shadow">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-pink-100 to-rose-100 rounded-xl flex items-center justify-center">
-                <Heart className="w-6 h-6 text-pink-500" />
-              </div>
-            </div>
-            <p className="text-stone-500 text-sm">Wishes Saved</p>
-            <p className="text-2xl font-bold text-stone-800">{wishCount}</p>
-          </div>
-        </div>
-
-        {/* Fortune Today Card */}
-        <div className={`rounded-3xl p-6 mb-8 border-2 ${getFortuneLightBg(dailyFortune?.fortune_type || '')}`}>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 text-amber-500" />
-              <h2 className="text-lg font-bold text-stone-800">Today&apos;s Lucky Outlook</h2>
-            </div>
-            <Link href="/fortune" className="text-sm text-emerald-600 font-medium hover:text-emerald-700 flex items-center gap-1">
-              View All <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {dailyFortune ? (
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className={`w-24 h-24 rounded-2xl bg-gradient-to-br ${getFortuneBgClass(dailyFortune.fortune_type)} flex items-center justify-center shadow-lg`}>
-                <span className="text-4xl">{getFortuneEmoji(dailyFortune.fortune_type)}</span>
-              </div>
-              <div className="flex-1 text-center md:text-left">
-                <h3 className="text-2xl font-bold text-stone-800 mb-2">{dailyFortune.fortune_type}</h3>
-                <p className="text-stone-600 mb-3">{dailyFortune.description || 'Positive energy ahead. Stay focused, and good opportunities will come naturally.'}</p>
-                <div className="flex items-center justify-center md:justify-start gap-4 text-sm text-stone-500">
-                  <span className="flex items-center gap-1">
-                    <Zap className="w-4 h-4 text-amber-500" />
-                    Zodiac: {profile?.zodiac_sign || dailyFortune.zodiac_sign || 'Horse'}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    {formatDate(dailyFortune.created_at)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="w-24 h-24 rounded-2xl bg-stone-100 flex items-center justify-center">
-                <Sparkles className="w-10 h-10 text-stone-400" />
-              </div>
-              <div className="flex-1 text-center md:text-left">
-                <h3 className="text-xl font-bold text-stone-700 mb-2">Fortune Not Yet Unlocked</h3>
-                <p className="text-stone-500 mb-4">Positive energy ahead. Stay focused, and good opportunities will come naturally.</p>
-                <a
-                  href="/fortune/daily"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  Unlock Now - 5 coins
-                </a>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Feature Grid */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-stone-800">Explore Features</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {features.map((feature, index) => {
-              const Icon = feature.icon
-              return (
-                <Link
-                  key={index}
-                  href={feature.href}
-                  className="group bg-white rounded-2xl p-5 shadow-lg border border-stone-100 hover:shadow-xl hover:-translate-y-1 transition-all"
-                >
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-bold text-stone-800 mb-1">{feature.title}</h3>
-                  <p className="text-sm text-stone-500 mb-3">{feature.desc}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">
-                      {feature.cost}
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Bottom Section */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Recent Prayers */}
-          {recentPrayers.length > 0 && (
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-stone-100">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Award className="w-5 h-5 text-cyan-500" />
-                  <h2 className="text-lg font-bold text-stone-800">Your Recent Blessing Records</h2>
-                </div>
-                <a href="/user/prayer" className="text-sm text-cyan-600 font-medium hover:text-cyan-700">
-                  View all
-                </a>
-              </div>
-              <div className="space-y-3">
-                {recentPrayers.slice(0, 3).map((prayer: any) => (
-                  <div key={prayer.id} className="flex items-center justify-between p-3 bg-stone-50 rounded-xl hover:bg-stone-100 transition-colors">
-                    <div>
-                      <p className="font-medium text-stone-800">{prayer.prayer_type}</p>
-                      <p className="text-xs text-stone-500">{formatDate(prayer.created_at)}</p>
-                    </div>
-                    <span className="text-sm font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">
-                      -{prayer.points_spent}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Tips Card */}
-          <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl p-6 border border-violet-100">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-500 rounded-xl flex items-center justify-center">
-                <Shield className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-lg font-bold text-stone-800">Daily Tips</h2>
-            </div>
-            <div className="space-y-3">
-              <div className="flex gap-3">
-                <span className="text-violet-500 mt-0.5">✨</span>
-                <p className="text-sm text-stone-600">Check your daily fortune every morning to plan your day</p>
-              </div>
-              <div className="flex gap-3">
-                <span className="text-violet-500 mt-0.5">🎁</span>
-                <p className="text-sm text-stone-600">Fill out your birthday to claim 100 free bonus coins</p>
-              </div>
-              <div className="flex gap-3">
-                <span className="text-violet-500 mt-0.5">🙏</span>
-                <p className="text-sm text-stone-600">Sincere prayers greatly improve your chance of good luck</p>
-              </div>
-            </div>
-            <a
-              href="/articles"
-              className="mt-5 inline-flex items-center gap-2 text-violet-600 font-medium text-sm hover:text-violet-700"
-            >
-              Read more articles <ChevronRight className="w-4 h-4" />
-            </a>
-          </div>
-        </div>
         </div>
       </div>
     </SidebarLayout>
