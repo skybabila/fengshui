@@ -494,7 +494,7 @@ export default function ProfilePage() {
                         </div>
                         <div>
                           <p className="font-bold text-xl text-stone-800">{zodiac.name}</p>
-                          <p className="text-stone-500">{zodiac.chinese} 生肖</p>
+                          <p className="text-stone-500">{zodiac.name} Zodiac</p>
                           <p className="text-xs text-pink-600 mt-1">Calculated from birth year</p>
                         </div>
                       </div>
@@ -520,7 +520,7 @@ export default function ProfilePage() {
                         </div>
                         <div>
                           <p className="font-bold text-xl text-stone-800">{element.name}</p>
-                          <p className="text-stone-500">{element.chinese} 命格</p>
+                          <p className="text-stone-500">{element.name} Element</p>
                           <p className="text-xs text-emerald-600 mt-1">Based on birth year</p>
                         </div>
                       </div>
