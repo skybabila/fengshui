@@ -8,7 +8,7 @@ import SidebarLayout from '@/components/SidebarLayout'
 import {
   History, X, Coins, Sparkles, CheckCircle2, Calendar,
   Flame, Leaf, Heart, Star, ChevronRight, Clock,
-  Home, BookOpen, Award, Zap, TrendingUp
+  Home, BookOpen, Award, Zap, TrendingUp, RefreshCw
 } from 'lucide-react'
 
 const deities = [
@@ -23,6 +23,16 @@ const deities = [
     bgColor: 'bg-amber-50',
     borderColor: 'border-amber-200',
     textColor: 'text-amber-700',
+    wishes: [
+      'May my work go smoothly and my income grow steadily month by month.',
+      'May I meet helpful people in my career and seize good opportunities.',
+      'May my side projects bring in extra income and financial stability.',
+      'May my investments be wise and my savings increase steadily.',
+      'May my business run smoothly with more customers and steady revenue.',
+      'May I get a promotion and salary increase this year through my hard work.',
+      'May my financial situation improve and I feel more at peace about money.',
+      'May unexpected income come my way and bring pleasant surprises.',
+    ],
   },
   {
     id: 'health',
@@ -35,6 +45,16 @@ const deities = [
     bgColor: 'bg-emerald-50',
     borderColor: 'border-emerald-200',
     textColor: 'text-emerald-700',
+    wishes: [
+      'May my body stay healthy and full of energy every day.',
+      'May I sleep well at night and wake up feeling refreshed.',
+      'May my digestion be good and my appetite stay healthy.',
+      'May any minor discomfort fade away and my body recover naturally.',
+      'May I build a regular exercise habit and keep my body strong.',
+      'May my mind stay calm and free from excessive stress and anxiety.',
+      'May my eyes stay healthy even with long hours of screen work.',
+      'May my immune system stay strong and keep illnesses away.',
+    ],
   },
   {
     id: 'family',
@@ -47,6 +67,16 @@ const deities = [
     bgColor: 'bg-rose-50',
     borderColor: 'border-rose-200',
     textColor: 'text-rose-700',
+    wishes: [
+      'May my family members all stay healthy and safe.',
+      'May my parents be in good health and enjoy their daily life.',
+      'May my children grow up happily and stay out of trouble.',
+      'May my partner and I get along well with fewer arguments.',
+      'May my home be a warm and peaceful place to rest after work.',
+      'May family relationships be harmonious and full of understanding.',
+      'May trivial family troubles disappear and life be smooth.',
+      'May my siblings and relatives get along well and support each other.',
+    ],
   },
   {
     id: 'wisdom',
@@ -59,6 +89,16 @@ const deities = [
     bgColor: 'bg-blue-50',
     borderColor: 'border-blue-200',
     textColor: 'text-blue-700',
+    wishes: [
+      'May my work projects go smoothly and be completed on time.',
+      'May I make the right decisions at work and avoid mistakes.',
+      'May my abilities be recognized by my team and leaders.',
+      'May I get a promotion opportunity this year.',
+      'May my studies progress well and I pass all exams smoothly.',
+      'May I learn new skills quickly and improve my professional value.',
+      'May my relationships with colleagues be harmonious and cooperative.',
+      'May I find my true career direction and feel fulfilled at work.',
+    ],
   },
   {
     id: 'fortune',
@@ -72,6 +112,16 @@ const deities = [
     borderColor: 'border-violet-200',
     textColor: 'text-violet-700',
     featured: true,
+    wishes: [
+      'May everything in my life go smoothly and gently.',
+      'May I meet kind people wherever I go.',
+      'May all my small worries fade away day by day.',
+      'May my love life be sweet and fulfilling.',
+      'May I find inner peace and feel content every day.',
+      'May good things come to me naturally at the right time.',
+      'May my overall luck improve and life gets better steadily.',
+      'May I stay positive and attract good energy around me.',
+    ],
   },
 ]
 
@@ -84,7 +134,7 @@ export default function TempleWorshipPage() {
   const [selectedDeity, setSelectedDeity] = useState<any>(null)
   const [showWishModal, setShowWishModal] = useState(false)
   const [showBlessingModal, setShowBlessingModal] = useState(false)
-  const [wishText, setWishText] = useState('')
+  const [currentWishIndex, setCurrentWishIndex] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [incenseFading, setIncenseFading] = useState(false)
   const [blessingDeity, setBlessingDeity] = useState<any>(null)
@@ -159,24 +209,26 @@ export default function TempleWorshipPage() {
   const handleOpenWishModal = (deity: any) => {
     if (isDeityWorshipped(deity)) return
     setSelectedDeity(deity)
-    setWishText('')
+    const randomIndex = Math.floor(Math.random() * deity.wishes.length)
+    setCurrentWishIndex(randomIndex)
     setShowWishModal(true)
   }
 
   const handleCloseWishModal = () => {
     setShowWishModal(false)
     setSelectedDeity(null)
-    setWishText('')
+    setCurrentWishIndex(0)
   }
 
   const handleWorship = async () => {
     if (!user || !selectedDeity || submitting) return
-    if (wishText.trim().length < 15 || wishText.trim().length > 160) return
 
     const currentPoints = profile?.points || 0
     if (currentPoints < selectedDeity.cost) {
       return
     }
+
+    const currentWish = selectedDeity.wishes[currentWishIndex] || selectedDeity.wishes[0]
 
     setSubmitting(true)
     setIncenseFading(true)
@@ -191,7 +243,7 @@ export default function TempleWorshipPage() {
             user_id: user.id,
             deity_id: selectedDeity.id,
             deity_name: selectedDeity.name,
-            wish_text: wishText.trim(),
+            wish_text: currentWish,
             points_spent: selectedDeity.cost,
             blessing_text: selectedDeity.blessing,
             prayer_type: selectedDeity.name,
@@ -300,9 +352,14 @@ export default function TempleWorshipPage() {
   }
 
   const points = profile?.points || 0
-  const charCount = wishText.trim().length
-  const isValid = charCount >= 15 && charCount <= 160
   const hasEnoughCoins = selectedDeity && points >= selectedDeity.cost
+  const currentWishText = selectedDeity?.wishes?.[currentWishIndex] || ''
+
+  const handleNextWish = () => {
+    if (!selectedDeity?.wishes) return
+    const nextIndex = Math.floor(Math.random() * selectedDeity.wishes.length)
+    setCurrentWishIndex(nextIndex)
+  }
 
   return (
     <SidebarLayout>
@@ -337,18 +394,21 @@ export default function TempleWorshipPage() {
                 </div>
 
                 <div className="mb-6">
-                  <textarea
-                    value={wishText}
-                    onChange={(e) => setWishText(e.target.value)}
-                    placeholder="Write your wish for career, health or family peace…"
-                    className="w-full h-32 p-4 border-2 border-stone-200 rounded-2xl resize-none focus:outline-none focus:border-emerald-400 transition-colors text-stone-700 placeholder-stone-400"
-                    maxLength={160}
-                  />
-                  <div className="flex justify-between mt-2 text-xs">
-                    <span className={charCount < 15 ? 'text-orange-500' : 'text-stone-400'}>
-                      {charCount < 15 ? `Minimum 15 characters (${charCount}/15)` : 'Good length'}
-                    </span>
-                    <span className="text-stone-400">{charCount}/160</span>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium text-stone-600">Today&apos;s Wish</p>
+                    <button
+                      onClick={handleNextWish}
+                      disabled={submitting}
+                      className="flex items-center gap-1 text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors disabled:opacity-50"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      Change Wish
+                    </button>
+                  </div>
+                  <div className={`${selectedDeity.bgColor} ${selectedDeity.borderColor} border-2 rounded-2xl p-5 min-h-[100px] flex items-center`}>
+                    <p className={`${selectedDeity.textColor} leading-relaxed text-sm`}>
+                      {currentWishText}
+                    </p>
                   </div>
                 </div>
 
@@ -380,7 +440,7 @@ export default function TempleWorshipPage() {
                   </button>
                   <button
                     onClick={handleWorship}
-                    disabled={!isValid || submitting || !hasEnoughCoins}
+                    disabled={submitting || !hasEnoughCoins}
                     className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {submitting ? (
