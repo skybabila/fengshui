@@ -118,7 +118,18 @@ export default function FortuneDrawPage() {
   const [loading, setLoading] = useState(true)
   const [drawing, setDrawing] = useState(false)
   const [drawnFortune, setDrawnFortune] = useState<any>(null)
+  const [luckyNumber, setLuckyNumber] = useState<number>(0)
   const [animationClass, setAnimationClass] = useState('')
+
+  const getLuckyNumber = (type: string): number => {
+    switch (type) {
+      case 'Excellent': return Math.floor(Math.random() * 15) + 85 // 85-99
+      case 'Good': return Math.floor(Math.random() * 25) + 60 // 60-84
+      case 'Normal': return Math.floor(Math.random() * 20) + 40 // 40-59
+      case 'Challenging': return Math.floor(Math.random() * 20) + 20 // 20-39
+      default: return Math.floor(Math.random() * 80) + 20
+    }
+  }
 
   useEffect(() => {
     async function fetchData() {
@@ -147,8 +158,10 @@ export default function FortuneDrawPage() {
     
     const randomIndex = Math.floor(Math.random() * FORTUNES.length)
     const selectedFortune = FORTUNES[randomIndex]
+    const number = getLuckyNumber(selectedFortune.type)
     
     setDrawnFortune(selectedFortune)
+    setLuckyNumber(number)
     setAnimationClass('animate-fade-in-up')
     setDrawing(false)
   }
@@ -274,8 +287,8 @@ export default function FortuneDrawPage() {
                   <div className="w-10 h-10 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                     <Sparkles className="w-5 h-5 text-emerald-600" />
                   </div>
-                  <p className="text-sm text-stone-500 mb-1">Fortune Pool</p>
-                  <p className="font-semibold text-stone-800">{FORTUNES.length} Wisdom</p>
+                  <p className="text-sm text-stone-500 mb-1">Lucky Index</p>
+                  <p className="font-semibold text-stone-800">{luckyNumber}</p>
                 </div>
               </div>
 
