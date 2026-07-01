@@ -9,6 +9,34 @@ const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_BASE_URL || ''
 const AI_API_KEY = process.env.NEXT_PUBLIC_AI_API_KEY || ''
 const AI_MODEL = process.env.NEXT_PUBLIC_AI_MODEL || 'gpt-3.5-turbo'
 
+// Content filter - blocks sensitive keywords
+const contentFilterPatterns = [
+  // Political
+  /\b(独裁|专制|暴政|推翻|革命|叛乱|叛乱|起义|政变)\b/gi,
+  /\b(government\s*collapse|regime\s*change|coup|rebellion|revolution)\b/gi,
+  
+  // Military/War
+  /\b(战争|打仗|武器|枪支|枪械|坦克|导弹|炸弹|恐怖袭击)\b/gi,
+  /\b(war|attack|military|weapon|gun|terrorist|bomb|killing)\b/gi,
+  
+  // Violence/Blood
+  /\b(杀人|谋杀|暴力|血腥|虐待|折磨|凌辱|残害)\b/gi,
+  /\b(murder|killing|blood|gore|torture|abuse|brutal|cruel)\b/gi,
+  
+  // Explicit/Sexual
+  /\b(色情|淫秽|黄色|裸体|性交易|嫖娼|卖淫|通奸)\b/gi,
+  /\b(porn|sex|nude|naked|explicit|prostitution|adult\s*content)\b/gi,
+]
+
+// Replace sensitive keywords with asterisks
+const filterContent = (text: string): string => {
+  let filtered = text
+  contentFilterPatterns.forEach(pattern => {
+    filtered = filtered.replace(pattern, match => '*'.repeat(match.length))
+  })
+  return filtered
+}
+
 const fallbackReplies = [
   'Your current confusion is very normal. Your life energy is in a stage of adjustment. Keeping a calm mindset will help you see clearer answers.',
   'Recently, you may feel unstable emotionally or mentally. This is a temporary energy fluctuation. Things will gradually become stable if you keep steady rhythm.',
@@ -164,10 +192,13 @@ The user is seeking spiritual and wellness guidance. Respond with empathy and ge
     if (!inputValue.trim() || isTyping || !sessionStarted) return
     if (sessionRounds >= MAX_ROUNDS) return
 
+    // Filter sensitive content before sending
+    const filteredContent = filterContent(inputValue.trim())
+
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: inputValue.trim(),
+      content: filteredContent,
       timestamp: new Date(),
     }
 
@@ -177,7 +208,7 @@ The user is seeking spiritual and wellness guidance. Respond with empathy and ge
     setIsTyping(true)
 
     try {
-      const aiReply = await callAI(userMessage.content, newMessages)
+      const aiReply = await callAI(filteredContent, newMessages)
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
