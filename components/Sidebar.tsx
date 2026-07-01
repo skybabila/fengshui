@@ -6,8 +6,8 @@ import { useState, useEffect } from 'react'
 import { supabase, ADMIN_EMAIL, getUserProfile } from '@/lib/supabase'
 import {
   LayoutDashboard, Users, FileText, Activity, Star, Heart,
-  Coins, Settings, LogOut, Calendar, Sparkles, Home, BookOpen,
-  MessageCircle
+  Coins, Settings, LogOut, Sparkles, Home, BookOpen,
+  MessageCircle, Compass, Moon, Sun, Palette
 } from 'lucide-react'
 
 interface MenuItem {
@@ -15,7 +15,7 @@ interface MenuItem {
   label: string
   href: string
   icon: any
-  section: 'admin' | 'user' | 'fortune' | 'public'
+  section: 'admin' | 'user' | 'mystical' | 'records' | 'settings' | 'fortune' | 'public'
 }
 
 const adminMenu: MenuItem[] = [
@@ -26,18 +26,22 @@ const adminMenu: MenuItem[] = [
 ]
 
 const userMenu: MenuItem[] = [
-  { id: 'user-dashboard', label: 'Dashboard', href: '/user/dashboard', icon: LayoutDashboard, section: 'user' },
-  { id: 'user-fortune', label: 'Energy Forecast', href: '/fortune', icon: Sparkles, section: 'fortune' },
-  { id: 'user-draw', label: 'Fortune Drawing', href: '/fortune/draw', icon: Star, section: 'fortune' },
-  { id: 'user-prayer', label: 'Temple Worship', href: '/user/prayer', icon: Star, section: 'user' },
-  { id: 'user-wishes', label: 'Wish Wall', href: '/wish-wall', icon: Heart, section: 'user' },
-  { id: 'user-points', label: 'Coin History', href: '/user/points', icon: Coins, section: 'user' },
-  { id: 'user-profile', label: 'Profile Settings', href: '/user/profile', icon: Settings, section: 'user' },
+  { id: 'user-dashboard', label: 'Dashboard Overview', href: '/user/dashboard', icon: LayoutDashboard, section: 'user' },
+  { id: 'user-fortune', label: 'Daily Energy Forecast', href: '/fortune', icon: Sparkles, section: 'user' },
+  { id: 'user-prayer', label: 'Temple Worship Center', href: '/user/prayer', icon: Star, section: 'user' },
+  { id: 'user-tarot', label: 'Tarot Energy Reading', href: '/user/tarot-reading', icon: Moon, section: 'mystical' },
+  { id: 'user-chat', label: 'AI Spiritual Chat', href: '/user/ai-spiritual-chat', icon: MessageCircle, section: 'mystical' },
+  { id: 'user-fengshui', label: 'Home & Office Feng Shui', href: '/user/feng-shui-analysis', icon: Palette, section: 'mystical' },
+  { id: 'user-zodiac', label: 'Zodiac + Numerology Report', href: '/user/zodiac-numerology-report', icon: Sun, section: 'mystical' },
+  { id: 'user-wishes', label: 'Wish Wall', href: '/wish-wall', icon: Heart, section: 'records' },
+  { id: 'user-draw', label: 'Fortune Drawing', href: '/fortune/draw', icon: Compass, section: 'records' },
+  { id: 'user-points', label: 'Coin Transaction History', href: '/user/points', icon: Coins, section: 'records' },
+  { id: 'user-profile', label: 'Profile Settings', href: '/user/profile', icon: Settings, section: 'settings' },
 ]
 
 const publicMenu: MenuItem[] = [
   { id: 'home', label: 'Home', href: '/', icon: Home, section: 'public' },
-  { id: 'articles', label: 'Articles', href: '/articles', icon: BookOpen, section: 'public' },
+  { id: 'articles', label: 'Mystical Culture Library', href: '/articles', icon: BookOpen, section: 'public' },
 ]
 
 export default function Sidebar() {
@@ -176,24 +180,76 @@ export default function Sidebar() {
 
             {!isAdmin && !collapsed && (
               <div className="px-4 mb-2 mt-4">
-                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Fortune</p>
+                <p className="text-xs font-semibold text-purple-500 uppercase tracking-wider">
+                  ✨ Mystical Analysis Center
+                </p>
               </div>
             )}
 
-            {menuItems.filter(item => item.section === 'fortune').map(item => (
+            {menuItems.filter(item => item.section === 'mystical').map(item => (
               <Link
                 key={item.id}
                 href={item.href}
                 className={`flex items-center gap-3 px-4 py-3 mx-2 rounded-xl transition-all ${
                   isActive(item.href)
-                    ? 'bg-amber-50 text-amber-700'
+                    ? 'bg-purple-50 text-purple-700'
                     : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
                 }`}
               >
                 <item.icon className={`w-5 h-5 flex-shrink-0 ${
-                  isActive(item.href) ? 'text-amber-600' : 'text-stone-400'
+                  isActive(item.href) ? 'text-purple-600' : 'text-stone-400'
                 }`} />
-                {!collapsed && <span className="font-medium whitespace-nowrap">{item.label}</span>}
+                {!collapsed && <span className="font-medium whitespace-nowrap text-sm">{item.label}</span>}
+              </Link>
+            ))}
+
+            {!isAdmin && !collapsed && (
+              <div className="px-4 mb-2 mt-4">
+                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
+                  My Records
+                </p>
+              </div>
+            )}
+
+            {menuItems.filter(item => item.section === 'records').map(item => (
+              <Link
+                key={item.id}
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-3 mx-2 rounded-xl transition-all ${
+                  isActive(item.href)
+                    ? 'bg-teal-50 text-teal-700'
+                    : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+                }`}
+              >
+                <item.icon className={`w-5 h-5 flex-shrink-0 ${
+                  isActive(item.href) ? 'text-teal-600' : 'text-stone-400'
+                }`} />
+                {!collapsed && <span className="font-medium whitespace-nowrap text-sm">{item.label}</span>}
+              </Link>
+            ))}
+
+            {!isAdmin && !collapsed && (
+              <div className="px-4 mb-2 mt-4">
+                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
+                  Settings
+                </p>
+              </div>
+            )}
+
+            {menuItems.filter(item => item.section === 'settings').map(item => (
+              <Link
+                key={item.id}
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-3 mx-2 rounded-xl transition-all ${
+                  isActive(item.href)
+                    ? 'bg-stone-100 text-stone-700'
+                    : 'text-stone-600 hover:bg-stone-50 hover:text-stone-800'
+                }`}
+              >
+                <item.icon className={`w-5 h-5 flex-shrink-0 ${
+                  isActive(item.href) ? 'text-stone-600' : 'text-stone-400'
+                }`} />
+                {!collapsed && <span className="font-medium whitespace-nowrap text-sm">{item.label}</span>}
               </Link>
             ))}
           </>
