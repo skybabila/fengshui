@@ -106,13 +106,23 @@ export default function ArticlesPage() {
             Pinned
           </div>
         )}
-        <div className="relative h-52 overflow-hidden">
-          <Image
-            src={article.image}
-            alt={article.title}
-            fill
-            className="object-cover group-hover:scale-110 transition-transform duration-500"
-          />
+        <div className="relative h-52 overflow-hidden bg-stone-100">
+          {article.image ? (
+            <Image
+              src={article.image}
+              alt={article.title}
+              fill
+              className="object-cover group-hover:scale-110 transition-transform duration-500"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement
+                target.src = `https://neeko-copilot.bytedance.net/api/text_to_image?prompt=${encodeURIComponent(article.title + ' feng shui ancient wisdom')}&image_size=landscape_4_3`
+              }}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-emerald-100 to-teal-100">
+              <BookOpen className="w-12 h-12 text-emerald-400" />
+            </div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div className={`absolute top-4 left-4 px-3 py-1 bg-gradient-to-r ${getCategoryColor(article.category)} rounded-full text-white text-xs font-medium shadow-lg`}>
             {article.category}
@@ -236,14 +246,24 @@ export default function ArticlesPage() {
             <Link href={`/articles/${featuredArticle.id}`}>
               <div className="group relative bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500">
                 <div className="grid md:grid-cols-2 gap-0">
-                  <div className="relative h-64 md:h-80 overflow-hidden">
-                    <Image
-                      src={featuredArticle.image}
-                      alt={featuredArticle.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-700"
-                      priority
-                    />
+                  <div className="relative h-64 md:h-80 overflow-hidden bg-stone-100">
+                    {featuredArticle.image ? (
+                      <Image
+                        src={featuredArticle.image}
+                        alt={featuredArticle.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        priority
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement
+                          target.src = `https://neeko-copilot.bytedance.net/api/text_to_image?prompt=${encodeURIComponent(featuredArticle.title + ' feng shui ancient wisdom')}&image_size=landscape_4_3`
+                        }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-emerald-100 to-teal-100">
+                        <Sparkles className="w-16 h-16 text-emerald-400" />
+                      </div>
+                    )}
                     <div className={`absolute top-4 left-4 px-4 py-2 bg-gradient-to-r ${getCategoryColor(featuredArticle.category)} rounded-full text-white text-sm font-medium shadow-lg`}>
                       {featuredArticle.category}
                     </div>

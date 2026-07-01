@@ -1,9 +1,16 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useCallback, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabase'
 import 'react-quill/dist/quill.snow.css'
+
+interface RichTextEditorProps {
+  value: string
+  onChange: (content: string) => void
+  placeholder?: string
+  bucket?: string
+}
 
 const ReactQuill = dynamic(() => import('react-quill'), {
   ssr: false,
@@ -14,15 +21,39 @@ const ReactQuill = dynamic(() => import('react-quill'), {
   )
 })
 
-interface RichTextEditorProps {
-  value: string
-  onChange: (content: string) => void
-  placeholder?: string
-  bucket?: string
-}
-
 export default function RichTextEditor({ value, onChange, placeholder = 'Write your article content here...', bucket = 'articles' }: RichTextEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const quillEditorRef = useRef<any>(null)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const editor = document.querySelector('.rich-text-editor .ql-editor')
+      if (editor && quillEditorRef.current === null) {
+        const quill = (window as any).Quill?.find(editor)
+        if (quill) {
+          quillEditorRef.current = quill
+        }
+      }
+    }, 100)
+    return () => clearInterval(interval)
+  }, [])
+
+  const insertImageAtCursor = useCallback((imageUrl: string) => {
+    const quill = quillEditorRef.current
+    if (quill) {
+      const range = quill.getSelection()
+      if (range) {
+        quill.insertEmbed(range.index, 'image', imageUrl)
+        quill.formatText(range.index + 1, 0, { 'align': 'center' })
+        quill.insertText(range.index + 1, '\n\n')
+        quill.setSelection(range.index + 3)
+      } else {
+        quill.insertEmbed(quill.getLength() - 1, 'image', imageUrl)
+        quill.formatText(quill.getLength() - 1, 0, { 'align': 'center' })
+        quill.insertText(quill.getLength(), '\n\n')
+      }
+    }
+  }, [])
 
   const handleImageUpload = () => {
     fileInputRef.current?.click()
@@ -62,8 +93,7 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write y
       const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(filePath)
       
       if (urlData?.publicUrl) {
-        const imageHtml = `<p><img src="${urlData.publicUrl}" alt="article image" style="max-width:100%;border-radius:0.5rem;margin:1rem 0;" /></p>`
-        onChange(value + imageHtml)
+        insertImageAtCursor(urlData.publicUrl)
       }
     } catch {
       alert('Failed to upload image')
@@ -81,7 +111,7 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write y
       [{ color: [] }, { background: [] }],
       [{ list: 'ordered' }, { list: 'bullet' }],
       [{ indent: '-1' }, { indent: '+1' }],
-      ['link'],
+      ['link', 'image'],
       ['clean'],
     ],
   }
@@ -105,7 +135,7 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Write y
         className="hidden"
       />
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm text-stone-500">Click the button to insert images at the end of your article</p>
+        <p className="text-sm text-stone-500">Click the button to insert images at your cursor position</p>
         <button
           type="button"
           onClick={handleImageUpload}
