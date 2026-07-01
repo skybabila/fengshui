@@ -314,7 +314,9 @@ export default function AISpiritualChatPage() {
                   </div>
                   <div>
                     <p className="font-bold text-white">AI Wellness Guide</p>
-                    <p className="text-xs text-indigo-100">Always here to listen</p>
+                    <p className="text-xs text-indigo-100">
+                      {aiConfigured === true ? 'AI Connected' : aiConfigured === false ? 'Demo Mode' : 'Checking...'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-full">

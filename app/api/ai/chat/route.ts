@@ -2,9 +2,24 @@ import { NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
 
-const AI_BASE_URL = process.env.AI_BASE_URL || process.env.NEXT_PUBLIC_AI_BASE_URL || ''
-const AI_API_KEY = process.env.AI_API_KEY || process.env.NEXT_PUBLIC_AI_API_KEY || ''
-const AI_MODEL = process.env.AI_MODEL || process.env.NEXT_PUBLIC_AI_MODEL || 'gpt-3.5-turbo'
+const AI_BASE_URL = 
+  process.env.AI_BASE_URL || 
+  process.env.NEXT_PUBLIC_AI_BASE_URL ||
+  process.env.OPENAI_BASE_URL ||
+  process.env.OPENAI_API_BASE ||
+  ''
+
+const AI_API_KEY = 
+  process.env.AI_API_KEY || 
+  process.env.NEXT_PUBLIC_AI_API_KEY ||
+  process.env.OPENAI_API_KEY ||
+  ''
+
+const AI_MODEL = 
+  process.env.AI_MODEL || 
+  process.env.NEXT_PUBLIC_AI_MODEL ||
+  process.env.OPENAI_MODEL ||
+  'gpt-3.5-turbo'
 
 const systemPrompt = `You are a gentle AI spiritual wellness guide. Your role is to provide compassionate, thoughtful guidance about life, relationships, career, mental health, and personal growth. 
 
@@ -32,19 +47,41 @@ const fallbackReplies = [
   'Your energy field is shifting and realigning. Embrace the changes rather than resisting them.',
 ]
 
+function getEnvStatus() {
+  const envVars = [
+    'AI_BASE_URL', 'NEXT_PUBLIC_AI_BASE_URL', 'OPENAI_BASE_URL', 'OPENAI_API_BASE',
+    'AI_API_KEY', 'NEXT_PUBLIC_AI_API_KEY', 'OPENAI_API_KEY',
+    'AI_MODEL', 'NEXT_PUBLIC_AI_MODEL', 'OPENAI_MODEL'
+  ]
+  
+  const status: Record<string, string> = {}
+  envVars.forEach(name => {
+    const val = process.env[name]
+    if (val) {
+      if (name.toLowerCase().includes('key')) {
+        status[name] = val.substring(0, 6) + '...' + val.substring(val.length - 4)
+      } else {
+        status[name] = val
+      }
+    } else {
+      status[name] = '(not set)'
+    }
+  })
+  
+  return status
+}
+
 export async function GET() {
   const hasBaseUrl = !!AI_BASE_URL
   const hasApiKey = !!AI_API_KEY
-  const maskedKey = AI_API_KEY 
-    ? AI_API_KEY.substring(0, 6) + '...' + AI_API_KEY.substring(AI_API_KEY.length - 4)
-    : 'not set'
 
   return NextResponse.json({
     configured: hasBaseUrl && hasApiKey,
-    baseUrl: AI_BASE_URL || 'not set',
+    baseUrl: AI_BASE_URL || '(not set)',
     model: AI_MODEL,
-    apiKey: maskedKey,
+    apiKeySet: hasApiKey,
     runtime: 'nodejs',
+    envVars: getEnvStatus(),
   })
 }
 
@@ -62,7 +99,11 @@ export async function POST(request: Request) {
     if (!AI_BASE_URL || !AI_API_KEY) {
       console.log('[AI Chat] AI not configured, using fallback replies')
       const randomReply = fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
-      return NextResponse.json({ reply: randomReply, fallback: true })
+      return NextResponse.json({ 
+        reply: randomReply, 
+        fallback: true,
+        fallbackReason: 'AI not configured - missing base URL or API key'
+      })
     }
 
     const apiMessages = [
@@ -81,45 +122,101 @@ export async function POST(request: Request) {
     
     console.log('[AI Chat] Calling API:', apiUrl, 'model:', AI_MODEL)
 
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${AI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: AI_MODEL,
-        messages: apiMessages,
-        temperature: 0.7,
-        max_tokens: 800
-      }),
-      cache: 'no-store',
-    })
+    const startTime = Date.now()
+    let response: Response
+    
+    try {
+      response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${AI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: AI_MODEL,
+          messages: apiMessages,
+          temperature: 0.7,
+          max_tokens: 800
+        }),
+        cache: 'no-store',
+        signal: AbortSignal.timeout(30000),
+      })
+    } catch (fetchError: any) {
+      console.error('[AI Chat] Fetch error:', fetchError.message)
+      const randomReply = fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
+      return NextResponse.json({
+        reply: randomReply,
+        fallback: true,
+        fallbackReason: `Network error: ${fetchError.message}`,
+        duration: Date.now() - startTime
+      })
+    }
+
+    const responseTime = Date.now() - startTime
 
     if (!response.ok) {
       const errorText = await response.text()
       console.error('[AI Chat] API error status:', response.status)
       console.error('[AI Chat] API error body:', errorText)
-      throw new Error(`API request failed: ${response.status}`)
+      
+      let errorMsg = `HTTP ${response.status}`
+      try {
+        const errorJson = JSON.parse(errorText)
+        if (errorJson.error?.message) {
+          errorMsg += `: ${errorJson.error.message}`
+        }
+      } catch {}
+      
+      const randomReply = fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
+      return NextResponse.json({
+        reply: randomReply,
+        fallback: true,
+        fallbackReason: errorMsg,
+        status: response.status,
+        duration: responseTime
+      })
     }
 
-    const data = await response.json()
+    let data: any
+    try {
+      data = await response.json()
+    } catch (parseError: any) {
+      console.error('[AI Chat] JSON parse error:', parseError.message)
+      const randomReply = fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
+      return NextResponse.json({
+        reply: randomReply,
+        fallback: true,
+        fallbackReason: `JSON parse error: ${parseError.message}`,
+        duration: responseTime
+      })
+    }
+
     const reply = data.choices?.[0]?.message?.content || ''
 
     if (!reply) {
-      console.error('[AI Chat] Empty reply from API, data:', JSON.stringify(data))
-      throw new Error('Empty reply from AI')
+      console.error('[AI Chat] Empty reply from API, data:', JSON.stringify(data).substring(0, 500))
+      const randomReply = fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
+      return NextResponse.json({
+        reply: randomReply,
+        fallback: true,
+        fallbackReason: 'Empty reply from API',
+        duration: responseTime
+      })
     }
 
-    console.log('[AI Chat] Success, reply length:', reply.length)
-    return NextResponse.json({ reply, fallback: false })
+    console.log('[AI Chat] Success, reply length:', reply.length, 'time:', responseTime + 'ms')
+    return NextResponse.json({ 
+      reply, 
+      fallback: false,
+      duration: responseTime
+    })
   } catch (error) {
-    console.error('[AI Chat] Error:', error)
+    console.error('[AI Chat] Unexpected error:', error)
     const randomReply = fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
     return NextResponse.json({
       reply: randomReply,
       fallback: true,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      fallbackReason: error instanceof Error ? error.message : 'Unknown error'
     })
   }
 }
