@@ -5,10 +5,6 @@ import { supabase, getUserProfile } from '@/lib/supabase'
 import SidebarLayout from '@/components/SidebarLayout'
 import { MessageCircle, Send, Coins, Sparkles, Clock, Bot, User } from 'lucide-react'
 
-const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_BASE_URL || ''
-const AI_API_KEY = process.env.NEXT_PUBLIC_AI_API_KEY || ''
-const AI_MODEL = process.env.NEXT_PUBLIC_AI_MODEL || 'gpt-3.5-turbo'
-
 // Content filter - blocks sensitive keywords
 const contentFilterPatterns = [
   // Political
@@ -66,9 +62,9 @@ export default function AISpiritualChatPage() {
   const [sessionStarted, setSessionStarted] = useState(false)
   const [sessionRounds, setSessionRounds] = useState(0)
   const [sessionId, setSessionId] = useState<string | null>(null)
-  const [isFirstMessage, setIsFirstMessage] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const chatContainerRef = useRef<HTMLDivElement>(null)
   const SESSION_COST = 20
   const MAX_ROUNDS = 5
 
@@ -85,52 +81,22 @@ export default function AISpiritualChatPage() {
   }, [])
 
   useEffect(() => {
-    if (isFirstMessage) {
-      inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      inputRef.current?.focus()
-      setIsFirstMessage(false)
-    } else if (messages.length > 0) {
+    if (messages.length > 0 && !isTyping) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
-  }, [messages, isFirstMessage])
+  }, [messages, isTyping])
 
   const callAI = async (userMessage: string, history: Message[]): Promise<string> => {
-    if (!AI_BASE_URL || !AI_API_KEY) {
-      return fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
-    }
-
     try {
-      const systemPrompt = `You are a gentle AI spiritual wellness guide. Your role is to provide compassionate, thoughtful guidance about life, relationships, career, mental health, and personal growth. 
-
-Important guidelines:
-- Speak in a warm, calming, and supportive tone
-- Focus on wellness, positive thinking, and personal reflection
-- Do not make definitive predictions about the future
-- Do not provide medical, legal, or financial advice
-- Encourage self-reflection and inner wisdom
-- Keep responses thoughtful but not overly long
-- All content is for entertainment and personal reflection only
-
-The user is seeking spiritual and wellness guidance. Respond with empathy and gentle wisdom.`
-
-      const apiMessages = [
-        { role: 'system', content: systemPrompt },
-        ...history.slice(-10).map(m => ({ role: m.role, content: m.content })),
-        { role: 'user', content: userMessage }
-      ]
-
-      const response = await fetch(`${AI_BASE_URL}/chat/completions`, {
+      const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${AI_API_KEY}`
         },
         body: JSON.stringify({
-          model: AI_MODEL,
-          messages: apiMessages,
-          temperature: 0.7,
-          max_tokens: 800
-        })
+          message: userMessage,
+          history: history.map(m => ({ role: m.role, content: m.content })),
+        }),
       })
 
       if (!response.ok) {
@@ -138,7 +104,7 @@ The user is seeking spiritual and wellness guidance. Respond with empathy and ge
       }
 
       const data = await response.json()
-      return data.choices[0]?.message?.content || fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
+      return data.reply || fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
     } catch (error) {
       console.error('AI API call failed:', error)
       return fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
@@ -175,7 +141,6 @@ The user is seeking spiritual and wellness guidance. Respond with empathy and ge
       setSessionId(data.id)
       setSessionStarted(true)
       setSessionRounds(0)
-      setIsFirstMessage(true)
 
       setMessages([{
         id: '1',
@@ -183,6 +148,11 @@ The user is seeking spiritual and wellness guidance. Respond with empathy and ge
         content: "Hello, I'm your AI spiritual wellness guide. I'm here to listen and offer gentle guidance for whatever is on your mind. Whether it's about relationships, career, health, or life direction, feel free to share. How can I support you today?",
         timestamp: new Date(),
       }])
+
+      setTimeout(() => {
+        inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        inputRef.current?.focus()
+      }, 500)
     } catch (err) {
       alert('Failed to start session. Please try again.')
     }
