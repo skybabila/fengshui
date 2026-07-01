@@ -223,13 +223,41 @@ export default function TempleWorshipPage() {
   const handleWorship = async () => {
     if (!user || !selectedDeity || submitting) return
 
-    // No cost for worship - completely free
+    const cost = selectedDeity.cost || 0
+    if (points < cost) {
+      alert('Not enough coins! Please earn more coins first.')
+      return
+    }
+
     const currentWish = selectedDeity.wishes[currentWishIndex] || selectedDeity.wishes[0]
 
     setSubmitting(true)
     setIncenseFading(true)
 
     try {
+      // Deduct coins
+      const newPoints = points - cost
+      const { error: updateError } = await supabase
+        .from('user_profiles')
+        .update({ points: newPoints })
+        .eq('id', user.id)
+
+      if (updateError) {
+        alert('Failed to deduct coins: ' + updateError.message)
+        setSubmitting(false)
+        setIncenseFading(false)
+        return
+      }
+
+      // Record transaction
+      await supabase
+        .from('point_transactions')
+        .insert({
+          user_id: user.id,
+          description: `Temple Worship - ${selectedDeity.name}`,
+          points: -cost
+        })
+
       let insertError: any = null
       
       try {
@@ -240,7 +268,7 @@ export default function TempleWorshipPage() {
             deity_id: selectedDeity.id,
             deity_name: selectedDeity.name,
             wish_text: currentWish,
-            points_spent: 0,
+            points_spent: cost,
             blessing_text: selectedDeity.blessing,
             prayer_type: selectedDeity.name,
           })
@@ -325,8 +353,7 @@ export default function TempleWorshipPage() {
   }
 
   const points = profile?.points || 0
-  // Always allow worship - completely free
-  const hasEnoughCoins = true
+  const hasEnoughCoins = points >= (selectedDeity?.cost || 0)
   const currentWishText = selectedDeity?.wishes?.[currentWishIndex] || ''
 
   const handleNextWish = () => {
@@ -386,9 +413,9 @@ export default function TempleWorshipPage() {
                   </div>
                 </div>
 
-                <div className="mb-6 p-3 bg-emerald-50 rounded-xl flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-emerald-500 mr-2" />
-                  <span className="text-sm text-emerald-600 font-medium">Free Worship - No Cost</span>
+                <div className="mb-6 p-3 bg-amber-50 rounded-xl flex items-center justify-center">
+                  <Coins className="w-4 h-4 text-amber-500 mr-2" />
+                  <span className="text-sm text-amber-600 font-medium">{selectedDeity.cost} Coins</span>
                 </div>
 
                 <div className="flex gap-3">
@@ -510,8 +537,8 @@ export default function TempleWorshipPage() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1">
-                        <Sparkles className="w-4 h-4 text-emerald-500" />
-                        <span className="font-bold text-emerald-600">Free</span>
+                        <Coins className="w-4 h-4 text-amber-500" />
+                        <span className="font-bold text-amber-600">{deity.cost} Coins</span>
                       </div>
                       <button
                         onClick={() => handleOpenWishModal(deity)}
@@ -569,8 +596,8 @@ export default function TempleWorshipPage() {
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
-                        <Sparkles className="w-5 h-5 text-emerald-500" />
-                        <span className="font-bold text-xl text-emerald-600">Free</span>
+                        <Coins className="w-5 h-5 text-amber-500" />
+                        <span className="font-bold text-xl text-amber-600">{deities[4].cost} Coins</span>
                       </div>
                       <button
                         onClick={() => handleOpenWishModal(deities[4])}

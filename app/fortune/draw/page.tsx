@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase, getUserProfile } from '@/lib/supabase'
+import SidebarLayout from '@/components/SidebarLayout'
 import { Sparkles, ArrowRight, RefreshCw, Star, BookOpen, Heart, Sun, Moon, Cloud, Zap } from 'lucide-react'
 
 const FORTUNES = [
@@ -173,20 +174,23 @@ export default function FortuneDrawPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
-            <span className="text-2xl">🎋</span>
+      <SidebarLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
+              <span className="text-2xl">🎋</span>
+            </div>
+            <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
           </div>
-          <h2 className="text-xl font-semibold text-stone-700">Loading...</h2>
         </div>
-      </div>
+      </SidebarLayout>
     )
   }
 
   const config = drawnFortune ? fortuneTypeConfig[drawnFortune.type] : null
 
   return (
+    <SidebarLayout>
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
@@ -309,25 +313,7 @@ export default function FortuneDrawPage() {
           </p>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0) rotate(0); }
-          25% { transform: translateX(-5px) rotate(-5deg); }
-          75% { transform: translateX(5px) rotate(5deg); }
-        }
-        @keyframes fade-in-up {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-shake { animation: shake 0.5s ease-in-out infinite; }
-        .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
-        .animate-fade-in { animation: fade-in 0.3s ease-out; }
-        @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-      `}</style>
     </div>
+    </SidebarLayout>
   )
 }
