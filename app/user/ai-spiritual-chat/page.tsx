@@ -5,7 +5,11 @@ import { supabase, getUserProfile } from '@/lib/supabase'
 import SidebarLayout from '@/components/SidebarLayout'
 import { MessageCircle, Send, Coins, Sparkles, Clock, Bot, User } from 'lucide-react'
 
-const aiReplies = [
+const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_BASE_URL || ''
+const AI_API_KEY = process.env.NEXT_PUBLIC_AI_API_KEY || ''
+const AI_MODEL = process.env.NEXT_PUBLIC_AI_MODEL || 'gpt-3.5-turbo'
+
+const fallbackReplies = [
   'Your current confusion is very normal. Your life energy is in a stage of adjustment. Keeping a calm mindset will help you see clearer answers.',
   'Recently, you may feel unstable emotionally or mentally. This is a temporary energy fluctuation. Things will gradually become stable if you keep steady rhythm.',
   'You are overthinking some issues. The actual situation is better than you feel. Relax your mind and allow natural progress.',
@@ -34,7 +38,9 @@ export default function AISpiritualChatPage() {
   const [sessionStarted, setSessionStarted] = useState(false)
   const [sessionRounds, setSessionRounds] = useState(0)
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [isFirstMessage, setIsFirstMessage] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   const SESSION_COST = 20
   const MAX_ROUNDS = 5
 
@@ -51,8 +57,65 @@ export default function AISpiritualChatPage() {
   }, [])
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    if (isFirstMessage) {
+      inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      inputRef.current?.focus()
+      setIsFirstMessage(false)
+    } else if (messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [messages, isFirstMessage])
+
+  const callAI = async (userMessage: string, history: Message[]): Promise<string> => {
+    if (!AI_BASE_URL || !AI_API_KEY) {
+      return fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
+    }
+
+    try {
+      const systemPrompt = `You are a gentle AI spiritual wellness guide. Your role is to provide compassionate, thoughtful guidance about life, relationships, career, mental health, and personal growth. 
+
+Important guidelines:
+- Speak in a warm, calming, and supportive tone
+- Focus on wellness, positive thinking, and personal reflection
+- Do not make definitive predictions about the future
+- Do not provide medical, legal, or financial advice
+- Encourage self-reflection and inner wisdom
+- Keep responses thoughtful but not overly long
+- All content is for entertainment and personal reflection only
+
+The user is seeking spiritual and wellness guidance. Respond with empathy and gentle wisdom.`
+
+      const apiMessages = [
+        { role: 'system', content: systemPrompt },
+        ...history.slice(-10).map(m => ({ role: m.role, content: m.content })),
+        { role: 'user', content: userMessage }
+      ]
+
+      const response = await fetch(`${AI_BASE_URL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${AI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: AI_MODEL,
+          messages: apiMessages,
+          temperature: 0.7,
+          max_tokens: 800
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data.choices[0]?.message?.content || fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
+    } catch (error) {
+      console.error('AI API call failed:', error)
+      return fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
+    }
+  }
 
   const startSession = async () => {
     if (!user) return
@@ -84,6 +147,7 @@ export default function AISpiritualChatPage() {
       setSessionId(data.id)
       setSessionStarted(true)
       setSessionRounds(0)
+      setIsFirstMessage(true)
 
       setMessages([{
         id: '1',
@@ -107,27 +171,22 @@ export default function AISpiritualChatPage() {
       timestamp: new Date(),
     }
 
-    setMessages(prev => [...prev, userMessage])
+    const newMessages = [...messages, userMessage]
+    setMessages(newMessages)
     setInputValue('')
     setIsTyping(true)
 
-    setTimeout(async () => {
-      const randomReply = aiReplies[Math.floor(Math.random() * aiReplies.length)]
-      const additional = sessionRounds >= 2 
-        ? '\n\nIs there anything else on your mind? Feel free to share more details and I can offer deeper guidance.'
-        : sessionRounds >= 1
-        ? '\n\nWould you like to explore this further? Tell me more about how this makes you feel.'
-        : ''
-
+    try {
+      const aiReply = await callAI(userMessage.content, newMessages)
+      
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: randomReply + additional,
+        content: aiReply,
         timestamp: new Date(),
       }
 
       setMessages(prev => [...prev, assistantMessage])
-      setIsTyping(false)
       const newRounds = sessionRounds + 1
       setSessionRounds(newRounds)
 
@@ -137,7 +196,18 @@ export default function AISpiritualChatPage() {
           .update({ rounds_used: newRounds })
           .eq('id', sessionId)
       }
-    }, 1500 + Math.random() * 1000)
+    } catch (error) {
+      console.error('Send message error:', error)
+      const fallbackMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)],
+        timestamp: new Date(),
+      }
+      setMessages(prev => [...prev, fallbackMessage])
+    } finally {
+      setIsTyping(false)
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -309,6 +379,7 @@ export default function AISpiritualChatPage() {
                   <div className="flex items-center gap-3">
                     <div className="flex-1 relative">
                       <input
+                        ref={inputRef}
                         type="text"
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
