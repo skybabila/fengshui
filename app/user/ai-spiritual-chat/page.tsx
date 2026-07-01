@@ -62,6 +62,7 @@ export default function AISpiritualChatPage() {
   const [sessionStarted, setSessionStarted] = useState(false)
   const [sessionRounds, setSessionRounds] = useState(0)
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [aiConfigured, setAiConfigured] = useState<boolean | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const chatScrollRef = useRef<HTMLDivElement>(null)
   const SESSION_COST = 20
@@ -77,6 +78,17 @@ export default function AISpiritualChatPage() {
       }
     }
     loadUser()
+    
+    async function checkAIStatus() {
+      try {
+        const res = await fetch('/api/ai/chat')
+        const data = await res.json()
+        setAiConfigured(data.configured)
+      } catch (e) {
+        setAiConfigured(false)
+      }
+    }
+    checkAIStatus()
   }, [])
 
   useEffect(() => {
@@ -262,6 +274,15 @@ export default function AISpiritualChatPage() {
               </div>
 
               <div className="border-t border-slate-100 pt-6">
+                {aiConfigured !== null && (
+                  <div className={`mb-4 p-3 rounded-lg text-center text-sm ${
+                    aiConfigured 
+                      ? 'bg-emerald-50 text-emerald-700' 
+                      : 'bg-amber-50 text-amber-700'
+                  }`}>
+                    {aiConfigured ? '✓ AI Connected' : '⚠ AI Not Configured - Using Demo Mode'}
+                  </div>
+                )}
                 <div className="flex items-center justify-between mb-6">
                   <span className="text-slate-600">Session Price</span>
                   <div className="flex items-center gap-1.5">

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+export const runtime = 'nodejs'
+
 const AI_BASE_URL = process.env.AI_BASE_URL || process.env.NEXT_PUBLIC_AI_BASE_URL || ''
 const AI_API_KEY = process.env.AI_API_KEY || process.env.NEXT_PUBLIC_AI_API_KEY || ''
 const AI_MODEL = process.env.AI_MODEL || process.env.NEXT_PUBLIC_AI_MODEL || 'gpt-3.5-turbo'
@@ -29,6 +31,22 @@ const fallbackReplies = [
   'Small consistent steps lead to big transformations. Be gentle with yourself as you grow.',
   'Your energy field is shifting and realigning. Embrace the changes rather than resisting them.',
 ]
+
+export async function GET() {
+  const hasBaseUrl = !!AI_BASE_URL
+  const hasApiKey = !!AI_API_KEY
+  const maskedKey = AI_API_KEY 
+    ? AI_API_KEY.substring(0, 6) + '...' + AI_API_KEY.substring(AI_API_KEY.length - 4)
+    : 'not set'
+
+  return NextResponse.json({
+    configured: hasBaseUrl && hasApiKey,
+    baseUrl: AI_BASE_URL || 'not set',
+    model: AI_MODEL,
+    apiKey: maskedKey,
+    runtime: 'nodejs',
+  })
+}
 
 export async function POST(request: Request) {
   try {
@@ -94,7 +112,7 @@ export async function POST(request: Request) {
     }
 
     console.log('[AI Chat] Success, reply length:', reply.length)
-    return NextResponse.json({ reply })
+    return NextResponse.json({ reply, fallback: false })
   } catch (error) {
     console.error('[AI Chat] Error:', error)
     const randomReply = fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
