@@ -62,9 +62,8 @@ export default function AISpiritualChatPage() {
   const [sessionStarted, setSessionStarted] = useState(false)
   const [sessionRounds, setSessionRounds] = useState(0)
   const [sessionId, setSessionId] = useState<string | null>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const chatContainerRef = useRef<HTMLDivElement>(null)
+  const chatScrollRef = useRef<HTMLDivElement>(null)
   const SESSION_COST = 20
   const MAX_ROUNDS = 5
 
@@ -81,8 +80,8 @@ export default function AISpiritualChatPage() {
   }, [])
 
   useEffect(() => {
-    if (messages.length > 0 && !isTyping) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messages.length > 0 && chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight
     }
   }, [messages, isTyping])
 
@@ -150,9 +149,8 @@ export default function AISpiritualChatPage() {
       }])
 
       setTimeout(() => {
-        inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
         inputRef.current?.focus()
-      }, 500)
+      }, 300)
     } catch (err) {
       alert('Failed to start session. Please try again.')
     }
@@ -162,7 +160,6 @@ export default function AISpiritualChatPage() {
     if (!inputValue.trim() || isTyping || !sessionStarted) return
     if (sessionRounds >= MAX_ROUNDS) return
 
-    // Filter sensitive content before sending
     const filteredContent = filterContent(inputValue.trim())
 
     const userMessage: Message = {
@@ -222,85 +219,69 @@ export default function AISpiritualChatPage() {
 
   return (
     <SidebarLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-full mb-4">
-              <MessageCircle className="w-5 h-5 text-indigo-600" />
-              <span className="text-indigo-700 text-sm font-medium">AI Spiritual Wellness Chat</span>
-            </div>
-            <h1 className="text-3xl font-bold text-slate-800 mb-3">
-              24-Hour AI Spiritual & Wellness Guidance Chat
-            </h1>
-            <p className="text-slate-600 max-w-2xl mx-auto">
-              Get professional guidance for relationship, career, health and life confusion anytime. 
-              AI remembers your conversation context for continuous deep analysis.
-            </p>
-          </div>
-
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-3xl">
           {!sessionStarted ? (
-            <div className="max-w-md mx-auto">
-              <div className="bg-white rounded-2xl shadow-xl p-8">
-                <div className="text-center mb-8">
-                  <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                    <Bot className="w-10 h-10 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-slate-800 mb-2">Start a Chat Session</h2>
-                  <p className="text-slate-500">One session includes 5 full dialogue rounds</p>
+            <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-auto">
+              <div className="text-center mb-8">
+                <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Bot className="w-10 h-10 text-white" />
                 </div>
+                <h2 className="text-2xl font-bold text-slate-800 mb-2">Start a Chat Session</h2>
+                <p className="text-slate-500">One session includes 5 full dialogue rounds</p>
+              </div>
 
-                <div className="space-y-4 mb-8">
-                  <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl">
-                    <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-emerald-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-700">24/7 Unlimited Service</p>
-                      <p className="text-sm text-slate-500">Anytime, anywhere guidance</p>
-                    </div>
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-emerald-600" />
                   </div>
-                  <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <MessageCircle className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-700">Full Context Memory</p>
-                      <p className="text-sm text-slate-500">AI remembers your conversation</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-xl">
-                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <Clock className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-700">Multi-Domain Guidance</p>
-                      <p className="text-sm text-slate-500">Love, career, family, mental health</p>
-                    </div>
+                  <div>
+                    <p className="font-medium text-slate-700">24/7 Unlimited Service</p>
+                    <p className="text-sm text-slate-500">Anytime, anywhere guidance</p>
                   </div>
                 </div>
-
-                <div className="border-t border-slate-100 pt-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="text-slate-600">Session Price</span>
-                    <div className="flex items-center gap-1.5">
-                      <Coins className="w-5 h-5 text-amber-500" />
-                      <span className="text-2xl font-bold text-slate-800">{SESSION_COST}</span>
-                      <span className="text-slate-500">Coins</span>
-                    </div>
+                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <MessageCircle className="w-5 h-5 text-blue-600" />
                   </div>
-
-                  <button
-                    onClick={startSession}
-                    disabled={points < SESSION_COST}
-                    className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
-                  >
-                    {points < SESSION_COST ? 'Not Enough Coins' : 'Start Chat Session'}
-                  </button>
-
-                  <p className="text-center text-sm text-slate-400 mt-4">
-                    Your balance: {points.toLocaleString()} Coins
-                  </p>
+                  <div>
+                    <p className="font-medium text-slate-700">Full Context Memory</p>
+                    <p className="text-sm text-slate-500">AI remembers your conversation</p>
+                  </div>
                 </div>
+                <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-xl">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-slate-700">Multi-Domain Guidance</p>
+                    <p className="text-sm text-slate-500">Love, career, family, mental health</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-100 pt-6">
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-slate-600">Session Price</span>
+                  <div className="flex items-center gap-1.5">
+                    <Coins className="w-5 h-5 text-amber-500" />
+                    <span className="text-2xl font-bold text-slate-800">{SESSION_COST}</span>
+                    <span className="text-slate-500">Coins</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={startSession}
+                  disabled={points < SESSION_COST}
+                  className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                >
+                  {points < SESSION_COST ? 'Not Enough Coins' : 'Start Chat Session'}
+                </button>
+
+                <p className="text-center text-sm text-slate-400 mt-4">
+                  Your balance: {points.toLocaleString()} Coins
+                </p>
               </div>
             </div>
           ) : (
@@ -323,7 +304,7 @@ export default function AISpiritualChatPage() {
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50">
+              <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50">
                 {messages.map((message) => (
                   <div
                     key={message.id}
@@ -363,7 +344,6 @@ export default function AISpiritualChatPage() {
                     </div>
                   </div>
                 )}
-                <div ref={messagesEndRef} />
               </div>
 
               {sessionRounds >= MAX_ROUNDS ? (
@@ -401,14 +381,6 @@ export default function AISpiritualChatPage() {
               )}
             </div>
           )}
-
-          <div className="mt-12 max-w-2xl mx-auto text-center">
-            <p className="text-slate-400 text-sm">
-              All analysis content is based on traditional folk culture and modern spiritual wellness guidance. 
-              All services are for entertainment and personal reflection only. 
-              It does not constitute medical, legal, investment or life prediction advice.
-            </p>
-          </div>
         </div>
       </div>
     </SidebarLayout>

@@ -17,6 +17,19 @@ Important guidelines:
 
 The user is seeking spiritual and wellness guidance. Respond with empathy and gentle wisdom.`
 
+const fallbackReplies = [
+  'Your current confusion is very normal. Your life energy is in a stage of adjustment. Keeping a calm mindset will help you see clearer answers.',
+  'Recently, you may feel unstable emotionally or mentally. This is a temporary energy fluctuation. Things will gradually become stable if you keep steady rhythm.',
+  'You are overthinking some issues. The actual situation is better than you feel. Relax your mind and allow natural progress.',
+  'Your recent effort is accumulating quietly. Although you cannot see results immediately, positive changes are on the way.',
+  'In terms of relationships, gentle communication and patience will resolve most misunderstandings.',
+  'In terms of career, steady progress is more important than fast progress right now.',
+  'Your inner wisdom is stronger than you realize. Take some quiet time to listen to your own intuition.',
+  'What you seek is also seeking you. Trust the timing of your life and have faith in the process.',
+  'Small consistent steps lead to big transformations. Be gentle with yourself as you grow.',
+  'Your energy field is shifting and realigning. Embrace the changes rather than resisting them.',
+]
+
 export async function POST(request: Request) {
   try {
     const { message, history } = await request.json()
@@ -29,20 +42,9 @@ export async function POST(request: Request) {
     }
 
     if (!AI_BASE_URL || !AI_API_KEY) {
-      const fallbackReplies = [
-        'Your current confusion is very normal. Your life energy is in a stage of adjustment. Keeping a calm mindset will help you see clearer answers.',
-        'Recently, you may feel unstable emotionally or mentally. This is a temporary energy fluctuation. Things will gradually become stable if you keep steady rhythm.',
-        'You are overthinking some issues. The actual situation is better than you feel. Relax your mind and allow natural progress.',
-        'Your recent effort is accumulating quietly. Although you cannot see results immediately, positive changes are on the way.',
-        'In terms of relationships, gentle communication and patience will resolve most misunderstandings.',
-        'In terms of career, steady progress is more important than fast progress right now.',
-        'Your inner wisdom is stronger than you realize. Take some quiet time to listen to your own intuition.',
-        'What you seek is also seeking you. Trust the timing of your life and have faith in the process.',
-        'Small consistent steps lead to big transformations. Be gentle with yourself as you grow.',
-        'Your energy field is shifting and realigning. Embrace the changes rather than resisting them.',
-      ]
+      console.log('[AI Chat] AI not configured, using fallback replies')
       const randomReply = fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
-      return NextResponse.json({ reply: randomReply })
+      return NextResponse.json({ reply: randomReply, fallback: true })
     }
 
     const apiMessages = [
@@ -54,7 +56,14 @@ export async function POST(request: Request) {
       { role: 'user', content: message }
     ]
 
-    const response = await fetch(`${AI_BASE_URL}/chat/completions`, {
+    const baseUrl = AI_BASE_URL.endsWith('/') 
+      ? AI_BASE_URL.slice(0, -1) 
+      : AI_BASE_URL
+    const apiUrl = `${baseUrl}/chat/completions`
+    
+    console.log('[AI Chat] Calling API:', apiUrl, 'model:', AI_MODEL)
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -65,28 +74,34 @@ export async function POST(request: Request) {
         messages: apiMessages,
         temperature: 0.7,
         max_tokens: 800
-      })
+      }),
+      cache: 'no-store',
     })
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('AI API error:', response.status, errorText)
+      console.error('[AI Chat] API error status:', response.status)
+      console.error('[AI Chat] API error body:', errorText)
       throw new Error(`API request failed: ${response.status}`)
     }
 
     const data = await response.json()
-    const reply = data.choices[0]?.message?.content || ''
+    const reply = data.choices?.[0]?.message?.content || ''
 
+    if (!reply) {
+      console.error('[AI Chat] Empty reply from API, data:', JSON.stringify(data))
+      throw new Error('Empty reply from AI')
+    }
+
+    console.log('[AI Chat] Success, reply length:', reply.length)
     return NextResponse.json({ reply })
   } catch (error) {
-    console.error('AI chat error:', error)
-    const fallbackReplies = [
-      'Your current confusion is very normal. Your life energy is in a stage of adjustment. Keeping a calm mindset will help you see clearer answers.',
-      'Recently, you may feel unstable emotionally or mentally. This is a temporary energy fluctuation. Things will gradually become stable if you keep steady rhythm.',
-      'You are overthinking some issues. The actual situation is better than you feel. Relax your mind and allow natural progress.',
-    ]
+    console.error('[AI Chat] Error:', error)
+    const randomReply = fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
     return NextResponse.json({
-      reply: fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
+      reply: randomReply,
+      fallback: true,
+      error: error instanceof Error ? error.message : 'Unknown error'
     })
   }
 }
