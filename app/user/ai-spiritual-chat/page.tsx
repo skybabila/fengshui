@@ -115,6 +115,12 @@ export default function AISpiritualChatPage() {
       }
 
       const data = await response.json()
+      console.log('[AI Chat] Response:', data)
+      
+      if (data.fallback) {
+        console.warn('[AI Chat] Fallback triggered, reason:', data.fallbackReason)
+      }
+      
       return data.reply || fallbackReplies[Math.floor(Math.random() * fallbackReplies.length)]
     } catch (error) {
       console.error('AI API call failed:', error)
