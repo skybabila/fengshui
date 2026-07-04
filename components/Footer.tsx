@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { VERSION } from '@/lib/version'
 
 export default function Footer() {
   return (
@@ -49,7 +50,7 @@ export default function Footer() {
         </div>
 
         <div className="pt-8 border-t border-stone-700 text-center text-sm text-stone-500">
-          <p>© 2026 Feng Shui Wisdom. All rights reserved.</p>
+          <p>© 2026 Feng Shui Wisdom. All rights reserved. v{VERSION}</p>
           <p className="mt-2">For entertainment and wellness guidance only.</p>
         </div>
       </div>
