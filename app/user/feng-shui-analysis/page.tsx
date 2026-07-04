@@ -59,7 +59,76 @@ export default function FengShuiAnalysisPage() {
     setTodayCount(count || 0)
   }
 
-  const generateReport = () => {
+  const generateReport = async (): Promise<any> => {
+    const spaceLabel = spaceTypes.find(t => t.value === spaceType)?.label || spaceType
+    const concernLabel = mainConcerns.find(c => c.value === concern)?.label || concern
+
+    const prompt = `You are a professional Feng Shui consultant. Please analyze the following space and provide a detailed energy report.
+
+Space Type: ${spaceLabel}
+Layout Description: ${layout}
+Main Concern: ${concernLabel}
+Improvement Goal: ${improvement}
+
+Please provide your analysis in the following JSON format (return ONLY valid JSON, no markdown):
+{
+  "energyState": "Your analysis of the current space energy state, 2-3 sentences",
+  "fiveElements": {
+    "wood": {"score": <number 30-90>, "item": "one suggestion item for wood element"},
+    "fire": {"score": <number 30-90>, "item": "one suggestion item for fire element"},
+    "earth": {"score": <number 30-90>, "item": "one suggestion item for earth element"},
+    "metal": {"score": <number 30-90>, "item": "one suggestion item for metal element"},
+    "water": {"score": <number 30-90>, "item": "one suggestion item for water element"}
+  },
+  "directionEnergy": "Analysis of direction energy and corner positions, 2-3 sentences",
+  "suggestions": ["specific suggestion 1", "specific suggestion 2", "specific suggestion 3", "specific suggestion 4", "specific suggestion 5"],
+  "wellness": "Wellness guidance after adjustment, 2-3 sentences"
+}
+
+Important guidelines:
+- Focus on wellness, positive energy, and space harmony
+- Provide specific, practical suggestions based on the user's actual layout
+- Do not make definitive predictions
+- All content is for entertainment and personal reflection only`
+
+    try {
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: prompt,
+          history: [],
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`)
+      }
+
+      const data = await response.json()
+      const reply = data.reply || ''
+
+      // Try to extract JSON from the reply
+      const jsonMatch = reply.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0])
+        // Validate and fill defaults
+        return {
+          energyState: parsed.energyState || '',
+          fiveElements: parsed.fiveElements || generateFallbackReport().fiveElements,
+          directionEnergy: parsed.directionEnergy || '',
+          suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
+          wellness: parsed.wellness || '',
+        }
+      }
+      throw new Error('No JSON in AI reply')
+    } catch (error) {
+      console.error('Feng Shui AI call failed, using fallback:', error)
+      return generateFallbackReport()
+    }
+  }
+
+  const generateFallbackReport = () => {
     const woodItems = ['Green plants', 'Wooden decor', 'Natural materials', 'Fresh flowers']
     const fireItems = ['Warm lighting', 'Candles', 'Red accents', 'Sunlight']
     const earthItems = ['Stable furniture', 'Ceramic pieces', 'Earth tones', 'Crystals']
@@ -114,7 +183,7 @@ export default function FengShuiAnalysisPage() {
       if (updateError) throw updateError
       setPoints(prev => prev - PRICE)
 
-      const report = generateReport()
+      const report = await generateReport()
 
       const { error: insertError } = await supabase
         .from('fengshui_reports')
