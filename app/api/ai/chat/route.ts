@@ -2,24 +2,41 @@ import { NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
 
-const AI_BASE_URL = 
+// Clean env value: strip backticks, quotes, spaces
+function cleanEnv(val: string): string {
+  return val.replace(/[`"' ]/g, '').trim()
+}
+
+// Normalize model name: "Agnes 2.0 Flash" -> "agnes-2.0-flash"
+function normalizeModel(val: string): string {
+  const cleaned = val.trim()
+  // If already lowercase with dashes, return as-is
+  if (/^[a-z0-9._-]+$/.test(cleaned)) return cleaned
+  // Convert "Agnes 2.0 Flash" -> "agnes-2.0-flash"
+  return cleaned.toLowerCase().replace(/\s+/g, '-')
+}
+
+const AI_BASE_URL = cleanEnv(
   process.env.AI_BASE_URL || 
   process.env.NEXT_PUBLIC_AI_BASE_URL ||
   process.env.OPENAI_BASE_URL ||
   process.env.OPENAI_API_BASE ||
   ''
+)
 
-const AI_API_KEY = 
+const AI_API_KEY = cleanEnv(
   process.env.AI_API_KEY || 
   process.env.NEXT_PUBLIC_AI_API_KEY ||
   process.env.OPENAI_API_KEY ||
   ''
+)
 
-const AI_MODEL = 
+const AI_MODEL = normalizeModel(
   process.env.AI_MODEL || 
   process.env.NEXT_PUBLIC_AI_MODEL ||
   process.env.OPENAI_MODEL ||
   'gpt-3.5-turbo'
+)
 
 const systemPrompt = `You are a gentle AI spiritual wellness guide. Your role is to provide compassionate, thoughtful guidance about life, relationships, career, mental health, and personal growth. 
 
