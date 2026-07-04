@@ -106,10 +106,26 @@ export default function LoginPage() {
           }
           setError(msg)
         } else if (data?.user && !data?.session) {
-          alert('Registration successful! Please check your email and click the confirmation link to activate your account.')
+          // Give 500 welcome coins to new user
+          try {
+            await supabase
+              .from('user_profiles')
+              .upsert({ id: data.user.id, points: 500, role: 'user' })
+          } catch (e) {
+            console.error('Failed to grant welcome coins:', e)
+          }
+          alert('Registration successful! 500 welcome coins have been added to your account. Please check your email and click the confirmation link to activate your account.')
           setIsLogin(true)
-        } else if (data?.session) {
-          alert('Welcome! Your account has been created.')
+        } else if (data?.session && data?.user) {
+          // Give 500 welcome coins to new user
+          try {
+            await supabase
+              .from('user_profiles')
+              .upsert({ id: data.user!.id, points: 500, role: 'user' })
+          } catch (e) {
+            console.error('Failed to grant welcome coins:', e)
+          }
+          alert('Welcome! Your account has been created with 500 welcome coins!')
           setIsLogin(true)
         } else {
           console.error('Unexpected signup response:', result)

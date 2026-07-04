@@ -205,6 +205,8 @@ export default function ZodiacNumerologyPage() {
                     type="date"
                     value={birthDate}
                     onChange={(e) => setBirthDate(e.target.value)}
+                    min="1900-01-01"
+                    max="2026-12-31"
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-slate-700"
                   />
                 </div>
